@@ -1,10 +1,7 @@
 module Legal
 
 entity Thing
-entity Conduct {
-    conduct        : Thing
-    indirectObject : Thing?
-}
+entity Conduct
 entity Relation {
     debtor   : Person
     thing    : Thing?
@@ -27,19 +24,8 @@ effect verb give(
     object    : Thing,
     recipient : Person
 ) =>
-    subject.patrimony.obligations += Relation {
-        debtor   = subject,
-        thing    = object,
-        conduct  = none,
-        creditor = recipient,
-    }
-
-    recipient.patrimony.rights += Relation {
-        debtor   = subject,
-        thing    = object,
-        conduct  = none,
-        creditor = recipient,
-    }
+    subject.patrimony.assets   -= object
+    recipient.patrimony.assets += object
 
 
 effect verb do(

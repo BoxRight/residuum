@@ -64,7 +64,7 @@ def worker(report, index):
                     pass
                 while samples and samples[0][0] < now - 1.0:
                     samples.popleft()
-                if (request['stage'] == 'test' and rss >= 128 * MIB and samples
+                if (request['stage'] in ('test', 'fixture') and rss >= 128 * MIB and samples
                         and rss - min(sample[1] for sample in samples) >= 64 * MIB):
                     reason = reason or 'abnormal_memory_growth'
                 samples.append((now, rss))
@@ -154,12 +154,55 @@ def main():
     parser.add_argument('--compile-only', action='store_true')
     parser.add_argument('--fmt-check', action='store_true')
     parser.add_argument('--format', action='store_true')
+    parser.add_argument('--fixture', type=Path, help='Run one source-defined Formal fixture with the bounded example runner')
+    parser.add_argument('--incremental', action='store_true', help='Forward incremental comparison of base/delta seed blocks; requires --fixture')
+    parser.add_argument('--forward', action='store_true', help='Module-aware forward closure with active verb programs; requires --fixture')
+    parser.add_argument('--library', type=Path, help='Compose one shared declaration fixture; requires --fixture and --incremental')
     args = parser.parse_args()
+    if args.incremental and not args.fixture:
+        parser.error('--incremental requires --fixture')
+    if args.forward and not args.fixture:
+        parser.error('--forward requires --fixture')
+    if args.forward and args.incremental:
+        parser.error('--forward and --incremental are separate experiment modes')
+    if args.library and not (args.fixture and args.incremental):
+        parser.error('--library requires --fixture and --incremental')
+    if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
+        parser.error('--fixture cannot be combined with test, binary, compile, or format options')
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     report = ROOT / 'target' / 'test-diagnostics' / f'{stamp}-{os.getpid()}'
     report.mkdir(parents=True)
     print(f'Reports: {report}', flush=True)
     rows = []
+    if args.fixture:
+        fixture = args.fixture.resolve()
+        if not fixture.is_file() or fixture.stat().st_size > 64 * 1024:
+            raise RuntimeError('Expected one regular fixture file of at most 64 KiB')
+        library = args.library.resolve() if args.library else None
+        if library and (not library.is_file() or library.stat().st_size + fixture.stat().st_size > 64 * 1024):
+            raise RuntimeError('Expected one regular library; combined fixtures must be at most 64 KiB')
+        output = run_bounded(report, rows, 'compile', 'compile fixture runner',
+                             ['cargo', 'build', '--offline', '--locked', '--example', 'run_fixture',
+                              '--jobs', '1', '--message-format=json'], 45)
+        binaries = []
+        for line in output.read_text().splitlines():
+            try:
+                message = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (message.get('reason') == 'compiler-artifact' and message.get('executable')
+                    and message.get('target', {}).get('name') == 'run_fixture'
+                    and 'example' in message.get('target', {}).get('kind', [])):
+                binaries.append(Path(message['executable']))
+        if len(binaries) != 1:
+            raise RuntimeError('Expected one fixture runner binary; refusing execution')
+        output = run_bounded(report, rows, 'fixture', str(fixture.relative_to(ROOT))
+                             if fixture.is_relative_to(ROOT) else fixture.name,
+                             [str(binaries[0])] + (['--incremental'] if args.incremental else [])
+                             + (['--forward'] if args.forward else []) + [str(fixture)]
+                             + (['--library', str(library)] if library else []), 15)
+        print(output.read_text(), end='', flush=True)
+        return 0
     if args.fmt_check or args.format:
         command = ['cargo', 'fmt', '--all'] + (['--check'] if args.fmt_check else [])
         run_bounded(report, rows, 'format', 'cargo fmt', command, 30)

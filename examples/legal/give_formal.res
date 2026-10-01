@@ -5,10 +5,7 @@ entity Immovable <: Thing
 entity Money <: Fungible
 entity Movable <: Thing
 entity Thing
-entity Conduct {
-    conduct        : Thing
-    indirectObject : Thing?
-}
+entity Conduct
 entity Patrimony {
     assets      : Set Thing
     rights      : Set Relation
@@ -29,16 +26,5 @@ effect verb give(
     object    : Thing,
     recipient : Person
 ) =>
-    subject.patrimony.obligations += Relation {
-        debtor   = subject,
-        thing    = object,
-        conduct  = none,
-        creditor = recipient,
-    }
-
-    recipient.patrimony.rights += Relation {
-        debtor   = subject,
-        thing    = object,
-        conduct  = none,
-        creditor = recipient,
-    }
+    subject.patrimony.assets   -= object
+    recipient.patrimony.assets += object

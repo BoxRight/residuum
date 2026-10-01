@@ -1,12 +1,15 @@
 use crate::elab::Error;
 use crate::surface::{
-    FormalArg, FormalConst, FormalDeclaration, FormalDefault, FormalEntity, FormalField,
-    FormalModule, FormalRule, FormalVerb, SurfaceAntecedent, SurfaceDefaultBody, SurfaceEffect,
-    SurfaceEvent, SurfaceFieldAccess, SurfaceRecordFieldValue, SurfaceRuleBody,
+    FormalArg, FormalConst, FormalDeclaration, FormalDefault, FormalEntity, FormalExperiment,
+    FormalField, FormalModule, FormalRule, FormalVerb, SurfaceAntecedent, SurfaceDefaultBody,
+    SurfaceEffect, SurfaceEvent, SurfaceFieldAccess, SurfaceRecordFieldValue, SurfaceRuleBody,
     SurfaceStateOperation, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
 };
-use crate::typed::Type;
+use crate::typed::{ExperimentInputKind, ExperimentQueryKind, Polarity, Type};
 use chumsky::prelude::*;
+
+#[cfg(test)]
+mod comment_tests;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Token {
@@ -26,7 +29,9 @@ enum Token {
     PlusEqual,
     MinusEqual,
     Leq,
+    Multimap,
     Ampersand,
+    Tilde,
 }
 
 pub fn parse_formal(source: &str) -> Result<FormalModule, Error> {
@@ -61,15 +66,32 @@ where
 }
 
 fn lexer() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
+    let line_comment = just("//")
+        .or(just("#"))
+        .ignore_then(filter(|c: &char| *c != '\n' && *c != '\r').repeated())
+        .ignored();
+    let block_comment = just("/*").ignore_then(take_until(just("*/"))).ignored();
+    // Each repeated trivia item consumes a character or a comment opener.
+    // The trivia list may be empty; repeated tokens still consume input.
+    let trivia = choice((
+        line_comment,
+        block_comment,
+        filter(|c: &char| c.is_whitespace()).ignored(),
+    ))
+    .repeated()
+    .ignored();
     let ident = text::ident().map(Token::Ident);
     let symbols = choice((
         just("=>").to(Token::FatArrow),
         just("+=").to(Token::PlusEqual),
         just("-=").to(Token::MinusEqual),
+        just("-o").to(Token::Multimap),
         just("<=").to(Token::Leq),
         just("<:").to(Token::Subtype),
         just('≤').to(Token::Leq),
+        just('⊸').to(Token::Multimap),
         just('&').to(Token::Ampersand),
+        just('~').to(Token::Tilde),
         just('{').to(Token::LBrace),
         just('}').to(Token::RBrace),
         just('(').to(Token::LParen),
@@ -82,9 +104,10 @@ fn lexer() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
         just('=').to(Token::Equal),
     ));
 
-    choice((ident, symbols))
-        .padded()
-        .repeated()
+    // A repeated token always consumes its identifier/symbol before trivia.
+    trivia
+        .clone()
+        .ignore_then(choice((ident, symbols)).then_ignore(trivia).repeated())
         .then_ignore(end())
 }
 
@@ -95,7 +118,10 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
     };
 
     let ty = recursive(|ty| {
-        let entity = ident.clone().map(Type::Entity);
+        let entity = choice((
+            keyword("PropositionTime").to(Type::PropositionTime),
+            ident.clone().map(Type::Entity),
+        ));
         let set = keyword("Set")
             .ignore_then(ident.clone())
             .map(|name| Type::Set(Box::new(Type::Entity(name))));
@@ -214,18 +240,26 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
 
     let verb = choice((
         keyword("seeded").to(SurfaceVerbKind::Seeded),
+        keyword("derived").to(SurfaceVerbKind::Derived),
         keyword("effect").to(SurfaceVerbKind::Effect),
     ))
     .then_ignore(keyword("verb"))
     .then(ident.clone())
     .then(args.clone())
     .then(just(Token::FatArrow).ignore_then(effect_body).or_not())
-    .map(|(((kind, name), args), effect)| {
+    .then(
+        just(Token::Equal)
+            .ignore_then(keyword("program"))
+            .ignore_then(ident.clone())
+            .or_not(),
+    )
+    .map(|((((kind, name), args), effect), program)| {
         FormalDeclaration::Verb(FormalVerb {
             name,
             kind,
             args,
             effect,
+            program,
         })
     });
 
@@ -238,8 +272,9 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
         )))
         .or_not();
 
-    let event = ident
-        .clone()
+    let event = just(Token::Tilde)
+        .or_not()
+        .then(ident.clone())
         .then(
             ident
                 .clone()
@@ -248,14 +283,28 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                 .delimited_by(just(Token::LParen), just(Token::RParen)),
         )
         .then(time)
-        .map(|((verb, args), time)| SurfaceEvent { verb, args, time });
+        .map(|(((negative, verb), args), time)| SurfaceEvent {
+            polarity: if negative.is_some() {
+                Polarity::EvidentialNot
+            } else {
+                Polarity::Positive
+            },
+            verb,
+            args,
+            time,
+        });
 
-    let antecedent = event
+    // I consumes a token and produces a neutral witness independently of Known.
+    // Trying the event first preserves I(...) as an ordinary verb application.
+    let antecedent_atom = choice((
+        event.clone().map(SurfaceAntecedent::Event),
+        keyword("I").to(SurfaceAntecedent::Unit),
+    ));
+    let antecedent = antecedent_atom
         .clone()
-        .map(SurfaceAntecedent::Event)
         .then(
             just(Token::Ampersand)
-                .ignore_then(event.clone().map(SurfaceAntecedent::Event))
+                .ignore_then(antecedent_atom)
                 .repeated(),
         )
         .map(|(first, rest)| {
@@ -282,6 +331,17 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
             })
         });
 
+    // Both branches consume an event; residual syntax is one level in this fragment.
+    // No recursive alternatives or optional separators are introduced.
+    let conclusion = choice((
+        antecedent
+            .clone()
+            .then_ignore(just(Token::Multimap))
+            .then(event.clone())
+            .map(|(required, event)| (Some(required), event)),
+        event.clone().map(|event| (None, event)),
+    ));
+
     let horn_rule = keyword("rule")
         .ignore_then(ident.clone())
         .then(
@@ -292,35 +352,98 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                 .delimited_by(just(Token::LParen), just(Token::RParen)),
         )
         .then_ignore(just(Token::Equal))
-        .then(antecedent)
+        .then(antecedent.clone())
         .then_ignore(just(Token::Leq))
-        .then(event.clone())
-        .map(|(((name, params), premise), conclusion)| {
+        .then(conclusion)
+        .map(|(((name, params), premise), (required, conclusion))| {
             FormalDeclaration::Rule(FormalRule {
                 name,
-                body: SurfaceRuleBody::Horn {
-                    params,
-                    premise,
-                    conclusion,
+                body: match required {
+                    Some(required) => SurfaceRuleBody::Residual {
+                        params,
+                        premise,
+                        required,
+                        conclusion,
+                    },
+                    None => SurfaceRuleBody::Horn {
+                        params,
+                        premise,
+                        conclusion,
+                    },
                 },
             })
         });
 
     let rule = choice((horn_rule, rule_application));
 
+    let default_body = choice((
+        keyword("supernormal")
+            .ignore_then(ident.clone())
+            .map(|rule| (SurfaceDefaultBody::Supernormal { rule }, None)),
+        keyword("exception")
+            .ignore_then(ident.clone())
+            .then_ignore(keyword("to"))
+            .then(ident.clone())
+            .then(keyword("when").ignore_then(antecedent.clone()).or_not())
+            .map(|((rule, to), condition)| (SurfaceDefaultBody::Exception { rule, to }, condition)),
+    ));
+
     let default = keyword("default")
         .ignore_then(ident.clone())
         .then_ignore(just(Token::Equal))
-        .then_ignore(keyword("supernormal"))
-        .then(ident.clone())
-        .map(|(name, rule)| {
+        .then(default_body)
+        .then(
+            keyword("blocked")
+                .then_ignore(keyword("when"))
+                .ignore_then(antecedent)
+                .or_not(),
+        )
+        .map(|((name, (body, condition)), blocking)| {
             FormalDeclaration::Default(FormalDefault {
                 name,
-                body: SurfaceDefaultBody::Supernormal { rule },
+                body,
+                condition,
+                blocking,
             })
         });
 
-    let declaration = choice((entity, const_decl, verb, rule, default));
+    // Each list item consumes an event; internal commas are mandatory. Only
+    // the final comma is optional. Box this new declaration at its boundary
+    // to keep its combinator type out of the existing declaration choice.
+    let experiment = keyword("experiment")
+        .ignore_then(ident.clone())
+        .then(
+            choice((
+                keyword("seeds").to(ExperimentInputKind::Seeds),
+                keyword("premises").to(ExperimentInputKind::Premises),
+            ))
+            .then(
+                event
+                    .clone()
+                    .separated_by(just(Token::Comma))
+                    .allow_trailing()
+                    .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+            )
+            .then_ignore(keyword("query"))
+            .then(choice((
+                keyword("residual").to(ExperimentQueryKind::Residual),
+                keyword("fourFusion").to(ExperimentQueryKind::FourFusion),
+            )))
+            .then(event.clone())
+            .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+        )
+        .map(|(name, (((input_kind, input), query_kind), goal))| {
+            FormalDeclaration::Experiment(FormalExperiment {
+                name,
+                input_kind,
+                input,
+                query_kind,
+                goal,
+            })
+        })
+        .boxed();
+
+    let declaration = choice((entity, const_decl, verb, rule, default, experiment));
 
     keyword("module")
         .ignore_then(ident.clone())
@@ -337,6 +460,38 @@ fn lex(source: &str) -> Result<Vec<Token>, Error> {
     while let Some((idx, ch)) = chars.next() {
         match ch {
             c if c.is_whitespace() => {}
+            '#' => {
+                for (_, c) in chars.by_ref() {
+                    if c == '\n' || c == '\r' {
+                        break;
+                    }
+                }
+            }
+            '/' => match chars.next() {
+                Some((_, '/')) => {
+                    for (_, c) in chars.by_ref() {
+                        if c == '\n' || c == '\r' {
+                            break;
+                        }
+                    }
+                }
+                Some((_, '*')) => {
+                    let mut closed = false;
+                    while let Some((_, c)) = chars.next() {
+                        if c == '*' && matches!(chars.peek(), Some((_, '/'))) {
+                            chars.next();
+                            closed = true;
+                            break;
+                        }
+                    }
+                    if !closed {
+                        return Err(Error::new(format!(
+                            "unterminated block comment at byte {idx}"
+                        )));
+                    }
+                }
+                _ => return Err(Error::new(format!("unexpected `/` at byte {idx}"))),
+            },
             '{' => tokens.push(Token::LBrace),
             '}' => tokens.push(Token::RBrace),
             '(' => tokens.push(Token::LParen),
@@ -358,7 +513,9 @@ fn lex(source: &str) -> Result<Vec<Token>, Error> {
             '.' => tokens.push(Token::Dot),
             '@' => tokens.push(Token::At),
             '≤' => tokens.push(Token::Leq),
+            '⊸' => tokens.push(Token::Multimap),
             '&' => tokens.push(Token::Ampersand),
+            '~' => tokens.push(Token::Tilde),
             '=' => {
                 if matches!(chars.peek(), Some((_, '>'))) {
                     chars.next();
@@ -379,6 +536,9 @@ fn lex(source: &str) -> Result<Vec<Token>, Error> {
                 if matches!(chars.peek(), Some((_, '='))) {
                     chars.next();
                     tokens.push(Token::MinusEqual);
+                } else if matches!(chars.peek(), Some((_, 'o'))) {
+                    chars.next();
+                    tokens.push(Token::Multimap);
                 } else {
                     return Err(Error::new(format!("unexpected `-` at byte {idx}")));
                 }
@@ -425,11 +585,14 @@ impl ManualParser {
             match head {
                 "entity" => declarations.push(FormalDeclaration::Entity(self.parse_entity()?)),
                 "const" => declarations.push(FormalDeclaration::Const(self.parse_const()?)),
-                "seeded" | "effect" => {
+                "seeded" | "derived" | "effect" => {
                     declarations.push(FormalDeclaration::Verb(self.parse_verb()?))
                 }
                 "rule" => declarations.push(FormalDeclaration::Rule(self.parse_rule()?)),
                 "default" => declarations.push(FormalDeclaration::Default(self.parse_default()?)),
+                "experiment" => {
+                    declarations.push(FormalDeclaration::Experiment(self.parse_experiment()?))
+                }
                 other => return Err(Error::new(format!("unexpected declaration `{other}`"))),
             }
         }
@@ -476,18 +639,25 @@ impl ManualParser {
     fn parse_verb(&mut self) -> Result<FormalVerb, Error> {
         let kind = match self.expect_ident()?.as_str() {
             "seeded" => SurfaceVerbKind::Seeded,
+            "derived" => SurfaceVerbKind::Derived,
             "effect" => SurfaceVerbKind::Effect,
             other => return Err(Error::new(format!("expected verb kind, got `{other}`"))),
         };
         self.expect_ident_value("verb")?;
         let name = self.expect_ident()?;
         let args = self.parse_args()?;
-        let effect = if matches!(kind, SurfaceVerbKind::Effect) {
+        let effect = if matches!(kind, SurfaceVerbKind::Effect | SurfaceVerbKind::Derived) {
             if self.eat(&Token::FatArrow) {
                 Some(self.parse_effect()?)
             } else {
                 None
             }
+        } else {
+            None
+        };
+        let program = if self.eat(&Token::Equal) {
+            self.expect_ident_value("program")?;
+            Some(self.expect_ident()?)
         } else {
             None
         };
@@ -497,6 +667,7 @@ impl ManualParser {
             kind,
             args,
             effect,
+            program,
         })
     }
 
@@ -517,6 +688,8 @@ impl ManualParser {
         let name = self.expect_ident()?;
         let ty = if name == "Set" {
             Type::Set(Box::new(Type::Entity(self.expect_ident()?)))
+        } else if name == "PropositionTime" {
+            Type::PropositionTime
         } else {
             Type::Entity(name)
         };
@@ -593,16 +766,26 @@ impl ManualParser {
             self.expect(&Token::Equal)?;
             let premise = self.parse_antecedent()?;
             self.expect(&Token::Leq)?;
-            let conclusion = self.parse_event()?;
-
-            Ok(FormalRule {
-                name,
-                body: SurfaceRuleBody::Horn {
+            let right = self.parse_antecedent()?;
+            let body = if self.eat(&Token::Multimap) {
+                SurfaceRuleBody::Residual {
+                    params,
+                    premise,
+                    required: right,
+                    conclusion: self.parse_event()?,
+                }
+            } else {
+                let SurfaceAntecedent::Event(conclusion) = right else {
+                    return Err(Error::new("conjunctive consequent requires a residual"));
+                };
+                SurfaceRuleBody::Horn {
                     params,
                     premise,
                     conclusion,
-                },
-            })
+                }
+            };
+
+            Ok(FormalRule { name, body })
         } else {
             self.expect(&Token::Equal)?;
             let rule = self.expect_ident()?;
@@ -620,28 +803,69 @@ impl ManualParser {
     }
 
     fn parse_antecedent(&mut self) -> Result<SurfaceAntecedent, Error> {
-        let mut antecedent = SurfaceAntecedent::Event(self.parse_event()?);
+        let mut antecedent = self.parse_antecedent_atom()?;
         while self.eat(&Token::Ampersand) {
-            let right = SurfaceAntecedent::Event(self.parse_event()?);
+            let right = self.parse_antecedent_atom()?;
             antecedent = SurfaceAntecedent::And(Box::new(antecedent), Box::new(right));
         }
         Ok(antecedent)
+    }
+
+    fn parse_antecedent_atom(&mut self) -> Result<SurfaceAntecedent, Error> {
+        if matches!(self.tokens.get(self.pos), Some(Token::Ident(name)) if name == "I")
+            && self.tokens.get(self.pos + 1) != Some(&Token::LParen)
+        {
+            self.pos += 1;
+            Ok(SurfaceAntecedent::Unit)
+        } else {
+            self.parse_event().map(SurfaceAntecedent::Event)
+        }
     }
 
     fn parse_default(&mut self) -> Result<FormalDefault, Error> {
         self.expect_ident_value("default")?;
         let name = self.expect_ident()?;
         self.expect(&Token::Equal)?;
-        self.expect_ident_value("supernormal")?;
-        let rule = self.expect_ident()?;
-
+        let body = match self.expect_ident()?.as_str() {
+            "supernormal" => SurfaceDefaultBody::Supernormal {
+                rule: self.expect_ident()?,
+            },
+            "exception" => {
+                let rule = self.expect_ident()?;
+                self.expect_ident_value("to")?;
+                SurfaceDefaultBody::Exception {
+                    rule,
+                    to: self.expect_ident()?,
+                }
+            }
+            other => return Err(Error::new(format!("expected default kind, got `{other}`"))),
+        };
+        let condition =
+            if matches!(body, SurfaceDefaultBody::Exception { .. }) && self.eat_ident("when") {
+                Some(self.parse_antecedent()?)
+            } else {
+                None
+            };
+        let blocking = if self.eat_ident("blocked") {
+            self.expect_ident_value("when")?;
+            Some(self.parse_antecedent()?)
+        } else {
+            None
+        };
         Ok(FormalDefault {
             name,
-            body: SurfaceDefaultBody::Supernormal { rule },
+            body,
+            condition,
+            blocking,
         })
     }
 
     fn parse_event(&mut self) -> Result<SurfaceEvent, Error> {
+        let polarity = if self.eat(&Token::Tilde) {
+            Polarity::EvidentialNot
+        } else {
+            Polarity::Positive
+        };
         let verb = self.expect_ident()?;
         self.expect(&Token::LParen)?;
         let mut args = Vec::new();
@@ -659,7 +883,52 @@ impl ManualParser {
             None
         };
 
-        Ok(SurfaceEvent { verb, args, time })
+        Ok(SurfaceEvent {
+            polarity,
+            verb,
+            args,
+            time,
+        })
+    }
+
+    fn parse_experiment(&mut self) -> Result<FormalExperiment, Error> {
+        self.expect_ident_value("experiment")?;
+        let name = self.expect_ident()?;
+        self.expect(&Token::LBrace)?;
+        let input_kind = match self.expect_ident()?.as_str() {
+            "seeds" => ExperimentInputKind::Seeds,
+            "premises" => ExperimentInputKind::Premises,
+            _ => return Err(Error::new("expected seeds or premises")),
+        };
+        self.expect(&Token::LBrace)?;
+        let mut input = Vec::new();
+        if !self.eat(&Token::RBrace) {
+            loop {
+                input.push(self.parse_event()?);
+                if self.eat(&Token::RBrace) {
+                    break;
+                }
+                self.expect(&Token::Comma)?;
+                if self.eat(&Token::RBrace) {
+                    break;
+                }
+            }
+        }
+        self.expect_ident_value("query")?;
+        let query_kind = match self.expect_ident()?.as_str() {
+            "residual" => ExperimentQueryKind::Residual,
+            "fourFusion" => ExperimentQueryKind::FourFusion,
+            _ => return Err(Error::new("expected residual or fourFusion")),
+        };
+        let goal = self.parse_event()?;
+        self.expect(&Token::RBrace)?;
+        Ok(FormalExperiment {
+            name,
+            input_kind,
+            input,
+            query_kind,
+            goal,
+        })
     }
 
     fn expect_ident_value(&mut self, expected: &str) -> Result<(), Error> {

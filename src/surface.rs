@@ -1,4 +1,4 @@
-use crate::typed::Type;
+use crate::typed::{Polarity, Type};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FormalModule {
@@ -13,6 +13,16 @@ pub enum FormalDeclaration {
     Verb(FormalVerb),
     Rule(FormalRule),
     Default(FormalDefault),
+    Experiment(FormalExperiment),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FormalExperiment {
+    pub name: String,
+    pub input_kind: crate::typed::ExperimentInputKind,
+    pub input: Vec<SurfaceEvent>,
+    pub query_kind: crate::typed::ExperimentQueryKind,
+    pub goal: SurfaceEvent,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,6 +50,7 @@ pub struct FormalVerb {
     pub kind: SurfaceVerbKind,
     pub args: Vec<FormalArg>,
     pub effect: Option<SurfaceEffect>,
+    pub program: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,6 +62,7 @@ pub struct FormalArg {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SurfaceVerbKind {
     Seeded,
+    Derived,
     Effect,
 }
 
@@ -106,6 +118,12 @@ pub enum SurfaceRuleBody {
         premise: SurfaceAntecedent,
         conclusion: SurfaceEvent,
     },
+    Residual {
+        params: Vec<String>,
+        premise: SurfaceAntecedent,
+        required: SurfaceAntecedent,
+        conclusion: SurfaceEvent,
+    },
     Application {
         rule: String,
         args: Vec<String>,
@@ -114,6 +132,7 @@ pub enum SurfaceRuleBody {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SurfaceAntecedent {
+    Unit,
     Event(SurfaceEvent),
     And(Box<SurfaceAntecedent>, Box<SurfaceAntecedent>),
 }
@@ -122,15 +141,19 @@ pub enum SurfaceAntecedent {
 pub struct FormalDefault {
     pub name: String,
     pub body: SurfaceDefaultBody,
+    pub condition: Option<SurfaceAntecedent>,
+    pub blocking: Option<SurfaceAntecedent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SurfaceDefaultBody {
     Supernormal { rule: String },
+    Exception { rule: String, to: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SurfaceEvent {
+    pub polarity: Polarity,
     pub verb: String,
     pub args: Vec<String>,
     pub time: Option<SurfaceTime>,

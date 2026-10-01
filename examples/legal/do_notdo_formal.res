@@ -5,10 +5,7 @@ entity Immovable <: Thing
 entity Money <: Fungible
 entity Movable <: Thing
 entity Thing
-entity Conduct {
-    conduct        : Thing
-    indirectObject : Thing?
-}
+entity Conduct
 entity Patrimony {
     assets      : Set Thing
     rights      : Set Relation

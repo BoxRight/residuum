@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::derive::{match_antecedents, substitution_record};
 use crate::elab::Error;
-use crate::typed::{Declaration, DefaultBody, DefaultRef, Event, Module, Rule, Substitution};
+use crate::typed::{Declaration, DefaultRef, Event, Module, ProgramRef, Rule, Substitution};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicabilityMatch {
@@ -26,6 +26,8 @@ pub enum ConsistencyStatus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockingScope {
     RuleLambda,
+    ProgramLambda,
+    Lambda, // Mixed Rule/Program targets, still whole-lambda blocking.
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -46,11 +48,16 @@ pub struct DefaultExtension {
     pub selected: Vec<DefaultRef>,
     pub consistency: ConsistencyStatus,
     rules: Vec<Rule>,
+    programs: Vec<ProgramRef>,
 }
 
 impl DefaultExtension {
     pub fn rules(&self) -> &[Rule] {
         &self.rules
+    }
+    /// Selected autonomous units, not an external harness association.
+    pub fn programs(&self) -> &[ProgramRef] {
+        &self.programs
     }
 }
 
@@ -125,10 +132,27 @@ pub fn evaluate_defaults(module: &Module, context: &[Event]) -> Result<DefaultEx
     Ok(DefaultExtension {
         applicable,
         blocked,
-        blocking_scope: BlockingScope::RuleLambda,
+        blocking_scope: {
+            let targets: Vec<_> = module
+                .declarations
+                .iter()
+                .filter_map(|d| match d {
+                    Declaration::Default(d) => Some(d.body.is_program()),
+                    _ => None,
+                })
+                .collect();
+            if targets.iter().all(|p| !p) {
+                BlockingScope::RuleLambda
+            } else if targets.iter().all(|p| *p) {
+                BlockingScope::ProgramLambda
+            } else {
+                BlockingScope::Lambda
+            }
+        },
         defeated: selection.defeated,
         selected: selection.selected,
         rules: selection.rules,
+        programs: selection.programs,
         consistency: ConsistencyStatus::NotChecked,
     })
 }
@@ -137,6 +161,7 @@ struct PrioritySelection {
     defeated: Vec<DefaultRef>,
     selected: Vec<DefaultRef>,
     rules: Vec<Rule>,
+    programs: Vec<ProgramRef>,
 }
 
 /// Provisional priority harness with externally chosen candidates.
@@ -155,6 +180,7 @@ fn select_candidates(
 ) -> Result<PrioritySelection, Error> {
     let mut defaults = BTreeMap::new();
     let mut rules = BTreeMap::new();
+    let mut programs = BTreeMap::new();
     for declaration in &module.declarations {
         match declaration {
             Declaration::Default(default) => {
@@ -165,6 +191,17 @@ fn select_candidates(
             Declaration::Rule(rule) => {
                 if rules.insert(rule.name.as_str(), rule).is_some() {
                     return Err(Error::new(format!("duplicate rule `{}`", rule.name)));
+                }
+            }
+            Declaration::Program(program) => {
+                if programs
+                    .insert(program.identity.as_str(), program)
+                    .is_some()
+                {
+                    return Err(Error::new(format!(
+                        "duplicate program `{}`",
+                        program.identity
+                    )));
                 }
             }
             _ => {}
@@ -178,7 +215,7 @@ fn select_candidates(
             .get(name)
             .ok_or_else(|| Error::new(format!("unknown activated default `{name}`")))?;
         let mut visited = BTreeSet::from([current.name.as_str()]);
-        while let DefaultBody::Exception { to, .. } = &current.body {
+        while let Some(to) = current.body.exception_parent() {
             // A blocked default contributes no outgoing exception edge,
             // including when reached through a chain of priorities.
             if blocked.contains(current.name.as_str()) {
@@ -202,30 +239,47 @@ fn select_candidates(
 
     let surviving: BTreeSet<_> = activated.difference(&defeated).copied().collect();
     let mut selected_rules = BTreeSet::new();
+    let mut selected_programs = BTreeSet::new();
     for name in &surviving {
-        let rule = match &defaults[name].body {
-            DefaultBody::Supernormal { rule } | DefaultBody::Exception { rule, .. } => rule,
-        };
-        if !rules.contains_key(rule.name.as_str()) {
-            return Err(Error::new(format!(
-                "unknown rule `{}` in default `{name}`",
-                rule.name
-            )));
+        let body = &defaults[name].body;
+        let target = body.target_name();
+        if body.is_program() {
+            if !programs.contains_key(target) {
+                return Err(Error::new(format!(
+                    "unknown program `{target}` in default `{name}`"
+                )));
+            }
+            selected_programs.insert(target);
+        } else {
+            if !rules.contains_key(target) {
+                return Err(Error::new(format!(
+                    "unknown rule `{target}` in default `{name}`"
+                )));
+            }
+            selected_rules.insert(target);
         }
-        selected_rules.insert(rule.name.as_str());
     }
 
-    // Stable declaration order, independent of activation order; one copy per lambda.
-    let rules = module
-        .declarations
-        .iter()
-        .filter_map(|declaration| match declaration {
+    // Resolve whole surviving units first. Only then lower their bindings.
+    // Applicability substitutions never turn global selection into per-instance selection.
+    let mut rules = Vec::new();
+    let mut program_refs = Vec::new();
+    for declaration in &module.declarations {
+        match declaration {
             Declaration::Rule(rule) if selected_rules.contains(rule.name.as_str()) => {
-                Some(rule.clone())
+                rules.push(rule.clone())
             }
-            _ => None,
-        })
-        .collect();
+            Declaration::Program(program)
+                if selected_programs.contains(program.identity.as_str()) =>
+            {
+                program_refs.push(ProgramRef {
+                    name: program.identity.clone(),
+                });
+                rules.extend(crate::programs::compile_program(program, module)?);
+            }
+            _ => {}
+        }
+    }
     let mut selected = Vec::new();
     let mut defeated_defaults = Vec::new();
     for declaration in &module.declarations {
@@ -245,6 +299,7 @@ fn select_candidates(
     }
     Ok(PrioritySelection {
         rules,
+        programs: program_refs,
         selected,
         defeated: defeated_defaults,
     })

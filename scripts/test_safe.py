@@ -97,7 +97,7 @@ def worker(report, index):
     return 0 if reason is None else 1
 
 
-def run_bounded(report, rows, stage, name, command, timeout):
+def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None):
     index = len(rows) + 1
     request = dict(stage=stage, name=name, command=command, timeout=timeout)
     (report / f'{index:02d}.request.json').write_text(json.dumps(request, indent=2) + '\n')
@@ -124,7 +124,7 @@ def run_bounded(report, rows, stage, name, command, timeout):
     rows.append(row)
     save_report(report, rows)
     print(f'{name} | {row["exit_status"]} | {row["elapsed_seconds"]:.4f}s | '
-          f'{row["peak_rss_bytes"] / MIB:.2f} MiB RSS', flush=True)
+          f'{row["peak_rss_bytes"] / MIB:.2f} MiB RSS', flush=True, file=diagnostics)
     if row['stop_reason']:
         raise RuntimeError(f'{name}: {row["stop_reason"]}; no remaining tests executed. '
                            f'See {report / f"{index:02d}.output.txt"}')
@@ -145,20 +145,36 @@ def parse_names(output):
     return {line[:-6] for line in output.read_text().splitlines() if line.endswith(': test')}
 
 
+def emit_output(path, stream):
+    # Rendering happens inside the limited worker. Do not load a potentially
+    # large result into the launcher process outside that cgroup.
+    with path.open(encoding='utf-8') as output:
+        while chunk := output.read(64 * 1024):
+            stream.write(chunk)
+    stream.flush()
+
+
 def main():
     if len(sys.argv) == 4 and sys.argv[1] == '--worker':
         return worker(Path(sys.argv[2]), int(sys.argv[3]))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--test', action='append', default=[], help='Exact active test name; repeatable')
+    parser.add_argument('--test-target', choices=('lib', 'cli'), default='lib',
+                        help='Compile only the selected test target (default: lib)')
     parser.add_argument('--binary', type=Path, help='Use an existing binary without compiling')
     parser.add_argument('--compile-only', action='store_true')
     parser.add_argument('--fmt-check', action='store_true')
     parser.add_argument('--format', action='store_true')
     parser.add_argument('--fixture', type=Path, help='Run one source-defined Formal fixture with the bounded example runner')
+    parser.add_argument('--cli', choices=('run', 'query', 'explain'), help='Run one CLI command on --fixture under the same limits')
     parser.add_argument('--incremental', action='store_true', help='Forward incremental comparison of base/delta seed blocks; requires --fixture')
     parser.add_argument('--forward', action='store_true', help='Module-aware forward closure with active verb programs; requires --fixture')
     parser.add_argument('--library', type=Path, help='Compose one shared declaration fixture; requires --fixture and --incremental')
     args = parser.parse_args()
+    if args.test_target != 'lib' and (args.fixture or args.fmt_check or args.format):
+        parser.error('--test-target is only for test compilation/execution')
+    if args.cli and (not args.fixture or args.forward or args.incremental or args.library):
+        parser.error('--cli requires --fixture and cannot be combined with other fixture modes')
     if args.incremental and not args.fixture:
         parser.error('--incremental requires --fixture')
     if args.forward and not args.fixture:
@@ -172,7 +188,8 @@ def main():
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     report = ROOT / 'target' / 'test-diagnostics' / f'{stamp}-{os.getpid()}'
     report.mkdir(parents=True)
-    print(f'Reports: {report}', flush=True)
+    diagnostics = sys.stderr if args.cli else sys.stdout
+    print(f'Reports: {report}', flush=True, file=diagnostics)
     rows = []
     if args.fixture:
         fixture = args.fixture.resolve()
@@ -181,9 +198,11 @@ def main():
         library = args.library.resolve() if args.library else None
         if library and (not library.is_file() or library.stat().st_size + fixture.stat().st_size > 64 * 1024):
             raise RuntimeError('Expected one regular library; combined fixtures must be at most 64 KiB')
-        output = run_bounded(report, rows, 'compile', 'compile fixture runner',
-                             ['cargo', 'build', '--offline', '--locked', '--example', 'run_fixture',
-                              '--jobs', '1', '--message-format=json'], 45)
+        target = 'residuum' if args.cli else 'run_fixture'
+        target_kind = 'bin' if args.cli else 'example'
+        output = run_bounded(report, rows, 'compile', f'compile {target}',
+                             ['cargo', 'build', '--offline', '--locked', f'--{target_kind}', target,
+                              '--jobs', '1', '--message-format=json'], 45, diagnostics=diagnostics)
         binaries = []
         for line in output.read_text().splitlines():
             try:
@@ -191,17 +210,25 @@ def main():
             except json.JSONDecodeError:
                 continue
             if (message.get('reason') == 'compiler-artifact' and message.get('executable')
-                    and message.get('target', {}).get('name') == 'run_fixture'
-                    and 'example' in message.get('target', {}).get('kind', [])):
+                    and message.get('target', {}).get('name') == target
+                    and target_kind in message.get('target', {}).get('kind', [])):
                 binaries.append(Path(message['executable']))
         if len(binaries) != 1:
-            raise RuntimeError('Expected one fixture runner binary; refusing execution')
-        output = run_bounded(report, rows, 'fixture', str(fixture.relative_to(ROOT))
-                             if fixture.is_relative_to(ROOT) else fixture.name,
-                             [str(binaries[0])] + (['--incremental'] if args.incremental else [])
-                             + (['--forward'] if args.forward else []) + [str(fixture)]
-                             + (['--library', str(library)] if library else []), 15)
-        print(output.read_text(), end='', flush=True)
+            raise RuntimeError('Expected one compiled runner binary; refusing execution')
+        try:
+            output = run_bounded(report, rows, 'fixture', str(fixture.relative_to(ROOT))
+                                 if fixture.is_relative_to(ROOT) else fixture.name,
+                                 [str(binaries[0])] + ([args.cli] if args.cli else [])
+                                 + (['--incremental'] if args.incremental else [])
+                                 + (['--forward'] if args.forward else []) + [str(fixture)]
+                                 + (['--library', str(library)] if library else []), 15,
+                                 diagnostics=diagnostics)
+        except RuntimeError:
+            # Expose semantic errors to CLI callers as well as keeping the report.
+            if args.cli and rows and rows[-1]['stage'] == 'fixture':
+                emit_output(report / f'{len(rows):02d}.output.txt', sys.stderr)
+            raise
+        emit_output(output, sys.stdout)
         return 0
     if args.fmt_check or args.format:
         command = ['cargo', 'fmt', '--all'] + (['--check'] if args.fmt_check else [])
@@ -209,8 +236,10 @@ def main():
         return 0
     binary = args.binary.resolve() if args.binary else None
     if binary is None:
+        target_args = ['--lib'] if args.test_target == 'lib' else ['--bin', 'residuum']
+        target_kind = 'lib' if args.test_target == 'lib' else 'bin'
         output = run_bounded(report, rows, 'compile', 'compile only',
-                             ['cargo', 'test', '--offline', '--locked', '--no-run', '--lib',
+                             ['cargo', 'test', '--offline', '--locked', '--no-run'] + target_args + [
                               '--jobs', '1', '--message-format=json'], 45)
         binaries = []
         for line in output.read_text().splitlines():
@@ -220,10 +249,11 @@ def main():
                 continue
             if (message.get('reason') == 'compiler-artifact' and message.get('executable')
                     and message.get('profile', {}).get('test')
-                    and message.get('target', {}).get('name') == 'residuum'):
+                    and message.get('target', {}).get('name') == 'residuum'
+                    and target_kind in message.get('target', {}).get('kind', [])):
                 binaries.append(Path(message['executable']))
         if len(binaries) != 1:
-            raise RuntimeError('Expected one compiled library test binary; refusing execution')
+            raise RuntimeError('Expected one compiled test binary for the selected target; refusing execution')
         binary = binaries[0]
     if args.compile_only:
         return 0

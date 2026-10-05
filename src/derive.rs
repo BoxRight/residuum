@@ -183,14 +183,7 @@ pub fn close_program<C: DerivationClock>(
             "close_program requires a module without defaults",
         ));
     }
-    let definitions: BTreeSet<_> = module
-        .declarations
-        .iter()
-        .filter_map(|d| match d {
-            Declaration::Verb(v) => v.program.as_ref().map(|r| r.name.as_str()),
-            _ => None,
-        })
-        .collect();
+    let mut definitions = BTreeSet::new();
     let mut programs = Vec::new();
     for declaration in &module.declarations {
         let Declaration::Verb(verb) = declaration else {
@@ -199,19 +192,42 @@ pub fn close_program<C: DerivationClock>(
         let Some(reference) = &verb.program else {
             continue;
         };
-        let targets: Vec<_> = module
-            .declarations
-            .iter()
-            .filter_map(|d| match d {
-                Declaration::Rule(r) if r.name == reference.name => Some(r),
-                _ => None,
-            })
-            .collect();
-        let [rule] = targets.as_slice() else {
-            return Err(Error::new(format!(
-                "associated rule {} must resolve uniquely",
-                reference.name
-            )));
+        let (parameters, rules) = match reference.kind {
+            crate::typed::BehaviorKind::Rule => {
+                let rule = module
+                    .declarations
+                    .iter()
+                    .find_map(|d| match d {
+                        Declaration::Rule(r) if r.name == reference.name => Some(r),
+                        _ => None,
+                    })
+                    .ok_or_else(|| Error::new("unresolved associated rule"))?;
+                definitions.insert(rule.name.clone());
+                (rule.parameters.clone(), vec![rule.clone()])
+            }
+            crate::typed::BehaviorKind::Program => {
+                let program = module
+                    .declarations
+                    .iter()
+                    .find_map(|d| match d {
+                        Declaration::Program(p) if p.identity == reference.name => Some(p),
+                        _ => None,
+                    })
+                    .ok_or_else(|| Error::new("unresolved associated program"))?;
+                definitions.extend(program.rule_uses.iter().map(|u| u.rule.name.clone()));
+                let parameters = program
+                    .parameters
+                    .iter()
+                    .map(|p| Arg {
+                        name: crate::programs::shared_parameter(program, &p.name),
+                        ty: p.ty.clone(),
+                    })
+                    .collect();
+                (
+                    parameters,
+                    crate::programs::compile_program(program, module)?,
+                )
+            }
         };
         let expected: Vec<_> = verb
             .args
@@ -219,31 +235,35 @@ pub fn close_program<C: DerivationClock>(
             .map(|a| a.ty.clone())
             .chain([crate::typed::Type::PropositionTime])
             .collect();
-        if rule
-            .parameters
-            .iter()
-            .map(|a| a.ty.clone())
-            .collect::<Vec<_>>()
-            != expected
-        {
+        if parameters.iter().map(|a| a.ty.clone()).collect::<Vec<_>>() != expected {
             return Err(Error::new(format!(
-                "incompatible associated rule {}",
-                rule.name
+                "incompatible associated behavior {}",
+                reference.name
             )));
         }
         if matches!(verb.kind, VerbKind::Seeded | VerbKind::Derived) {
-            programs.push((verb, *rule));
+            programs.push(ProgramSource {
+                verb,
+                parameters,
+                rules,
+            });
         }
     }
     let ordinary: Vec<_> = module
         .declarations
         .iter()
         .filter_map(|d| match d {
-            Declaration::Rule(r) if !definitions.contains(r.name.as_str()) => Some(r.clone()),
+            Declaration::Rule(r) if !definitions.contains(&r.name) => Some(r.clone()),
             _ => None,
         })
         .collect();
     Ok(close_with_programs(seeds, &ordinary, &programs, clock))
+}
+
+struct ProgramSource<'a> {
+    verb: &'a Verb,
+    parameters: Vec<Arg>,
+    rules: Vec<Rule>,
 }
 
 struct ActivatedProgram<'a> {
@@ -282,7 +302,7 @@ fn instantiate_program(
 fn close_with_programs<C: DerivationClock>(
     seeds: Vec<Event>,
     rules: &[Rule],
-    programs: &[(&Verb, &Rule)],
+    programs: &[ProgramSource<'_>],
     clock: &mut C,
 ) -> Closure {
     let mut known_keys = BTreeSet::new();
@@ -304,14 +324,15 @@ fn close_with_programs<C: DerivationClock>(
         let mut next_frontier = Vec::new();
 
         for trigger in &frontier {
-            for (verb, rule) in programs {
+            for source in programs {
+                let verb = source.verb;
                 if trigger.verb != verb.name
                     || trigger.polarity != Polarity::Positive
                     || trigger.args.len() != verb.args.len()
                 {
                     continue;
                 }
-                let mut bindings: BTreeMap<_, _> = rule
+                let mut bindings: BTreeMap<_, _> = source
                     .parameters
                     .iter()
                     .zip(&trigger.args)
@@ -323,14 +344,16 @@ fn close_with_programs<C: DerivationClock>(
                     })
                     .collect();
                 bindings.insert(
-                    rule.parameters.last().unwrap().name.clone(),
+                    source.parameters.last().unwrap().name.clone(),
                     SubstitutionValue::Time(trigger.proposition.time.clone()),
                 );
-                activated.push(ActivatedProgram {
-                    rule,
-                    trigger: trigger.clone(),
-                    bindings,
-                });
+                for rule in &source.rules {
+                    activated.push(ActivatedProgram {
+                        rule,
+                        trigger: trigger.clone(),
+                        bindings: bindings.clone(),
+                    });
+                }
             }
         }
 

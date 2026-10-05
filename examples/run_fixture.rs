@@ -39,8 +39,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if arguments.next().is_some() {
         return Err("unexpected fixture argument".into());
     }
-    let source = read_fixture(&path)?;
     let module = if let Some(library_path) = library_path {
+        let source = read_fixture(&path)?;
         let library = read_fixture(&library_path)?;
         if library.len() + source.len() > 64 * 1024 {
             return Err("combined fixtures exceed the 64 KiB experimental limit".into());
@@ -50,7 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             residuum::parse_formal(&source)?,
         )?
     } else {
-        residuum::parse_formal_to_typed(&source)?
+        residuum::load_formal_module(&path)?
     };
     if incremental {
         let result = residuum::experiments::run_incremental_experiment(&module)?;

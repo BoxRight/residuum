@@ -10,8 +10,11 @@ use crate::typed::{
 };
 use crate::{DerivationClock, close, query_program_residual};
 
+mod default_selection;
 mod four;
 mod incremental;
+
+pub use default_selection::{DefaultExperimentResult, run_default_experiments};
 
 /// Fixture composition only: flat shared declarations, not a module/import
 /// system. Both sources are parsed independently before ordinary elaboration.
@@ -68,6 +71,15 @@ impl DerivationClock for Clock {
 }
 
 pub fn run_experiments(module: &Module) -> Result<Vec<ExperimentResult>, Error> {
+    if module
+        .declarations
+        .iter()
+        .any(|d| matches!(d, Declaration::Program(_)))
+    {
+        return Err(Error::new(
+            "Program currently supports forward execution; residual/FOUR experiment integration is not implemented",
+        ));
+    }
     if module
         .declarations
         .iter()
@@ -150,11 +162,28 @@ pub fn run_forward_experiments(module: &Module) -> Result<Vec<ExperimentResult>,
         let Some(reference) = &verb.program else {
             continue;
         };
-        let rule = dependencies
-            .iter()
-            .find(|r| r.name == reference.name)
-            .ok_or_else(|| Error::new("unresolved associated program"))?;
-        activation_edges.push((verb.name.clone(), horn(rule).consequent.verb));
+        match reference.kind {
+            crate::typed::BehaviorKind::Rule => {
+                let rule = dependencies
+                    .iter()
+                    .find(|r| r.name == reference.name)
+                    .ok_or_else(|| Error::new("unresolved associated rule"))?;
+                activation_edges.push((verb.name.clone(), horn(rule).consequent.verb));
+            }
+            crate::typed::BehaviorKind::Program => {
+                let program = module
+                    .declarations
+                    .iter()
+                    .find_map(|d| match d {
+                        Declaration::Program(p) if p.identity == reference.name => Some(p),
+                        _ => None,
+                    })
+                    .ok_or_else(|| Error::new("unresolved associated program"))?;
+                for rule in crate::programs::compile_program(program, module)? {
+                    activation_edges.push((verb.name.clone(), horn(&rule).consequent.verb));
+                }
+            }
+        }
     }
     require_acyclic_with_edges(&dependencies, activation_edges)?;
     let mut results = Vec::new();

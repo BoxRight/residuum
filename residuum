@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Safe entry point for the minimal Residuum CLI."""
+import os
+from pathlib import Path
+import sys
+
+
+USAGE = """Usage: residuum <run|query|explain> <case.res>
+  run      Forward closure and goals; no state execution
+  query    Declared residual or FOUR queries
+  explain  Forward justifications and default selection
+"""
+
+
+def main():
+    if sys.argv[1:] in (["--help"], ["-h"]):
+        print(USAGE, end="")
+        return 0
+    if len(sys.argv) != 3 or sys.argv[1] not in ("run", "query", "explain"):
+        print(USAGE, end="", file=sys.stderr)
+        return 2
+    root = Path(__file__).resolve().parent
+    # Resolve from the caller's cwd before the runner switches to the repository.
+    fixture = Path(sys.argv[2]).resolve()
+    os.execv(sys.executable, [sys.executable, str(root / "scripts/test_safe.py"),
+                            "--cli", sys.argv[1], "--fixture", str(fixture)])
+
+
+if __name__ == "__main__":
+    sys.exit(main())

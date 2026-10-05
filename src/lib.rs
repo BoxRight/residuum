@@ -5,6 +5,8 @@ pub mod derive;
 pub mod elab;
 pub mod experiments;
 pub mod formal;
+pub mod modules;
+pub mod programs;
 pub mod residual;
 pub mod runtime;
 pub mod surface;
@@ -20,6 +22,7 @@ pub use derive::{
 };
 pub use elab::{Error, elaborate_cnl, elaborate_formal};
 pub use formal::parse_formal;
+pub use modules::load_formal_module;
 pub use residual::{
     Abducible, AbductionFailure, ProgramResidualQuery, RequirementFormula, ResidualExplanation,
     ResidualProof, SearchLimits, SearchMetrics, query_program_residual,
@@ -880,6 +883,17 @@ mod tests {
                     RecordFieldValue {
                         field: "creditor".to_string(),
                         value: Term::Var("beneficiary".to_string()),
+                    },
+                    RecordFieldValue {
+                        field: "mode".to_string(),
+                        value: Term::Const(
+                            if verb_name == "do" {
+                                "Doing"
+                            } else {
+                                "Abstaining"
+                            }
+                            .to_string(),
+                        ),
                     },
                 ],
             };
@@ -2169,7 +2183,7 @@ mod tests {
         for (source, message) in [
             (
                 LEGAL_SALES_RETENTION_FORMAL.replace("exception retention", "exception missing"),
-                "unknown rule `missing` in exception default",
+                "unknown rule or program `missing` in exception default",
             ),
             (
                 LEGAL_SALES_RETENTION_FORMAL.replace("to NormalSale", "to Missing"),

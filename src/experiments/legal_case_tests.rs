@@ -10,7 +10,7 @@ fn cases() -> Vec<ExperimentResult> {
     let original = module.clone();
     let results = run_forward_experiments(&module).expect("finite monotonic forward case");
     assert_eq!(module, original);
-    assert_eq!(results.len(), 8);
+    assert_eq!(results.len(), 16);
     for result in &results {
         for seed in &result.experiment.input {
             assert!(result.closure.known.contains(seed), "no seed is retracted");
@@ -18,11 +18,23 @@ fn cases() -> Vec<ExperimentResult> {
         assert!(result.residual.is_none());
         assert!(result.four.is_none());
         for event in &result.closure.known {
-            assert_eq!(event.polarity, Polarity::Positive);
-            assert_eq!(event.proposition.time, TimeExpr::At("tau".into()));
+            if event.polarity == Polarity::EvidentialNot {
+                assert_eq!(event.verb, "Act");
+                assert!(result.experiment.input.contains(event));
+            }
+            let tau = TimeExpr::At("tau".into());
+            let expected = if event.proposition.kind == PropositionKind::Effect {
+                TimeExpr::After(Box::new(tau))
+            } else {
+                tau
+            };
+            assert_eq!(event.proposition.time, expected);
         }
         for derivation in &result.closure.derivations {
-            assert_eq!(derivation.event.proposition.kind, PropositionKind::Derived);
+            assert!(matches!(
+                derivation.event.proposition.kind,
+                PropositionKind::Derived | PropositionKind::Effect
+            ));
             assert!(!derivation.record.antecedents.is_empty());
             assert!(
                 derivation
@@ -69,9 +81,17 @@ fn legal_case_fulfillment_and_patrimony_chain() {
     let module = parse_formal_to_typed(SOURCE).unwrap();
     assert!(!module.declarations.iter().any(|d| match d {
         Declaration::Default(_) => true,
-        Declaration::Verb(v) => v.kind == VerbKind::Effect,
         _ => false,
     }));
+    let effects: Vec<_> = module
+        .declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Verb(v) if v.kind == VerbKind::Effect => Some(v.name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(effects, ["give", "do", "notDo"]);
     let results = cases();
     let fulfilled = case(&results, "fulfilledTransfer");
     assert!(fulfilled.horn_goal);
@@ -113,7 +133,7 @@ fn legal_case_fulfillment_and_patrimony_chain() {
 #[test]
 fn legal_case_counter_and_prohibition_remain_monotonic() {
     let results = cases();
-    let counter = case(&results, "counterOnly");
+    let counter = case(&results, "negativeActOnly");
     assert!(counter.horn_goal);
     for event in [
         "violation(deliveryDuty, deliveryAct, juan, car, pedro, private, oldDate) @ tau",
@@ -124,26 +144,33 @@ fn legal_case_counter_and_prohibition_remain_monotonic() {
         assert!(has(counter, event), "{event}");
     }
     assert!(
-        !counter
-            .closure
-            .known
-            .iter()
-            .any(|e| e.verb == "Act" || e.verb == "compliance")
+        !counter.closure.known.iter().any(|e| (e.verb == "Act"
+            && e.polarity == Polarity::Positive)
+            || e.verb == "compliance")
     );
-    let both = case(&results, "actAndCounter");
+    let both = case(&results, "actAndEvidentialNot");
     assert!(both.horn_goal);
     for verb in [
         "Act",
-        "CounterAct",
         "extinguished",
         "obligation",
         "compliance",
         "violation",
         "patrimonialAsset",
         "patrimonialLiability",
+        "inconsistent",
+        "disputedPerformance",
     ] {
         assert!(both.closure.known.iter().any(|e| e.verb == verb));
     }
+    assert!(has(
+        both,
+        "Act(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau"
+    ));
+    assert!(has(
+        both,
+        "~Act(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau"
+    ));
     let prohibited = case(&results, "prohibitedOccurrence");
     assert!(prohibited.horn_goal);
     assert_eq!(
@@ -152,13 +179,12 @@ fn legal_case_counter_and_prohibition_remain_monotonic() {
     );
     let absent = case(&results, "unperformed");
     assert!(!absent.horn_goal);
-    assert!(
-        !absent
-            .closure
-            .known
-            .iter()
-            .any(|e| matches!(e.verb.as_str(), "CounterAct" | "violation" | "compliance"))
-    );
+    assert!(!absent.closure.known.iter().any(|e| (e.verb == "Act"
+        && e.polarity == Polarity::EvidentialNot)
+        || matches!(
+            e.verb.as_str(),
+            "violation" | "compliance" | "inconsistent" | "disputedPerformance"
+        )));
 }
 
 #[test]

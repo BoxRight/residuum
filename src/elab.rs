@@ -8,11 +8,11 @@ use crate::surface::{
     SurfaceTerm, SurfaceTime, SurfaceVerbKind,
 };
 use crate::typed::{
-    Antecedent, Arg, Constant, Declaration, Default, DefaultBody, DefaultRef, Effect, Entity,
-    Event, Experiment, ExperimentInputKind, ExperimentQueryKind, Field, FieldAccess, HornClause,
-    Module, Polarity, PropositionKind, PropositionType, RecordFieldValue, Residual, ResidualClause,
-    Rule, RuleBody, RuleRef, StateOperation, StateTime, StateTransitionType, SubstitutionValue,
-    Term, TimeExpr, Type, Verb, VerbKind,
+    Antecedent, Arg, BehaviorKind, BehaviorRef, Constant, Declaration, Default, DefaultBody,
+    DefaultRef, Effect, Entity, Event, Experiment, ExperimentInputKind, ExperimentQueryKind, Field,
+    FieldAccess, HornClause, Module, Polarity, PropositionKind, PropositionType, RecordFieldValue,
+    Residual, ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime,
+    StateTransitionType, SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -55,18 +55,65 @@ impl From<&str> for Error {
 }
 
 pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
-    let mut declarations = Vec::new();
+    elaborate_formal_with_dependencies(module, &[])
+}
+
+/// Dependencies have already been resolved and independently elaborated.
+/// This extends the symbol environment, not the source text or SurfaceAST.
+pub(crate) fn elaborate_formal_with_dependencies(
+    module: FormalModule,
+    imported: &[Declaration],
+) -> Result<Module, Error> {
+    let mut declarations = imported.to_vec();
     let mut verb_sigs = BTreeMap::new();
     let mut entities = BTreeSet::new();
     let mut entity_fields = BTreeMap::new();
     let mut rule_parameters = BTreeMap::new();
+    let mut programs_by_name = BTreeMap::new();
     let mut rules_by_name = BTreeMap::new();
     let mut constants = BTreeMap::new();
     let mut defaults_by_name = BTreeMap::new();
     let mut experiments = Vec::new();
 
+    for declaration in imported {
+        match declaration {
+            Declaration::Entity(entity) => {
+                entities.insert(entity.name.clone());
+                entity_fields.insert(entity.name.clone(), entity.fields.clone());
+            }
+            Declaration::Const(constant) => {
+                constants.insert(constant.name.clone(), constant.ty.clone());
+            }
+            Declaration::Verb(verb) => {
+                verb_sigs.insert(
+                    verb.name.clone(),
+                    VerbSig {
+                        kind: verb.kind.clone(),
+                        arg_types: verb.args.iter().map(|a| a.ty.clone()).collect(),
+                    },
+                );
+            }
+            Declaration::Rule(rule) => {
+                rule_parameters.insert(rule.name.clone(), rule.parameters.clone());
+                rules_by_name.insert(rule.name.clone(), rule.clone());
+            }
+            Declaration::Program(program) => {
+                programs_by_name.insert(program.identity.clone(), program.clone());
+            }
+            Declaration::Default(default) => {
+                defaults_by_name.insert(default.name.clone(), default.clone());
+            }
+            Declaration::Experiment(_) => return Err(Error::new("experiments cannot be imported")),
+        }
+    }
+
     for declaration in module.declarations {
         match declaration {
+            FormalDeclaration::Import(path) => {
+                return Err(Error::new(format!(
+                    "unresolved import `{path}`; use load_formal_module with a source path"
+                )));
+            }
             FormalDeclaration::Entity(entity) => {
                 entities.insert(entity.name.clone());
                 let fields: Vec<_> = entity
@@ -116,14 +163,19 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
                 );
                 let effect = verb
                     .effect
-                    .map(|effect| lower_effect(effect.operations, &args, &entity_fields))
+                    .map(|effect| {
+                        lower_effect(effect.operations, &args, &entity_fields, &constants)
+                    })
                     .transpose()?;
                 declarations.push(Declaration::Verb(Verb {
                     name: verb.name,
                     kind: lower_kind(verb.kind),
                     args,
                     effect,
-                    program: verb.program.map(|name| RuleRef { name }),
+                    program: verb.program.map(|name| BehaviorRef {
+                        name,
+                        kind: BehaviorKind::Rule,
+                    }),
                 }));
             }
             FormalDeclaration::Rule(rule) => {
@@ -140,16 +192,34 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
                 rules_by_name.insert(lowered.name.clone(), lowered.clone());
                 declarations.push(Declaration::Rule(lowered));
             }
+            FormalDeclaration::Program(program) => {
+                if declarations.iter().any(|d| d.name() == program.name) {
+                    return Err(Error::new(format!("duplicate symbol `{}`", program.name)));
+                }
+                let lowered = crate::programs::lower_program(
+                    program,
+                    &module.name,
+                    &declarations,
+                    &constants,
+                    &entity_fields,
+                )?;
+                programs_by_name.insert(lowered.identity.clone(), lowered.clone());
+                declarations.push(Declaration::Program(lowered));
+            }
             FormalDeclaration::Default(default) => {
                 let lowered = lower_default(
                     default.name,
                     default.body,
                     &rule_parameters,
+                    &programs_by_name,
                     &defaults_by_name,
                 )?;
                 let mut lowered = lowered;
                 if let Some(condition) = default.condition {
-                    if matches!(lowered.body, DefaultBody::Supernormal { .. }) {
+                    if matches!(
+                        lowered.body,
+                        DefaultBody::Supernormal { .. } | DefaultBody::SupernormalProgram { .. }
+                    ) {
                         return Err(Error::new(
                             "supernormal defaults do not support a condition",
                         ));
@@ -204,20 +274,30 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
     // Verb declarations precede their rules because rules use verb signatures.
     // Resolve only this new link after elaboration; other name/order policies
     // stay unchanged. A reference retains the whole parametrized lambda.
+    let program_parameters: BTreeMap<_, _> = declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Program(p) => Some((p.identity.clone(), p.parameters.clone())),
+            _ => None,
+        })
+        .collect();
+    let mut declaration_counts = BTreeMap::new();
     for declaration in &declarations {
+        *declaration_counts
+            .entry(declaration.name().to_string())
+            .or_insert(0usize) += 1;
+    }
+    for declaration in &mut declarations {
         let Declaration::Verb(verb) = declaration else {
             continue;
         };
-        let Some(reference) = &verb.program else {
+        let Some(reference) = &mut verb.program else {
             continue;
         };
-        if declarations
-            .iter()
-            .filter(|d| {
-                matches!(d,
-            Declaration::Rule(rule) if rule.name == reference.name)
-            })
-            .count()
+        if declaration_counts
+            .get(&reference.name)
+            .copied()
+            .unwrap_or(0)
             > 1
         {
             return Err(Error::new(format!(
@@ -225,19 +305,23 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
                 reference.name, verb.name
             )));
         }
-        let program = rules_by_name.get(&reference.name).ok_or_else(|| {
-            Error::new(format!(
-                "unknown associated rule `{}` for verb `{}`",
-                reference.name, verb.name
-            ))
-        })?;
+        let parameters = if let Some(parameters) = program_parameters.get(&reference.name) {
+            reference.kind = BehaviorKind::Program;
+            parameters
+        } else {
+            &rules_by_name
+                .get(&reference.name)
+                .ok_or_else(|| {
+                    Error::new(format!(
+                        "unknown associated rule `{}` for verb `{}`",
+                        reference.name, verb.name
+                    ))
+                })?
+                .parameters
+        };
         let mut expected: Vec<_> = verb.args.iter().map(|arg| arg.ty.clone()).collect();
         expected.push(Type::PropositionTime);
-        let actual: Vec<_> = program
-            .parameters
-            .iter()
-            .map(|arg| arg.ty.clone())
-            .collect();
+        let actual: Vec<_> = parameters.iter().map(|arg| arg.ty.clone()).collect();
         if actual != expected {
             return Err(Error::new(format!(
                 "associated rule `{}` for verb `{}` has parameter types {:?}; expected {:?}",
@@ -249,6 +333,7 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
     let mut result = Module {
         name: module.name,
         declarations,
+        origins: BTreeMap::new(),
     };
     let mut names = BTreeSet::new();
     for experiment in experiments {
@@ -295,6 +380,19 @@ pub fn elaborate_formal(module: FormalModule) -> Result<Module, Error> {
                 goal,
             }));
     }
+    result.origins = result
+        .declarations
+        .iter()
+        .map(|d| {
+            (
+                d.name().to_string(),
+                crate::typed::DeclarationOrigin {
+                    module: result.name.clone(),
+                    file: None,
+                },
+            )
+        })
+        .collect();
     Ok(result)
 }
 
@@ -407,7 +505,9 @@ pub fn elaborate_cnl(module: CnlModule) -> Result<Module, Error> {
                 let entity_fields = cnl_entity_fields(&entities);
                 let effect = verb
                     .effect
-                    .map(|effect| lower_effect(effect.operations, &args, &entity_fields))
+                    .map(|effect| {
+                        lower_effect(effect.operations, &args, &entity_fields, &constants)
+                    })
                     .transpose()?;
                 verbs.push(Declaration::Verb(Verb {
                     name: verb.name,
@@ -477,9 +577,22 @@ pub fn elaborate_cnl(module: CnlModule) -> Result<Module, Error> {
     declarations.extend(rules);
     declarations.extend(defaults);
 
+    let origins = declarations
+        .iter()
+        .map(|d| {
+            (
+                d.name().to_string(),
+                crate::typed::DeclarationOrigin {
+                    module: module.name.clone(),
+                    file: None,
+                },
+            )
+        })
+        .collect();
     Ok(Module {
         name: module.name,
         declarations,
+        origins,
     })
 }
 
@@ -487,19 +600,30 @@ fn lower_default(
     name: String,
     body: SurfaceDefaultBody,
     rule_parameters: &BTreeMap<String, Vec<Arg>>,
+    programs: &BTreeMap<String, crate::typed::Program>,
     defaults: &BTreeMap<String, Default>,
 ) -> Result<Default, Error> {
     let (rule, kind) = match &body {
         SurfaceDefaultBody::Supernormal { rule } => (rule, "supernormal"),
         SurfaceDefaultBody::Exception { rule, .. } => (rule, "exception"),
     };
-    let parameters = rule_parameters
-        .get(rule)
-        .cloned()
-        .ok_or_else(|| Error::new(format!("unknown rule `{rule}` in {kind} default")))?;
+    let program = programs.get(rule);
+    let parameters = match program {
+        Some(program) => program.parameters.clone(),
+        None => rule_parameters.get(rule).cloned().ok_or_else(|| {
+            Error::new(format!(
+                "unknown rule or program `{rule}` in {kind} default"
+            ))
+        })?,
+    };
     let body = match body {
-        SurfaceDefaultBody::Supernormal { rule } => DefaultBody::Supernormal {
-            rule: RuleRef { name: rule },
+        SurfaceDefaultBody::Supernormal { rule } => match program {
+            Some(_) => DefaultBody::SupernormalProgram {
+                program: crate::typed::ProgramRef { name: rule },
+            },
+            None => DefaultBody::Supernormal {
+                rule: RuleRef { name: rule },
+            },
         },
         SurfaceDefaultBody::Exception { rule, to } => {
             let target = defaults.get(&to).ok_or_else(|| {
@@ -514,9 +638,15 @@ fn lower_default(
                     "incompatible parameter types for exception default `{name}` and target `{to}`"
                 )));
             }
-            DefaultBody::Exception {
-                rule: RuleRef { name: rule },
-                to: DefaultRef { name: to },
+            match program {
+                Some(_) => DefaultBody::ExceptionProgram {
+                    program: crate::typed::ProgramRef { name: rule },
+                    to: DefaultRef { name: to },
+                },
+                None => DefaultBody::Exception {
+                    rule: RuleRef { name: rule },
+                    to: DefaultRef { name: to },
+                },
             }
         }
     };
@@ -678,7 +808,11 @@ fn lower_rule(
                     args.len()
                 )));
             }
-            let mut substitution = BTreeMap::new();
+            // A PropositionTime constant can occur both as a verb argument
+            // (Term) and as an index (TimeExpr). Replace both positions without
+            // converting runtime time expressions into new term constructors.
+            let mut term_substitution = BTreeMap::new();
+            let mut time_substitution = BTreeMap::new();
             for (arg, parameter) in args.iter().zip(&base.parameters) {
                 let actual_ty = constants.get(arg).ok_or_else(|| {
                     Error::new(format!("unknown constant `{arg}` in rule application"))
@@ -689,17 +823,24 @@ fn lower_rule(
                         parameter.name
                     )));
                 }
-                let value = if parameter.ty == Type::PropositionTime {
-                    SubstitutionValue::Time(TimeExpr::At(arg.clone()))
-                } else {
-                    SubstitutionValue::Term(Term::Const(arg.clone()))
-                };
-                substitution.insert(parameter.name.clone(), value);
+                term_substitution.insert(
+                    parameter.name.clone(),
+                    SubstitutionValue::Term(Term::Const(arg.clone())),
+                );
+                if parameter.ty == Type::PropositionTime {
+                    time_substitution.insert(
+                        parameter.name.clone(),
+                        SubstitutionValue::Time(TimeExpr::At(arg.clone())),
+                    );
+                }
             }
             Ok(Rule {
                 name,
                 parameters: base.parameters[args.len()..].to_vec(),
-                body: substitute_rule_body(&base.body, &substitution),
+                body: substitute_rule_body(
+                    &substitute_rule_body(&base.body, &term_substitution),
+                    &time_substitution,
+                ),
             })
         }
     }
@@ -762,7 +903,7 @@ fn lower_event(
     })
 }
 
-fn substitute_rule_body(
+pub(crate) fn substitute_rule_body(
     body: &RuleBody,
     substitution: &BTreeMap<String, SubstitutionValue>,
 ) -> RuleBody {
@@ -839,7 +980,11 @@ fn check_rule_event(
     Ok(())
 }
 
-fn rule_type_assignable(actual: &Type, expected: &Type, declarations: &[Declaration]) -> bool {
+pub(crate) fn rule_type_assignable(
+    actual: &Type,
+    expected: &Type,
+    declarations: &[Declaration],
+) -> bool {
     if is_assignable(actual, expected) {
         return true;
     }
@@ -897,10 +1042,11 @@ fn lower_effect(
     operations: Vec<SurfaceStateOperation>,
     args: &[Arg],
     entity_fields: &BTreeMap<String, Vec<Field>>,
+    constants: &BTreeMap<String, Type>,
 ) -> Result<Effect, Error> {
     let operations = operations
         .into_iter()
-        .map(|operation| lower_state_operation(operation, args, entity_fields))
+        .map(|operation| lower_state_operation(operation, args, entity_fields, constants))
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Effect::StateTransform {
@@ -916,14 +1062,17 @@ fn lower_state_operation(
     operation: SurfaceStateOperation,
     args: &[Arg],
     entity_fields: &BTreeMap<String, Vec<Field>>,
+    constants: &BTreeMap<String, Type>,
 ) -> Result<StateOperation, Error> {
     match operation {
         SurfaceStateOperation::AddToSet { target, value } => {
-            let (target, value) = check_set_operation(target, value, args, entity_fields)?;
+            let (target, value) =
+                check_set_operation(target, value, args, entity_fields, constants)?;
             Ok(StateOperation::AddToSet { target, value })
         }
         SurfaceStateOperation::RemoveFromSet { target, value } => {
-            let (target, value) = check_set_operation(target, value, args, entity_fields)?;
+            let (target, value) =
+                check_set_operation(target, value, args, entity_fields, constants)?;
             Ok(StateOperation::RemoveFromSet { target, value })
         }
     }
@@ -934,6 +1083,7 @@ fn check_set_operation(
     value: SurfaceTerm,
     args: &[Arg],
     entity_fields: &BTreeMap<String, Vec<Field>>,
+    constants: &BTreeMap<String, Type>,
 ) -> Result<(FieldAccess, Term), Error> {
     let base_ty = lookup_arg_type(&target.base, args)?;
     let Type::Entity(entity_name) = base_ty else {
@@ -952,7 +1102,7 @@ fn check_set_operation(
             target.path.join(".")
         )));
     };
-    let (value, value_ty) = lower_term(value, args, entity_fields)?;
+    let (value, value_ty) = lower_term(value, args, entity_fields, constants)?;
     if !is_assignable(&value_ty, member_ty.as_ref()) {
         return Err(Error::new(format!(
             "cannot update `{}.{}` with `{}`",
@@ -971,15 +1121,26 @@ fn check_set_operation(
     ))
 }
 
-fn lower_term(
+pub(crate) fn lower_term(
     term: SurfaceTerm,
     args: &[Arg],
     entity_fields: &BTreeMap<String, Vec<Field>>,
+    constants: &BTreeMap<String, Type>,
 ) -> Result<(Term, Type), Error> {
     match term {
         SurfaceTerm::Var(name) => {
-            let ty = lookup_arg_type(&name, args)?.clone();
-            Ok((Term::Var(name), ty))
+            // Effect parameters shadow module constants, as rule parameters do.
+            // Keep a constant ground so runtime materialization never treats it
+            // as an argument or an ObjectId.
+            if let Some(arg) = args.iter().find(|arg| arg.name == name) {
+                Ok((Term::Var(name), arg.ty.clone()))
+            } else if let Some(ty) = constants.get(&name) {
+                Ok((Term::Const(name), ty.clone()))
+            } else {
+                Err(Error::new(format!(
+                    "unknown effect argument or constant `{name}`"
+                )))
+            }
         }
         SurfaceTerm::None => Ok((
             Term::None,
@@ -1004,7 +1165,7 @@ fn lower_term(
                         declared.name
                     ))
                 })?;
-                let (term, value_ty) = lower_term(value, args, entity_fields)?;
+                let (term, value_ty) = lower_term(value, args, entity_fields, constants)?;
                 if !is_assignable(&value_ty, &declared.ty) {
                     return Err(Error::new(format!(
                         "cannot assign `{}` to field `{}.{}`",

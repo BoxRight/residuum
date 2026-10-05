@@ -8,12 +8,29 @@ pub struct FormalModule {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FormalDeclaration {
+    Import(String),
     Entity(FormalEntity),
     Const(FormalConst),
     Verb(FormalVerb),
     Rule(FormalRule),
+    Program(FormalProgram),
     Default(FormalDefault),
     Experiment(FormalExperiment),
+}
+
+impl FormalDeclaration {
+    pub fn name(&self) -> Option<&str> {
+        match self {
+            Self::Import(_) => None,
+            Self::Entity(d) => Some(&d.name),
+            Self::Const(d) => Some(&d.name),
+            Self::Verb(d) => Some(&d.name),
+            Self::Rule(d) => Some(&d.name),
+            Self::Program(d) => Some(&d.name),
+            Self::Default(d) => Some(&d.name),
+            Self::Experiment(d) => Some(&d.name),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -109,6 +126,30 @@ pub struct SurfaceFieldAccess {
 pub struct FormalRule {
     pub name: String,
     pub body: SurfaceRuleBody,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FormalProgram {
+    pub name: String,
+    pub body: SurfaceProgramBody,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SurfaceProgramBody {
+    Definition {
+        parameters: Vec<FormalArg>,
+        uses: Vec<SurfaceRuleUse>,
+    },
+    Application {
+        program: String,
+        args: Vec<String>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SurfaceRuleUse {
+    pub rule: String,
+    pub bindings: Vec<SurfaceRecordFieldValue>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

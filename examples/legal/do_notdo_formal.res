@@ -6,6 +6,10 @@ entity Money <: Fungible
 entity Movable <: Thing
 entity Thing
 entity Conduct
+entity PerformanceMode
+const Doing : PerformanceMode
+const Abstaining : PerformanceMode
+const deliver : Conduct
 entity Patrimony {
     assets      : Set Thing
     rights      : Set Relation
@@ -19,6 +23,7 @@ entity Relation {
     thing    : Thing?
     conduct  : Conduct?
     creditor : Person
+    mode     : PerformanceMode
 }
 
 effect verb do(
@@ -32,6 +37,7 @@ effect verb do(
         thing    = indirectObject,
         conduct  = conduct,
         creditor = beneficiary,
+        mode     = Doing,
     }
 
     beneficiary.patrimony.rights += Relation {
@@ -39,6 +45,7 @@ effect verb do(
         thing    = indirectObject,
         conduct  = conduct,
         creditor = beneficiary,
+        mode     = Doing,
     }
 
 
@@ -53,6 +60,7 @@ effect verb notDo(
         thing    = indirectObject,
         conduct  = conduct,
         creditor = beneficiary,
+        mode     = Abstaining,
     }
 
     beneficiary.patrimony.rights += Relation {
@@ -60,4 +68,5 @@ effect verb notDo(
         thing    = indirectObject,
         conduct  = conduct,
         creditor = beneficiary,
+        mode     = Abstaining,
     }

@@ -6,11 +6,32 @@ module LegalMonotonicCase
 // Las queries existentes sólo nombran observaciones en modo --forward:
 // no se hace búsqueda residual, evaluación de defaults ni ejecución de State.
 
-entity Person
+entity Person {
+    patrimony : Patrimony
+}
 entity Thing
 entity Conduct
+entity PerformanceMode
+entity Relation {
+    debtor   : Person
+    thing    : Thing?
+    conduct  : Conduct?
+    creditor : Person
+    mode     : PerformanceMode
+}
+entity Patrimony {
+    assets      : Set Thing
+    rights      : Set Relation
+    obligations : Set Relation
+}
 entity Authority
 entity Fact
+entity ReciprocityPackage
+
+const Plain : ReciprocityPackage
+const Retention : ReciprocityPackage
+const Doing : PerformanceMode
+const Abstaining : PerformanceMode
 
 const juan : Person
 const pedro : Person
@@ -26,6 +47,8 @@ const deliver : Conduct
 const molest : Conduct
 const enact : Conduct
 const use : Conduct
+const pay : Conduct
+const price : Thing
 
 const private : Authority
 const legislative : Authority
@@ -66,19 +89,31 @@ const olderPermission : Fact
 const newerProhibition : Fact
 const sameDatePermission : Fact
 const sameDateProhibition : Fact
+const saleCase : Fact
+const saleTransferDuty : Fact
+const saleTransferPermission : Fact
+const pricePayment : Fact
 
-// Act y CounterAct son predicados positivos distintos con los mismos roles.
-// CounterAct no es EvidentialNot: tampoco la ausencia de Act lo satisface.
+// ~Act usa exclusivamente el EvidentialNot ya existente: evidencia explícita
+// negativa del mismo Act, no ausencia de evidencia ni retractación.
+// Act y ~Act pueden coexistir, junto con compliance y violation.
 // Fact identifica el documento/hecho; no reifica una proposición del core.
 // La autoridad y la vigencia se conservan en los argumentos y en provenance.
 seeded verb Act(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
-seeded verb CounterAct(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 seeded verb right(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 seeded verb obligationFiled(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 seeded verb prohibition(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 seeded verb omissionProhibition(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
-seeded verb permission(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
+seeded verb permissionFiled(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 seeded verb extinguished(id : Fact, authority : Authority, effective : PropositionTime)
+
+// La misma compraventa puede estudiarse bajo dos paquetes aportados como
+// datos positivos. reciprocity no selecciona defaults ni excluye otro paquete.
+seeded verb sale(id : Fact, seller : Person, object : Thing, buyer : Person, price : Thing, duty : Fact, permission : Fact, authority : Authority, effective : PropositionTime)
+seeded verb reciprocity(sale : Fact, package : ReciprocityPackage)
+// El documento de pago debe corresponder a esta compraventa. Su ocurrencia
+// se acredita separadamente mediante Act, con comprador, precio y vendedor.
+seeded verb paymentFor(sale : Fact, act : Fact)
 
 // Relaciones de comparación aportadas como datos del caso. Sólo se usan las
 // comparaciones explícitamente acreditadas; no hay ranking especial en Rust.
@@ -92,9 +127,12 @@ seeded verb legislationText(act : Fact, norm : Fact, subject : Person, conduct :
 // obligationFiled es el ingreso externo. obligation es la conclusión Derived
 // común a ese ingreso y a las obligaciones que produzca law.
 derived verb obligation(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
+derived verb permission(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 derived verb compliance(norm : Fact, act : Fact, subject : Person, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 derived verb violation(norm : Fact, act : Fact, subject : Person, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 derived verb enforceability(norm : Fact, act : Fact, subject : Person, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
+derived verb inconsistent(id : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
+derived verb disputedPerformance(norm : Fact, act : Fact, subject : Person, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 derived verb patrimonialAsset(owner : Person, object : Thing, cause : Fact, authority : Authority, effective : PropositionTime)
 derived verb patrimonialLiability(debtor : Person, object : Thing, cause : Fact, authority : Authority, effective : PropositionTime)
 derived verb transferred(act : Fact, subject : Person, object : Thing, recipient : Person, authority : Authority, effective : PropositionTime)
@@ -105,9 +143,93 @@ derived verb legislativePower(holder : Person, cause : Fact, authority : Authori
 derived verb law(norm : Fact, subject : Person, conduct : Conduct, object : Thing, beneficiary : Person, authority : Authority, effective : PropositionTime)
 derived verb annulled(inferior : Fact, superior : Fact, authority : Authority, effective : PropositionTime)
 
+// Effects conocidos y State se mantienen separados. do/notDo constituyen
+// relaciones de hacer/abstenerse; no son evidencia de una conducta histórica.
+// mode es un campo ordinario del record, no una polaridad de Act.
+effect verb give(subject : Person, object : Thing, recipient : Person) =>
+    subject.patrimony.assets -= object
+    recipient.patrimony.assets += object
+
+effect verb do(subject : Person, conduct : Conduct, indirectObject : Thing?, beneficiary : Person) =>
+    subject.patrimony.obligations += Relation {
+        debtor = subject,
+        thing = indirectObject,
+        conduct = conduct,
+        creditor = beneficiary,
+        mode = Doing,
+    }
+    beneficiary.patrimony.rights += Relation {
+        debtor = subject,
+        thing = indirectObject,
+        conduct = conduct,
+        creditor = beneficiary,
+        mode = Doing,
+    }
+
+effect verb notDo(subject : Person, conduct : Conduct, indirectObject : Thing?, beneficiary : Person) =>
+    subject.patrimony.obligations += Relation {
+        debtor = subject,
+        thing = indirectObject,
+        conduct = conduct,
+        creditor = beneficiary,
+        mode = Abstaining,
+    }
+    beneficiary.patrimony.rights += Relation {
+        debtor = subject,
+        thing = indirectObject,
+        conduct = conduct,
+        creditor = beneficiary,
+        mode = Abstaining,
+    }
+
+// Reglas puente expresas del expediente. La norma queda en Known; su efecto
+// puede ejecutarse después. Autoridad y vigencia se conservan en provenance.
+rule obligationCreatesRelation(id, subject, conduct, object, beneficiary, authority, effective, t) =
+    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t
+    <= do(subject, conduct, object, beneficiary) @ after t
+
+rule prohibitionCreatesAbstention(id, subject, conduct, object, beneficiary, authority, effective, t) =
+    prohibition(id, subject, conduct, object, beneficiary, authority, effective) @ t
+    <= notDo(subject, conduct, object, beneficiary) @ after t
+
+rule historicalTransferEffect(act, subject, object, recipient, authority, effective, t) =
+    transferred(act, subject, object, recipient, authority, effective) @ t
+    <= give(subject, object, recipient) @ after t
+
 rule filedObligation(id, subject, conduct, object, beneficiary, authority, effective, t) =
     obligationFiled(id, subject, conduct, object, beneficiary, authority, effective) @ t
     <= obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t
+
+// Los permisos externos y los producidos por reglas tienen la misma forma
+// Derived. El documento sembrado permanece en Known, como obligationFiled.
+rule filedPermission(id, subject, conduct, object, beneficiary, authority, effective, t) =
+    permissionFiled(id, subject, conduct, object, beneficiary, authority, effective) @ t
+    <= permission(id, subject, conduct, object, beneficiary, authority, effective) @ t
+
+// Reciprocidad monotónica. El permiso es común a los dos paquetes; Plain
+// añade el deber desde la compraventa, Retention lo condiciona al pago.
+// t es el índice del expediente observado; effective conserva la vigencia
+// de la norma y paymentEffective la del documento de pago, sin identificarlas.
+rule reciprocalTransferPermission(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective, package, t) =
+    sale(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective) @ t
+    & reciprocity(saleId, package) @ t
+    <= permission(permit, seller, transfer, object, buyer, authority, effective) @ t
+
+rule plainTransferObligation(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective, t) =
+    sale(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective) @ t
+    & reciprocity(saleId, Plain) @ t
+    <= obligation(duty, seller, transfer, object, buyer, authority, effective) @ t
+
+rule paidRetentionObligation(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective, payment, paymentAuthority, paymentEffective, t) =
+    sale(saleId, seller, object, buyer, priceObject, duty, permit, authority, effective) @ t
+    & reciprocity(saleId, Retention) @ t
+    & paymentFor(saleId, payment) @ t
+    & Act(payment, buyer, pay, priceObject, seller, paymentAuthority, paymentEffective) @ t
+    <= obligation(duty, seller, transfer, object, buyer, authority, effective) @ t
+
+// Estas reglas constituyen normas, que pueden derivar do mediante el puente.
+// No afirman Act(transfer) ni ejecutan State. Una transmisión ipso iure
+// requerirá su regla explícita; give sólo se deriva aquí de transferred.
 
 rule obligationCompliance(norm, act, subject, conduct, object, beneficiary, authority, effective, actAuthority, actEffective, t) =
     obligation(norm, subject, conduct, object, beneficiary, authority, effective) @ t
@@ -121,12 +243,12 @@ rule rightCompliance(norm, act, subject, conduct, object, beneficiary, authority
 
 rule obligationViolation(norm, act, subject, conduct, object, beneficiary, authority, effective, actAuthority, actEffective, t) =
     obligation(norm, subject, conduct, object, beneficiary, authority, effective) @ t
-    & CounterAct(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
+    & ~Act(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
     <= violation(norm, act, subject, object, beneficiary, authority, effective) @ t
 
 rule rightEnforceability(norm, act, subject, conduct, object, beneficiary, authority, effective, actAuthority, actEffective, t) =
     right(norm, subject, conduct, object, beneficiary, authority, effective) @ t
-    & CounterAct(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
+    & ~Act(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
     <= enforceability(norm, act, subject, object, beneficiary, authority, effective) @ t
 
 rule prohibitedAct(norm, act, subject, conduct, object, beneficiary, authority, effective, actAuthority, actEffective, t) =
@@ -136,8 +258,21 @@ rule prohibitedAct(norm, act, subject, conduct, object, beneficiary, authority, 
 
 rule prohibitedOmission(norm, act, subject, conduct, object, beneficiary, authority, effective, actAuthority, actEffective, t) =
     omissionProhibition(norm, subject, conduct, object, beneficiary, authority, effective) @ t
-    & CounterAct(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
+    & ~Act(act, subject, conduct, object, beneficiary, actAuthority, actEffective) @ t
     <= violation(norm, act, subject, object, beneficiary, authority, effective) @ t
+
+// Marcas ordinarias del dominio. No dan prioridad a violation, no bloquean
+// reglas y no generan otros hechos salvo los expresamente declarados aquí.
+// La oposición exacta exige mismos argumentos e índice, incluida la metadata.
+rule conflictingActEvidence(act, subject, conduct, object, beneficiary, authority, effective, t) =
+    Act(act, subject, conduct, object, beneficiary, authority, effective) @ t
+    & ~Act(act, subject, conduct, object, beneficiary, authority, effective) @ t
+    <= inconsistent(act, subject, conduct, object, beneficiary, authority, effective) @ t
+
+rule performanceDispute(norm, act, subject, object, beneficiary, authority, effective, t) =
+    compliance(norm, act, subject, object, beneficiary, authority, effective) @ t
+    & violation(norm, act, subject, object, beneficiary, authority, effective) @ t
+    <= disputedPerformance(norm, act, subject, object, beneficiary, authority, effective) @ t
 
 // Política patrimonial de este expediente: la prestación cumplida acredita
 // el activo de la cosa a su beneficiario; la violación registra el pasivo del
@@ -234,24 +369,26 @@ experiment fulfilledTransfer {
     query residual owns(pedro, car, transferDuty, private, oldDate) @ tau
 }
 
-experiment counterOnly {
+experiment negativeActOnly {
     seeds {
         obligationFiled(deliveryDuty, juan, deliver, car, pedro, private, oldDate) @ tau,
         right(deliveryRight, juan, deliver, car, pedro, private, oldDate) @ tau,
         omissionProhibition(noOmission, juan, deliver, car, pedro, judicial, oldDate) @ tau,
-        CounterAct(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau,
+        ~Act(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau,
     }
     query residual violation(deliveryDuty, deliveryAct, juan, car, pedro, private, oldDate) @ tau
 }
 
-experiment actAndCounter {
+experiment actAndEvidentialNot {
+    // Conserva el expediente antes llamado actAndCounter. La query observa la
+    // disputa ordinaria; el cierre conserva además ambos actos y ambos resultados.
     seeds {
         obligationFiled(deliveryDuty, juan, deliver, car, pedro, private, oldDate) @ tau,
         Act(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau,
-        CounterAct(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau,
+        ~Act(deliveryAct, juan, deliver, car, pedro, private, newDate) @ tau,
         extinguished(deliveryDuty, judicial, newDate) @ tau,
     }
-    query residual compliance(deliveryDuty, deliveryAct, juan, car, pedro, private, oldDate) @ tau
+    query residual disputedPerformance(deliveryDuty, deliveryAct, juan, car, pedro, private, oldDate) @ tau
 }
 
 experiment prohibitedOccurrence {
@@ -279,17 +416,17 @@ experiment authorityOverrides {
         higherAuthority(judicial, private) @ tau,
         notEarlier(newDate, oldDate) @ tau,
         notEarlier(oldDate, oldDate) @ tau,
-        permission(carPermission, juan, transfer, car, pedro, constitutional, newDate) @ tau,
+        permissionFiled(carPermission, juan, transfer, car, pedro, constitutional, newDate) @ tau,
         prohibition(carProhibition, juan, transfer, car, pedro, private, oldDate) @ tau,
         obligationFiled(boatDuty, juan, deliver, boat, pedro, legislative, newDate) @ tau,
         prohibition(boatProhibition, juan, deliver, boat, pedro, administrative, oldDate) @ tau,
         prohibition(houseProhibition, juan, molest, house, pedro, judicial, newDate) @ tau,
-        permission(housePermission, juan, molest, house, pedro, private, oldDate) @ tau,
+        permissionFiled(housePermission, juan, molest, house, pedro, private, oldDate) @ tau,
         prohibition(seatProhibition, juan, transfer, legislativeSeat, pedro, constitutional, newDate) @ tau,
         obligationFiled(seatDuty, juan, transfer, legislativeSeat, pedro, private, oldDate) @ tau,
-        permission(olderPermission, juan, transfer, book, pedro, judicial, oldDate) @ tau,
+        permissionFiled(olderPermission, juan, transfer, book, pedro, judicial, oldDate) @ tau,
         prohibition(newerProhibition, juan, transfer, book, pedro, private, newDate) @ tau,
-        permission(sameDatePermission, juan, transfer, bicycle, pedro, constitutional, oldDate) @ tau,
+        permissionFiled(sameDatePermission, juan, transfer, bicycle, pedro, constitutional, oldDate) @ tau,
         prohibition(sameDateProhibition, juan, transfer, bicycle, pedro, private, oldDate) @ tau,
     }
     query residual annulled(carProhibition, carPermission, constitutional, newDate) @ tau
@@ -308,4 +445,87 @@ experiment enactmentWithoutPower {
         legislationText(enactment, statutoryDuty, juan, deliver, car, pedro, legislative, newDate) @ tau,
     }
     query residual obligation(statutoryDuty, juan, deliver, car, pedro, legislative, newDate) @ tau
+}
+
+// Mismos términos de venta en cada expediente. Cambian exclusivamente los
+// paquetes y la evidencia de pago. La query sólo observa el deber de transmitir.
+experiment plainWithoutPayment {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Plain) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment retentionWithoutPayment {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment retentionPaid {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment retentionNegativePayment {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        ~Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment retentionPaidAndNegative {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+        ~Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment bothReciprocities {
+    // Al aportar ambos paquetes, las reglas acumulan consecuencias y pruebas.
+    // Ningún paquete derrota al otro; esa selección corresponde a defaults.
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Plain) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment retentionWrongPayment {
+    // El documento refiere a la venta, pero el destinatario del pago no es
+    // el vendedor. Esa evidencia no satisface la condición compartida.
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        reciprocity(saleCase, Retention) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        Act(pricePayment, pedro, pay, price, pedro, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
+}
+
+experiment noReciprocityPackage {
+    seeds {
+        sale(saleCase, juan, car, pedro, price, saleTransferDuty, saleTransferPermission, private, oldDate) @ tau,
+        paymentFor(saleCase, pricePayment) @ tau,
+        Act(pricePayment, pedro, pay, price, juan, private, newDate) @ tau,
+    }
+    query residual obligation(saleTransferDuty, juan, transfer, car, pedro, private, oldDate) @ tau
 }

@@ -43,9 +43,13 @@ si no puede imponer los límites. El worker Rust comprueba RAM/swap antes de lee
 el archivo. La salida del programa va a stdout y los diagnósticos a stderr.
 `./residuum --help` muestra los comandos. Para usar `residuum` desde otra carpeta,
 añade la raíz del repositorio al `PATH`. Los archivos admitidos son Formal, de
-hasta 64 KiB de fuente total entre el archivo y sus dependencias, con al menos un
-bloque `experiment` local para ejecutar. La resolución admite hasta 64 archivos
-únicos y conserva los mismos controles de recursos.
+hasta 1 MiB de fuente total entre los archivos únicos del grafo de imports,
+incluidos el archivo raíz y los comentarios, con al menos un bloque `experiment`
+local para ejecutar. Esta cota de entrada es configuración de implementación, no
+una restricción semántica; el tag `v1` conserva su límite de 64 KiB. La resolución
+admite hasta 64 archivos únicos y conserva los mismos controles de recursos.
+El launcher mantiene además el control independiente de 64 KiB para el archivo
+raíz en `test_safe.py --fixture`; las dependencias comparten la cota de 1 MiB.
 
 La CLI y sus tests viven en el target binario, separado de los tests de la
 biblioteca para reducir el consumo de compilación. Sus tests se seleccionan

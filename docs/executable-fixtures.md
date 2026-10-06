@@ -104,8 +104,12 @@ suficiente de terminación para estas fixtures. FOUR admite ciclos ground dentro
 de su universo finito. Se rechazan defaults. Estos modos no añaden `!`, derivada discreta,
 preferencia abductiva, ejecución de snapshots ni drafter. CNL permanece pausado.
 
-La entrada es un archivo regular de hasta 64 KiB. `test_safe.py --fixture` compila
-el ejemplo y lo ejecuta en fases y cgroups separados: 1 GiB total, sin swap, un
+El archivo raíz sigue siendo regular y de hasta 64 KiB por el control separado
+de `test_safe.py --fixture`. El resolver admite hasta 1 MiB sumando todos los
+archivos únicos del grafo de imports, incluidos raíz y comentarios, y conserva
+`MAX_MODULES = 64`. La cota de fuente es configuración de implementación; el tag
+`v1` permanece en 64 KiB. `test_safe.py --fixture` compila el ejemplo y lo ejecuta
+en fases y cgroups separados: 1 GiB total, sin swap, un
 trabajo de Cargo, timeout de compilación de 45 s y ejecución de 15 s. Conserva la
 detención por crecimiento anormal y cercanía al límite. `--fixture` no se combina
 con opciones de tests ni dispara la suite completa.

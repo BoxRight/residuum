@@ -42,6 +42,9 @@ mod modules;
 #[path = "extraction_tests.rs"]
 mod extraction;
 
+#[path = "legal_partition_tests.rs"]
+mod legal_partition;
+
 const LEGAL: &str = include_str!("../../../../examples/legal/case_monotonic_formal.res");
 const RESIDUAL: &str = include_str!("../../../../examples/experiments/residual_proof.res");
 const FOUR: &str = include_str!("../../../../examples/experiments/four_counterexample.res");

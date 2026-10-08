@@ -284,3 +284,6 @@ fn cli_keeps_existing_errors_and_associated_program_semantics() {
             .contains("not assignable")
     );
 }
+
+#[path = "peano_after_tests.rs"]
+mod peano_after;

@@ -509,7 +509,10 @@ fn parse_rule_premise(line: &str) -> Result<SurfaceEvent, Error> {
     Ok(SurfaceEvent {
         verb: verb.to_string(),
         polarity: crate::typed::Polarity::Positive,
-        args: vec![actor.to_string(), object.to_string(), receiver.to_string()],
+        args: vec![actor, object, receiver]
+            .into_iter()
+            .map(|name| SurfaceTerm::Var(name.to_string()))
+            .collect(),
         time: Some(SurfaceTime::At(time.to_string())),
     })
 }
@@ -524,7 +527,10 @@ fn parse_rule_conclusion(line: &str) -> Result<SurfaceEvent, Error> {
         return Ok(SurfaceEvent {
             verb: "acquires".to_string(),
             polarity: crate::typed::Polarity::Positive,
-            args: vec![receiver.to_string(), object.to_string()],
+            args: vec![receiver, object]
+                .into_iter()
+                .map(|name| SurfaceTerm::Var(name.to_string()))
+                .collect(),
             time: Some(SurfaceTime::After(time.to_string())),
         });
     }
@@ -535,7 +541,10 @@ fn parse_rule_conclusion(line: &str) -> Result<SurfaceEvent, Error> {
         return Ok(SurfaceEvent {
             verb: "transfers".to_string(),
             polarity: crate::typed::Polarity::Positive,
-            args: vec![giver.to_string(), object.to_string(), receiver.to_string()],
+            args: vec![giver, object, receiver]
+                .into_iter()
+                .map(|name| SurfaceTerm::Var(name.to_string()))
+                .collect(),
             time: Some(SurfaceTime::After(time.to_string())),
         });
     }
@@ -547,7 +556,10 @@ fn parse_rule_conclusion(line: &str) -> Result<SurfaceEvent, Error> {
     Ok(SurfaceEvent {
         verb: "give".to_string(),
         polarity: crate::typed::Polarity::Positive,
-        args: vec![giver.to_string(), object.to_string(), receiver.to_string()],
+        args: vec![giver, object, receiver]
+            .into_iter()
+            .map(|name| SurfaceTerm::Var(name.to_string()))
+            .collect(),
         time: Some(SurfaceTime::After(time.to_string())),
     })
 }

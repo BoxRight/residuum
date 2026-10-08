@@ -76,7 +76,7 @@ fn temporal_constants_substitute_in_arguments_indices_and_transitions() {
     };
     assert_eq!(
         c.consequent.proposition.time,
-        TimeExpr::After(Box::new(TimeExpr::At("t".into())))
+        TimeExpr::After(Box::new(TimeExpr::Var("t".into())))
     );
     let remembered =
         residuum::instantiate(rule(&module, "fixedRemember"), &input(&module, "right")).unwrap();

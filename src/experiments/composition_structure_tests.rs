@@ -75,7 +75,7 @@ fn module(fragments: &[&str]) -> Module {
         );
         assert_eq!(
             trigger.proposition.time,
-            TimeExpr::At(target.parameters.last().unwrap().name.clone())
+            TimeExpr::Var(target.parameters.last().unwrap().name.clone())
         );
     }
     typed

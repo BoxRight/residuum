@@ -109,3 +109,8 @@ Peak reported test RSS was about 15.50 MiB. The initial compilation completed
 under the unchanged controls (498.08 MiB reported peak RSS). No full suite ran.
 The fixture and harness are experimental worktree changes, not changes to `main`
 or the existing release tags.
+
+Follow-up: [multiplication and polynomial-value boundary](peano-multiplication-and-polynomial-boundary.md).
+
+Constructed temporal results can now cross event arguments on the experimental
+branch: [temporal constructor experiment](temporal-constructors-experiment.md).

@@ -171,18 +171,54 @@ fn unify_event(
             .args
             .iter()
             .zip(&event.args)
-            .all(|(pattern, value)| match pattern {
-                Term::Var(name) if scope.contains(name.as_str()) => {
-                    bind(name, SubstitutionValue::Term(value.clone()), bindings)
-                }
-                _ => pattern == value,
-            })
+            .all(|(pattern, value)| unify_term(pattern, value, scope, bindings))
         && unify_time(
             &pattern.proposition.time,
             &event.proposition.time,
             scope,
             bindings,
         )
+}
+
+fn unify_term(
+    pattern: &Term,
+    value: &Term,
+    scope: &BTreeSet<&str>,
+    bindings: &mut Bindings,
+) -> bool {
+    match (pattern, value) {
+        (Term::Var(name), _) if scope.contains(name.as_str()) => {
+            (!matches!(value, Term::Constructor { .. }) || value.is_ground())
+                && bind(name, SubstitutionValue::Term(value.clone()), bindings)
+        }
+        (
+            Term::Constructor {
+                constructor: a,
+                argument: p,
+            },
+            Term::Constructor {
+                constructor: b,
+                argument: v,
+            },
+        ) => a == b && value.is_ground() && unify_term(p, v, scope, bindings),
+        (
+            Term::RecordLiteral {
+                entity: a,
+                fields: p,
+            },
+            Term::RecordLiteral {
+                entity: b,
+                fields: v,
+            },
+        ) => {
+            a == b
+                && p.len() == v.len()
+                && p.iter().zip(v).all(|(p, v)| {
+                    p.field == v.field && unify_term(&p.value, &v.value, scope, bindings)
+                })
+        }
+        _ => pattern == value,
+    }
 }
 
 fn unify_time(
@@ -192,7 +228,7 @@ fn unify_time(
     bindings: &mut Bindings,
 ) -> bool {
     match (pattern, value) {
-        (TimeExpr::At(name), _) if scope.contains(name.as_str()) => {
+        (TimeExpr::Var(name), _) if scope.contains(name.as_str()) => {
             bind(name, SubstitutionValue::Time(value.clone()), bindings)
         }
         (TimeExpr::After(pattern), TimeExpr::After(value)) => {
@@ -204,7 +240,7 @@ fn unify_time(
 
 fn bind(name: &str, value: SubstitutionValue, bindings: &mut Bindings) -> bool {
     match bindings.get(name) {
-        Some(existing) => *existing == value,
+        Some(existing) => existing.compatible(&value),
         None => {
             bindings.insert(name.into(), value);
             true

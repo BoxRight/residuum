@@ -200,6 +200,7 @@ fn render_substitution(substitution: &Substitution) -> String {
 fn render_time(time: &TimeExpr) -> String {
     match time {
         TimeExpr::At(name) => name.clone(),
+        TimeExpr::Var(name) => format!("?{name}"),
         TimeExpr::After(time) => format!("after({})", render_time(time)),
     }
 }

@@ -102,6 +102,10 @@ pub enum SurfaceStateOperation {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SurfaceTerm {
+    Constructor {
+        constructor: crate::typed::Constructor,
+        argument: Box<SurfaceTerm>,
+    },
     Var(String),
     None,
     RecordLiteral {
@@ -196,7 +200,7 @@ pub enum SurfaceDefaultBody {
 pub struct SurfaceEvent {
     pub polarity: Polarity,
     pub verb: String,
-    pub args: Vec<String>,
+    pub args: Vec<SurfaceTerm>,
     pub time: Option<SurfaceTime>,
 }
 
@@ -259,4 +263,15 @@ pub struct CnlRule {
 pub struct CnlDefault {
     pub name: String,
     pub body: SurfaceDefaultBody,
+}
+
+impl std::fmt::Display for SurfaceTerm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Var(name) => write!(f, "{name}"),
+            Self::None => write!(f, "none"),
+            Self::RecordLiteral { entity, .. } => write!(f, "{entity} {{ ... }}"),
+            Self::Constructor { argument, .. } => write!(f, "after({argument})"),
+        }
+    }
 }

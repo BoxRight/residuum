@@ -229,17 +229,14 @@ pub(crate) fn elaborate_formal_with_dependencies(
                         &lowered.parameters,
                         &verb_sigs,
                         &constants,
+                        &declarations,
                     )?;
-                    let parameter_names = lowered
-                        .parameters
-                        .iter()
-                        .map(|arg| arg.name.clone())
-                        .collect();
                     lowered.condition = Some(lower_antecedent(
                         condition,
                         &verb_sigs,
                         &constants,
-                        &parameter_names,
+                        &lowered.parameters,
+                        &declarations,
                     )?);
                 }
                 if let Some(blocking) = default.blocking {
@@ -248,17 +245,14 @@ pub(crate) fn elaborate_formal_with_dependencies(
                         &lowered.parameters,
                         &verb_sigs,
                         &constants,
+                        &declarations,
                     )?;
-                    let parameter_names = lowered
-                        .parameters
-                        .iter()
-                        .map(|arg| arg.name.clone())
-                        .collect();
                     lowered.blocking = Some(lower_antecedent(
                         blocking,
                         &verb_sigs,
                         &constants,
-                        &parameter_names,
+                        &lowered.parameters,
+                        &declarations,
                     )?);
                 }
                 if defaults_by_name.contains_key(&lowered.name) {
@@ -413,17 +407,17 @@ fn lower_ground_event(
             event.args.len()
         )));
     }
-    for (name, expected) in event.args.iter().zip(&signature.arg_types) {
-        let actual = constants
-            .get(name)
-            .ok_or_else(|| Error::new(format!("unknown ground constant `{name}`")))?;
-        let subtype = match (actual, expected) {
-            (Type::Entity(a), Type::Entity(b)) => module.is_subtype(a, b),
-            _ => false,
-        };
-        if !is_assignable(actual, expected) && !subtype {
+    let fields = declaration_fields(&module.declarations);
+    for (term, expected) in event.args.iter().zip(&signature.arg_types) {
+        if let SurfaceTerm::Var(name) = term {
+            if !constants.contains_key(name) {
+                return Err(Error::new(format!("unknown ground constant `{name}`")));
+            }
+        }
+        let (_, actual) = lower_term(term.clone(), &[], &fields, constants)?;
+        if !rule_type_assignable(&actual, expected, &module.declarations) {
             return Err(Error::new(format!(
-                "ground constant `{name}` is not assignable to {expected:?}"
+                "ground constant `{term}` is not assignable to {expected:?}"
             )));
         }
     }
@@ -437,7 +431,7 @@ fn lower_ground_event(
             "ground time `{name}` must be a PropositionTime constant"
         )));
     }
-    lower_event(event, verbs, constants, &BTreeSet::new())
+    lower_event(event, verbs, constants, &[], &module.declarations)
 }
 
 pub fn elaborate_cnl(module: CnlModule) -> Result<Module, Error> {
@@ -664,12 +658,13 @@ fn check_default_condition(
     parameters: &[Arg],
     verb_sigs: &BTreeMap<String, VerbSig>,
     constants: &BTreeMap<String, Type>,
+    declarations: &[Declaration],
 ) -> Result<(), Error> {
     match condition {
         SurfaceAntecedent::Unit => Ok(()),
         SurfaceAntecedent::And(left, right) => {
-            check_default_condition(left, parameters, verb_sigs, constants)?;
-            check_default_condition(right, parameters, verb_sigs, constants)
+            check_default_condition(left, parameters, verb_sigs, constants, declarations)?;
+            check_default_condition(right, parameters, verb_sigs, constants, declarations)
         }
         SurfaceAntecedent::Event(event) => {
             let signature = verb_sigs
@@ -683,18 +678,24 @@ fn check_default_condition(
                     event.args.len()
                 )));
             }
-            for (name, expected) in event.args.iter().zip(&signature.arg_types) {
-                let actual = parameters
-                    .iter()
-                    .find(|arg| arg.name == *name)
-                    .map(|arg| &arg.ty)
-                    .or_else(|| constants.get(name))
-                    .ok_or_else(|| {
-                        Error::new(format!("unknown default condition term `{name}`"))
-                    })?;
-                if !is_assignable(actual, expected) {
+            for (term, expected) in event.args.iter().zip(&signature.arg_types) {
+                if let SurfaceTerm::Var(name) = term {
+                    if !parameters.iter().any(|p| p.name == *name) && !constants.contains_key(name)
+                    {
+                        return Err(Error::new(format!(
+                            "unknown default condition term `{name}`"
+                        )));
+                    }
+                }
+                let (_, actual) = lower_term(
+                    term.clone(),
+                    parameters,
+                    &declaration_fields(declarations),
+                    constants,
+                )?;
+                if !is_assignable(&actual, expected) {
                     return Err(Error::new(format!(
-                        "default condition term `{name}` is not assignable to {:?}",
+                        "default condition term `{term}` is not assignable to {:?}",
                         expected
                     )));
                 }
@@ -763,7 +764,9 @@ fn lower_rule(
         } => {
             if params.is_empty() {
                 collect_antecedent_params(&premise, &mut params);
-                params.extend(conclusion.args.iter().cloned());
+                for term in &conclusion.args {
+                    collect_term_params(term, &mut params);
+                }
                 if let Some(time) = &conclusion.time {
                     params.push(time_name(time));
                 }
@@ -771,15 +774,18 @@ fn lower_rule(
                 // Declared constants are ground, not inferred lambda binders.
                 params.retain(|name| !constants.contains_key(name));
             }
-            let parameters =
-                infer_rule_params(&params, &premise, &conclusion, verb_sigs, entities)?;
+            let parameters = infer_rule_params(
+                &params,
+                &premise,
+                &conclusion,
+                verb_sigs,
+                entities,
+                declarations,
+            )?;
             check_rule_antecedent(&premise, &parameters, verb_sigs, constants, declarations)?;
             check_rule_event(&conclusion, &parameters, verb_sigs, constants, declarations)?;
-            let parameter_names = parameters
-                .iter()
-                .map(|param| param.name.clone())
-                .collect::<BTreeSet<_>>();
-            let consequent = lower_event(conclusion, verb_sigs, constants, &parameter_names)?;
+            let consequent =
+                lower_event(conclusion, verb_sigs, constants, &parameters, declarations)?;
             if consequent.polarity == Polarity::EvidentialNot
                 && consequent.proposition.kind == PropositionKind::Seeded
             {
@@ -788,11 +794,13 @@ fn lower_rule(
                     consequent.verb
                 )));
             }
+            let antecedent =
+                lower_antecedent(premise, verb_sigs, constants, &parameters, declarations)?;
             Ok(Rule {
                 name,
                 parameters,
                 body: RuleBody::HornClause(HornClause {
-                    antecedent: lower_antecedent(premise, verb_sigs, constants, &parameter_names)?,
+                    antecedent,
                     consequent,
                 }),
             })
@@ -846,20 +854,47 @@ fn lower_rule(
     }
 }
 
+fn declaration_fields(declarations: &[Declaration]) -> BTreeMap<String, Vec<Field>> {
+    declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Entity(e) => Some((e.name.clone(), e.fields.clone())),
+            _ => None,
+        })
+        .collect()
+}
+
 fn lower_antecedent(
     antecedent: SurfaceAntecedent,
     verb_sigs: &BTreeMap<String, VerbSig>,
     constants: &BTreeMap<String, Type>,
-    parameters: &BTreeSet<String>,
+    parameters: &[Arg],
+    declarations: &[Declaration],
 ) -> Result<Antecedent, Error> {
     match antecedent {
         SurfaceAntecedent::Unit => Ok(Antecedent::Unit),
         SurfaceAntecedent::Event(event) => Ok(Antecedent::Event(lower_event(
-            event, verb_sigs, constants, parameters,
+            event,
+            verb_sigs,
+            constants,
+            parameters,
+            declarations,
         )?)),
         SurfaceAntecedent::And(left, right) => Ok(Antecedent::And(
-            Box::new(lower_antecedent(*left, verb_sigs, constants, parameters)?),
-            Box::new(lower_antecedent(*right, verb_sigs, constants, parameters)?),
+            Box::new(lower_antecedent(
+                *left,
+                verb_sigs,
+                constants,
+                parameters,
+                declarations,
+            )?),
+            Box::new(lower_antecedent(
+                *right,
+                verb_sigs,
+                constants,
+                parameters,
+                declarations,
+            )?),
         )),
     }
 }
@@ -868,7 +903,8 @@ fn lower_event(
     event: SurfaceEvent,
     verb_sigs: &BTreeMap<String, VerbSig>,
     constants: &BTreeMap<String, Type>,
-    parameters: &BTreeSet<String>,
+    parameters: &[Arg],
+    declarations: &[Declaration],
 ) -> Result<Event, Error> {
     let signature = verb_sigs
         .get(&event.verb)
@@ -876,28 +912,24 @@ fn lower_event(
     let time = event
         .time
         .ok_or_else(|| Error::new(format!("unresolved PropositionTime for `{}`", event.verb)))?;
-
+    let parameter_names = parameters.iter().map(|p| p.name.clone()).collect();
+    let time = proposition_time(&time, &parameter_names);
+    let fields = declaration_fields(declarations);
     Ok(Event {
         polarity: event.polarity,
         verb: event.verb,
         args: event
             .args
             .into_iter()
-            .map(|name| {
-                if constants.contains_key(&name) && !parameters.contains(&name) {
-                    Term::Const(name)
-                } else {
-                    Term::Var(name)
-                }
-            })
-            .collect(),
+            .map(|term| lower_term(term, parameters, &fields, constants).map(|(term, _)| term))
+            .collect::<Result<_, _>>()?,
         proposition: PropositionType {
             kind: match signature.kind {
                 VerbKind::Seeded => PropositionKind::Seeded,
                 VerbKind::Derived => PropositionKind::Derived,
                 VerbKind::Effect => PropositionKind::Effect,
             },
-            time: proposition_time(&time),
+            time: time.clone(),
         },
         transition: effect_transition(signature.kind, &time),
     })
@@ -958,12 +990,17 @@ fn check_rule_event(
             .map(|arg| &arg.ty)
             .or_else(|| constants.get(name))
     };
-    for (name, expected) in event.args.iter().zip(&signature.arg_types) {
-        let actual =
-            resolve(name).ok_or_else(|| Error::new(format!("unknown rule term `{name}`")))?;
-        if !rule_type_assignable(actual, expected, declarations) {
+    let fields = declaration_fields(declarations);
+    for (term, expected) in event.args.iter().zip(&signature.arg_types) {
+        if let SurfaceTerm::Var(name) = term {
+            if resolve(name).is_none() {
+                return Err(Error::new(format!("unknown rule term `{name}`")));
+            }
+        }
+        let (_, actual) = lower_term(term.clone(), parameters, &fields, constants)?;
+        if !rule_type_assignable(&actual, expected, declarations) {
             return Err(Error::new(format!(
-                "rule term `{name}` of type {actual:?} is not assignable to {expected:?}"
+                "rule term `{term}` of type {actual:?} is not assignable to {expected:?}"
             )));
         }
     }
@@ -1014,27 +1051,30 @@ pub(crate) fn rule_type_assignable(
     false
 }
 
-fn proposition_time(time: &SurfaceTime) -> TimeExpr {
+fn proposition_time(time: &SurfaceTime, parameters: &BTreeSet<String>) -> TimeExpr {
+    let named = |name: &String| {
+        if parameters.contains(name) {
+            TimeExpr::Var(name.clone())
+        } else {
+            TimeExpr::At(name.clone())
+        }
+    };
     match time {
-        SurfaceTime::At(time) => TimeExpr::At(time.clone()),
-        SurfaceTime::After(time) => TimeExpr::After(Box::new(TimeExpr::At(time.clone()))),
+        SurfaceTime::At(name) => named(name),
+        SurfaceTime::After(name) => TimeExpr::After(Box::new(named(name))),
     }
 }
 
-fn effect_transition(kind: VerbKind, time: &SurfaceTime) -> Option<StateTransitionType> {
+fn effect_transition(kind: VerbKind, time: &TimeExpr) -> Option<StateTransitionType> {
     if kind != VerbKind::Effect {
         return None;
     }
-
-    Some(match time {
-        SurfaceTime::At(time) => StateTransitionType {
-            input: StateTime::Unresolved,
-            output: StateTime::At(TimeExpr::At(time.clone())),
+    Some(StateTransitionType {
+        input: match time {
+            TimeExpr::After(input) => StateTime::At((**input).clone()),
+            TimeExpr::At(_) | TimeExpr::Var(_) => StateTime::Unresolved,
         },
-        SurfaceTime::After(time) => StateTransitionType {
-            input: StateTime::At(TimeExpr::At(time.clone())),
-            output: StateTime::At(TimeExpr::After(Box::new(TimeExpr::At(time.clone())))),
-        },
+        output: StateTime::At(time.clone()),
     })
 }
 
@@ -1128,6 +1168,25 @@ pub(crate) fn lower_term(
     constants: &BTreeMap<String, Type>,
 ) -> Result<(Term, Type), Error> {
     match term {
+        SurfaceTerm::Constructor {
+            constructor,
+            argument,
+        } => {
+            let (input, output) = constructor.signature();
+            let (argument, actual) = lower_term(*argument, args, entity_fields, constants)?;
+            if actual != input {
+                return Err(Error::new(format!(
+                    "after requires PropositionTime, got {actual:?}"
+                )));
+            }
+            Ok((
+                Term::Constructor {
+                    constructor,
+                    argument: Box::new(argument),
+                },
+                output,
+            ))
+        }
         SurfaceTerm::Var(name) => {
             // Effect parameters shadow module constants, as rule parameters do.
             // Keep a constant ground so runtime materialization never treats it
@@ -1215,6 +1274,7 @@ fn describe_term(term: &Term) -> String {
     match term {
         Term::Var(name) => name.clone(),
         Term::Const(name) => name.clone(),
+        Term::Constructor { argument, .. } => format!("after({})", describe_term(argument)),
         Term::None => "none".to_string(),
         Term::RecordLiteral { entity, .. } => format!("{entity} {{ ... }}"),
     }
@@ -1266,11 +1326,22 @@ fn infer_rule_params(
     conclusion: &SurfaceEvent,
     verb_sigs: &BTreeMap<String, VerbSig>,
     entities: &BTreeSet<String>,
+    declarations: &[Declaration],
 ) -> Result<Vec<Arg>, Error> {
     let mut inferred = BTreeMap::new();
     seed_role_types(requested, entities, &mut inferred);
-    infer_antecedent_args(premise, verb_sigs, &mut inferred)?;
-    infer_event_args(conclusion, verb_sigs, &mut inferred)?;
+    infer_antecedent_args(
+        premise,
+        verb_sigs,
+        &mut inferred,
+        &declaration_fields(declarations),
+    )?;
+    infer_event_args(
+        conclusion,
+        verb_sigs,
+        &mut inferred,
+        &declaration_fields(declarations),
+    )?;
     infer_antecedent_times(premise, &mut inferred);
     if let Some(time) = &conclusion.time {
         inferred.insert(time_name(time), Type::PropositionTime);
@@ -1294,7 +1365,9 @@ fn collect_antecedent_params(antecedent: &SurfaceAntecedent, params: &mut Vec<St
     match antecedent {
         SurfaceAntecedent::Unit => {}
         SurfaceAntecedent::Event(event) => {
-            params.extend(event.args.iter().cloned());
+            for term in &event.args {
+                collect_term_params(term, params);
+            }
             if let Some(time) = &event.time {
                 params.push(time_name(time));
             }
@@ -1310,13 +1383,14 @@ fn infer_antecedent_args(
     antecedent: &SurfaceAntecedent,
     verb_sigs: &BTreeMap<String, VerbSig>,
     inferred: &mut BTreeMap<String, Type>,
+    fields: &BTreeMap<String, Vec<Field>>,
 ) -> Result<(), Error> {
     match antecedent {
         SurfaceAntecedent::Unit => Ok(()),
-        SurfaceAntecedent::Event(event) => infer_event_args(event, verb_sigs, inferred),
+        SurfaceAntecedent::Event(event) => infer_event_args(event, verb_sigs, inferred, fields),
         SurfaceAntecedent::And(left, right) => {
-            infer_antecedent_args(left, verb_sigs, inferred)?;
-            infer_antecedent_args(right, verb_sigs, inferred)
+            infer_antecedent_args(left, verb_sigs, inferred, fields)?;
+            infer_antecedent_args(right, verb_sigs, inferred, fields)
         }
     }
 }
@@ -1340,6 +1414,7 @@ fn infer_event_args(
     event: &SurfaceEvent,
     verb_sigs: &BTreeMap<String, VerbSig>,
     inferred: &mut BTreeMap<String, Type>,
+    fields: &BTreeMap<String, Vec<Field>>,
 ) -> Result<(), Error> {
     let signature = verb_sigs
         .get(&event.verb)
@@ -1353,23 +1428,76 @@ fn infer_event_args(
         )));
     }
 
-    for (name, ty) in event.args.iter().zip(&signature.arg_types) {
-        if let Some(existing) = inferred.get(name) {
-            if existing == ty || is_assignable(existing, ty) {
-                continue;
+    for (term, ty) in event.args.iter().zip(&signature.arg_types) {
+        infer_term(term, ty, inferred, fields)?;
+    }
+    Ok(())
+}
+
+fn collect_term_params(term: &SurfaceTerm, params: &mut Vec<String>) {
+    match term {
+        SurfaceTerm::Var(name) => params.push(name.clone()),
+        SurfaceTerm::Constructor { argument, .. } => collect_term_params(argument, params),
+        SurfaceTerm::RecordLiteral { fields, .. } => {
+            for field in fields {
+                collect_term_params(&field.value, params);
             }
-            if is_assignable(ty, existing) {
-                inferred.insert(name.clone(), ty.clone());
-                continue;
+        }
+        SurfaceTerm::None => {}
+    }
+}
+
+fn infer_term(
+    term: &SurfaceTerm,
+    ty: &Type,
+    inferred: &mut BTreeMap<String, Type>,
+    fields: &BTreeMap<String, Vec<Field>>,
+) -> Result<(), Error> {
+    match term {
+        SurfaceTerm::Var(name) => {
+            if let Some(existing) = inferred.get(name) {
+                if existing == ty || is_assignable(existing, ty) {
+                    return Ok(());
+                }
+                if !is_assignable(ty, existing) {
+                    return Err(Error::new(format!(
+                        "conflicting inferred types for `{name}`"
+                    )));
+                }
             }
-            return Err(Error::new(format!(
-                "conflicting inferred types for `{name}`"
-            )));
-        } else {
             inferred.insert(name.clone(), ty.clone());
         }
+        SurfaceTerm::Constructor {
+            constructor,
+            argument,
+        } => {
+            let (input, output) = constructor.signature();
+            if !is_assignable(&output, ty) {
+                return Err(Error::new(format!(
+                    "after result PropositionTime is not assignable to {ty:?}"
+                )));
+            }
+            infer_term(argument, &input, inferred, fields)?;
+        }
+        SurfaceTerm::RecordLiteral {
+            entity,
+            fields: values,
+        } => {
+            let schema = fields
+                .get(entity)
+                .ok_or_else(|| Error::new(format!("unknown record entity `{entity}`")))?;
+            for value in values {
+                let field = schema
+                    .iter()
+                    .find(|f| f.name == value.field)
+                    .ok_or_else(|| {
+                        Error::new(format!("unknown field `{entity}.{}`", value.field))
+                    })?;
+                infer_term(&value.value, &field.ty, inferred, fields)?;
+            }
+        }
+        SurfaceTerm::None => {}
     }
-
     Ok(())
 }
 

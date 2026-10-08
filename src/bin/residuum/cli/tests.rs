@@ -287,3 +287,12 @@ fn cli_keeps_existing_errors_and_associated_program_semantics() {
 
 #[path = "peano_after_tests.rs"]
 mod peano_after;
+
+#[path = "peano_multiplication_tests.rs"]
+mod peano_multiplication;
+
+#[path = "temporal_identity_tests.rs"]
+mod temporal_identity;
+
+#[path = "temporal_constructor_tests.rs"]
+mod temporal_constructors;

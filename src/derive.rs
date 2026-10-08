@@ -125,8 +125,10 @@ fn term_has_unbound_parameter(
 ) -> bool {
     match term {
         Term::Var(name) => {
-            parameter_names.contains(name.as_str())
-                && !matches!(substitutions.get(name), Some(SubstitutionValue::Term(_)))
+            parameter_names.contains(name.as_str()) && !substitutions.contains_key(name)
+        }
+        Term::Constructor { argument, .. } => {
+            term_has_unbound_parameter(argument, parameter_names, substitutions)
         }
         Term::Const(_) | Term::None => false,
         Term::RecordLiteral { fields, .. } => fields
@@ -141,10 +143,11 @@ fn time_has_unbound_parameter(
     substitutions: &BTreeMap<String, SubstitutionValue>,
 ) -> bool {
     match time {
-        TimeExpr::At(name) => {
-            parameter_names.contains(name.as_str())
-                && !matches!(substitutions.get(name), Some(SubstitutionValue::Time(_)))
-        }
+        TimeExpr::At(_) => false,
+        TimeExpr::Var(name) => substitutions
+            .get(name)
+            .and_then(SubstitutionValue::as_time)
+            .is_none(),
         TimeExpr::After(time) => time_has_unbound_parameter(time, parameter_names, substitutions),
     }
 }
@@ -476,8 +479,38 @@ fn bind_term(
 ) -> Option<()> {
     match pattern {
         Term::Var(name) if parameters.iter().any(|parameter| parameter.name == *name) => {
+            if matches!(value, Term::Constructor { .. }) && !value.is_ground() {
+                return None;
+            }
             bind(name, SubstitutionValue::Term(value.clone()), substitutions)
         }
+        Term::Constructor {
+            constructor,
+            argument,
+        } => match value {
+            Term::Constructor {
+                constructor: other,
+                argument: actual,
+            } if constructor == other && value.is_ground() => {
+                bind_term(argument, actual, parameters, substitutions)
+            }
+            _ => None,
+        },
+        Term::RecordLiteral { entity, fields } => match value {
+            Term::RecordLiteral {
+                entity: other,
+                fields: actual,
+            } if entity == other && fields.len() == actual.len() => {
+                for (p, v) in fields.iter().zip(actual) {
+                    if p.field != v.field {
+                        return None;
+                    }
+                    bind_term(&p.value, &v.value, parameters, substitutions)?;
+                }
+                Some(())
+            }
+            _ => None,
+        },
         _ => (pattern == value).then_some(()),
     }
 }
@@ -489,7 +522,7 @@ fn bind_time(
     substitutions: &mut BTreeMap<String, SubstitutionValue>,
 ) -> Option<()> {
     match (pattern, value) {
-        (TimeExpr::At(name), _) if parameters.iter().any(|parameter| parameter.name == *name) => {
+        (TimeExpr::Var(name), _) if parameters.iter().any(|parameter| parameter.name == *name) => {
             bind(name, SubstitutionValue::Time(value.clone()), substitutions)
         }
         (TimeExpr::After(pattern_inner), TimeExpr::After(value_inner)) => {
@@ -505,7 +538,7 @@ fn bind(
     substitutions: &mut BTreeMap<String, SubstitutionValue>,
 ) -> Option<()> {
     if let Some(existing) = substitutions.get(name) {
-        (existing == &value).then_some(())
+        existing.compatible(&value).then_some(())
     } else {
         substitutions.insert(name.to_string(), value);
         Some(())
@@ -549,11 +582,21 @@ pub(crate) fn substitute_event(
     }
 }
 
-fn substitute_term(term: &Term, substitutions: &BTreeMap<String, SubstitutionValue>) -> Term {
+pub(crate) fn substitute_term(
+    term: &Term,
+    substitutions: &BTreeMap<String, SubstitutionValue>,
+) -> Term {
     match term {
         Term::Var(name) => match substitutions.get(name) {
-            Some(SubstitutionValue::Term(term)) => term.clone(),
+            Some(value) => value.as_term(),
             _ => Term::Var(name.clone()),
+        },
+        Term::Constructor {
+            constructor,
+            argument,
+        } => Term::Constructor {
+            constructor: *constructor,
+            argument: Box::new(substitute_term(argument, substitutions)),
         },
         Term::Const(name) => Term::Const(name.clone()),
         Term::None => Term::None,
@@ -570,15 +613,16 @@ fn substitute_term(term: &Term, substitutions: &BTreeMap<String, SubstitutionVal
     }
 }
 
-fn substitute_time(
+pub(crate) fn substitute_time(
     time: &TimeExpr,
     substitutions: &BTreeMap<String, SubstitutionValue>,
 ) -> TimeExpr {
     match time {
-        TimeExpr::At(name) => match substitutions.get(name) {
-            Some(SubstitutionValue::Time(time)) => time.clone(),
-            _ => TimeExpr::At(name.clone()),
-        },
+        TimeExpr::At(_) => time.clone(),
+        TimeExpr::Var(name) => substitutions
+            .get(name)
+            .and_then(SubstitutionValue::as_time)
+            .unwrap_or_else(|| time.clone()),
         TimeExpr::After(time) => TimeExpr::After(Box::new(substitute_time(time, substitutions))),
     }
 }

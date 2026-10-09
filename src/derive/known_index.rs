@@ -2,7 +2,7 @@
 use super::{Event, Polarity};
 use std::collections::BTreeMap;
 
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub(super) struct KnownIndex {
     buckets: BTreeMap<String, BTreeMap<(Polarity, usize), Vec<usize>>>,
 }

@@ -3,12 +3,14 @@ use std::collections::{BTreeMap, BTreeSet};
 
 mod incremental;
 mod known_index;
+mod program_incremental;
 use known_index::{KnownIndex, KnownView};
 #[cfg(test)]
 mod profile;
 #[cfg(test)]
 mod profile_tests;
 pub use incremental::{ClosureDelta, IncrementalClosure, IncrementalStats};
+pub use program_incremental::{IncrementalProgramClosure, ProgramActivation, ProgramClosureDelta};
 
 use crate::typed::{
     Antecedent, Arg, Closure, Declaration, DerivationRecord, DerivationTime, DerivedEvent, Event,
@@ -192,6 +194,24 @@ pub fn close_program<C: DerivationClock>(
     module: &Module,
     clock: &mut C,
 ) -> Result<Closure, crate::elab::Error> {
+    Ok(IncrementalProgramClosure::new(seeds, module, clock)?.into_closure())
+}
+
+/// Experimental comparison oracle: the previous indexed, full-match evaluator.
+/// It has the same semantics and termination requirement as close_program.
+#[doc(hidden)]
+pub fn close_program_reference<C: DerivationClock>(
+    seeds: Vec<Event>,
+    module: &Module,
+    clock: &mut C,
+) -> Result<Closure, crate::elab::Error> {
+    let (ordinary, programs) = prepare_programs(module)?;
+    Ok(close_with_programs(seeds, &ordinary, &programs, clock))
+}
+
+fn prepare_programs(
+    module: &Module,
+) -> Result<(Vec<Rule>, Vec<ProgramSource>), crate::elab::Error> {
     use crate::elab::Error;
     #[cfg(test)]
     let preparation = profile::start();
@@ -264,7 +284,7 @@ pub fn close_program<C: DerivationClock>(
         }
         if matches!(verb.kind, VerbKind::Seeded | VerbKind::Derived) {
             programs.push(ProgramSource {
-                verb,
+                verb: verb.clone(),
                 parameters,
                 rules,
             });
@@ -280,11 +300,12 @@ pub fn close_program<C: DerivationClock>(
         .collect();
     #[cfg(test)]
     profile::phase("preparation", preparation);
-    Ok(close_with_programs(seeds, &ordinary, &programs, clock))
+    Ok((ordinary, programs))
 }
 
-struct ProgramSource<'a> {
-    verb: &'a Verb,
+#[derive(Debug, Clone)]
+struct ProgramSource {
+    verb: Verb,
     parameters: Vec<Arg>,
     rules: Vec<Rule>,
 }
@@ -311,22 +332,50 @@ fn instantiate_program(
         Vec::new(),
     )
     .into_iter()
-    .filter_map(|mut matched| {
-        // The activation itself is evidence, even for a body equal to I.
-        // Preserve existing body provenance when it already cites that fact.
-        if !matched.antecedents.contains(&program.trigger) {
-            matched.antecedents.insert(0, program.trigger.clone());
-        }
-        finish_instantiation(program.rule, &clause.consequent, matched)
+    .filter_map(|matched| {
+        finish_program_match(program.rule, &clause.consequent, &program.trigger, matched)
     })
     .collect()
 }
 
-fn close_with_programs<C: DerivationClock>(
+fn activation_bindings(
+    source: &ProgramSource,
+    trigger: &Event,
+) -> Option<BTreeMap<String, SubstitutionValue>> {
+    let mut bindings = BTreeMap::new();
+    for (parameter, value) in source.parameters.iter().zip(&trigger.args) {
+        bind_typed(
+            parameter,
+            SubstitutionValue::Term(value.clone()),
+            &mut bindings,
+        )?;
+    }
+    bind_typed(
+        source.parameters.last()?,
+        SubstitutionValue::Time(trigger.proposition.time.clone()),
+        &mut bindings,
+    )?;
+    Some(bindings)
+}
+
+fn finish_program_match(
+    rule: &Rule,
+    consequent: &Event,
+    trigger: &Event,
+    mut matched: AntecedentMatch,
+) -> Option<UnstampedDerivation> {
+    // Activation is evidence even for I. Do not repeat an existing body witness.
+    if !matched.antecedents.contains(trigger) {
+        matched.antecedents.insert(0, trigger.clone());
+    }
+    finish_instantiation(rule, consequent, matched)
+}
+
+fn close_with_programs(
     seeds: Vec<Event>,
     rules: &[Rule],
-    programs: &[ProgramSource<'_>],
-    clock: &mut C,
+    programs: &[ProgramSource],
+    clock: &mut dyn DerivationClock,
 ) -> Closure {
     let mut known_keys = BTreeSet::new();
     // Logical identity ignores transition metadata. Keep the first supplied
@@ -351,36 +400,16 @@ fn close_with_programs<C: DerivationClock>(
         let activation = profile::start();
         for trigger in &frontier {
             for source in programs {
-                let verb = source.verb;
+                let verb = &source.verb;
                 if trigger.verb != verb.name
                     || trigger.polarity != Polarity::Positive
                     || trigger.args.len() != verb.args.len()
                 {
                     continue;
                 }
-                let mut bindings = BTreeMap::new();
-                let valid =
-                    source
-                        .parameters
-                        .iter()
-                        .zip(&trigger.args)
-                        .all(|(parameter, value)| {
-                            bind_typed(
-                                parameter,
-                                SubstitutionValue::Term(value.clone()),
-                                &mut bindings,
-                            )
-                            .is_some()
-                        })
-                        && bind_typed(
-                            source.parameters.last().unwrap(),
-                            SubstitutionValue::Time(trigger.proposition.time.clone()),
-                            &mut bindings,
-                        )
-                        .is_some();
-                if !valid {
+                let Some(bindings) = activation_bindings(source, trigger) else {
                     continue;
-                }
+                };
                 for rule in &source.rules {
                     activated.push(ActivatedProgram {
                         rule,

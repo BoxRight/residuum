@@ -1,5 +1,10 @@
 # Contrato experimental de incrementalidad con Program activados
 
+**Seguimiento actual:** el scheduler experimental ya está integrado en
+`close_program`; véase [integración de Program](program-semi-naive-integration.md).
+Las secciones siguientes conservan el contrato y las observaciones anteriores
+a esa integración.
+
 **Estado posterior:** la discrepancia de bindings descrita en las secciones
 7–9 queda corregida por [sustituciones tipadas canónicas](canonical-typed-substitutions.md).
 Se conservan aquí los resultados históricos que motivaron la reparación.

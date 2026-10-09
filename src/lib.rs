@@ -17,7 +17,8 @@ pub use defaults::{
     BlockingScope, DefaultBlock, DefaultExtension, evaluate_defaults, select_active_rules,
 };
 pub use derive::{
-    ClosureDelta, DerivationClock, IncrementalClosure, IncrementalStats, close, close_program,
+    ClosureDelta, DerivationClock, IncrementalClosure, IncrementalProgramClosure, IncrementalStats,
+    ProgramActivation, ProgramClosureDelta, close, close_program, close_program_reference,
     derive_once, instantiate, instantiate_from_known, stamp,
 };
 pub use elab::{Error, elaborate_cnl, elaborate_formal};

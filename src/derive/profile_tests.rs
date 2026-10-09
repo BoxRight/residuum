@@ -41,10 +41,10 @@ fn profiling_preserves_full_closure_and_stamps() {
     let (module, seeds) = product("unitProduct");
     let original = {
         let _scan = profile::linear_scan();
-        close_program(seeds.clone(), &module, &mut Clock::default()).unwrap()
+        close_program_reference(seeds.clone(), &module, &mut Clock::default()).unwrap()
     };
     let session = profile::Session::new("unitProduct");
-    let measured = close_program(seeds, &module, &mut Clock::default()).unwrap();
+    let measured = close_program_reference(seeds, &module, &mut Clock::default()).unwrap();
     let stats = session.finish();
     // Debug includes proposition types, transitions, witness order, substitutions,
     // clocks and multiplicity, which logical Event equality deliberately ignores.
@@ -66,7 +66,7 @@ fn profile_polynomial_product_fixture() {
         "principalProduct"
     };
     let session = profile::Session::new(label);
-    let closure = close_program(seeds, &module, &mut Clock::default()).unwrap();
+    let closure = close_program_reference(seeds, &module, &mut Clock::default()).unwrap();
     let stats = session.finish();
     if name == "partialProduct" {
         assert_eq!((closure.known.len(), closure.derivations.len()), (223, 244));
@@ -182,11 +182,12 @@ fn indexed_known_matches_linear_product_with_identical_provenance() {
     let (original, linear) = {
         let _scan = profile::linear_scan();
         let session = profile::Session::new("partialProduct linear");
-        let closure = close_program(seeds.clone(), &module, &mut Clock::default()).unwrap();
+        let closure =
+            close_program_reference(seeds.clone(), &module, &mut Clock::default()).unwrap();
         (closure, session.finish())
     };
     let session = profile::Session::new("partialProduct indexed");
-    let indexed = close_program(seeds, &module, &mut Clock::default()).unwrap();
+    let indexed = close_program_reference(seeds, &module, &mut Clock::default()).unwrap();
     let stats = session.finish();
     assert_eq!(format!("{original:?}"), format!("{indexed:?}"));
     assert_eq!(linear.probes, 2_117_296);
@@ -317,4 +318,95 @@ fn known_header_index_preserves_order_identity_and_all_three_keys() {
         .unwrap(),
         events.last().unwrap()
     ));
+}
+
+#[test]
+fn semi_naive_product_preserves_exact_provenance_and_reports_matching_cost() {
+    let (module, seeds) = product("partialProduct");
+    let reference_session = profile::Session::new("partialProduct indexed reference");
+    let reference = close_program_reference(seeds.clone(), &module, &mut Clock::default()).unwrap();
+    let full = reference_session.finish();
+    let delta_session = profile::Session::new("partialProduct semi-naive");
+    let incremental = close_program(seeds, &module, &mut Clock::default()).unwrap();
+    let inc = delta_session.finish();
+    let observations = |c: &Closure| {
+        let known = c
+            .known
+            .iter()
+            .map(|e| format!("{e:?}"))
+            .collect::<BTreeSet<_>>();
+        let mut proofs = c
+            .derivations
+            .iter()
+            .map(|d| format!("{:?} {:?}", d.event, d.record))
+            .collect::<Vec<_>>();
+        proofs.sort();
+        (known, proofs)
+    };
+    assert_eq!(observations(&incremental), observations(&reference));
+    assert_eq!(
+        (incremental.known.len(), incremental.derivations.len()),
+        (223, 244)
+    );
+    assert_eq!(inc.activated, full.activated);
+    println!(
+        "FIXED POINT comparison: probes {} -> {}, raw candidates {} -> {}, repeated justifications {} -> {}; timing is an observation, not a general bound",
+        full.probes, inc.probes, full.candidates, inc.candidates, full.duplicates, inc.duplicates
+    );
+}
+
+#[test]
+fn profile_semi_naive_polynomial_product_fixture() {
+    let name =
+        std::env::var("RESIDUUM_PROFILE_PRODUCT").unwrap_or_else(|_| "partialProduct".into());
+    assert!(["partialProduct", "principalProduct"].contains(&name.as_str()));
+    let (module, seeds) = product(&name);
+    let session = profile::Session::new("semi-naive product fixture");
+    let c = close_program(seeds.clone(), &module, &mut Clock::default()).unwrap();
+    let _stats = session.finish();
+    let goal = module
+        .declarations
+        .iter()
+        .find_map(|d| match d {
+            Declaration::Experiment(e) if e.name == name => Some(&e.goal),
+            _ => None,
+        })
+        .unwrap();
+    assert!(c.known.contains(goal));
+    if name == "partialProduct" {
+        assert_eq!((c.known.len(), c.derivations.len()), (223, 244));
+    }
+    if name == "principalProduct" {
+        fn natural(t: &Term) -> usize {
+            match t {
+                Term::Const(n) if n == "zeroTime" => 0,
+                Term::Constructor {
+                    constructor: crate::typed::Constructor::After,
+                    argument,
+                } => 1 + natural(argument),
+                _ => panic!("ground Peano natural required"),
+            }
+        }
+        let coefficients = c
+            .known
+            .iter()
+            .filter(|e| e.verb == "coefficient" && e.args[0] == Term::Const("r".into()))
+            .map(|e| (natural(&e.args[1]), natural(&e.args[2])))
+            .collect::<Vec<_>>();
+        assert_eq!(coefficients.len(), 7);
+        assert_eq!(
+            coefficients.into_iter().collect::<BTreeMap<_, _>>(),
+            [5, 10, 18, 26, 9, 12, 0].into_iter().enumerate().collect()
+        );
+        assert!(
+            seeds
+                .iter()
+                .all(|e| !(e.verb == "inputCoefficient" && e.args[0] == Term::Const("r".into())))
+        );
+    }
+    println!(
+        "FIXED POINT: {name}, {} events / {} justifications; no evidence supplied for output coefficients",
+        c.known.len(),
+        c.derivations.len()
+    );
 }

@@ -1,5 +1,9 @@
 # Sustituciones tipadas canónicas en la rama experimental
 
+**Checkpoint:** esta etapa quedó guardada en `c7d2895`. El estado de
+verificación que sigue es histórico, anterior a la
+[integración incremental de Program](program-semi-naive-integration.md).
+
 Rama `experiment-peano-after`, sobre `a7822ef` y los cambios de profiling,
 indexación y contrato incremental anteriores. `main` y el commit del tag `v1`
 siguen en `8025bc6b4afee3415c652a5830576ef18aaf8cb5`.

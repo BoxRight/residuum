@@ -1,8 +1,11 @@
-//! Test-only guarded-clause interpretation of existing Verb.program declarations.
-//! No production semi-naive scheduler or deduplication changes.
+//! Guarded-clause model and production scheduler compared with the previous
+//! full-match evaluator. No normalization of bindings/proof multiplicity here.
 use residuum::programs::{compile_program, program_rule_origin};
 use residuum::typed::*;
-use residuum::{DerivationClock, IncrementalClosure, close, close_program, instantiate_from_known};
+use residuum::{
+    DerivationClock, IncrementalClosure, IncrementalProgramClosure, close, close_program,
+    close_program_reference, instantiate_from_known,
+};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
@@ -201,7 +204,7 @@ fn equivalent(a: &Closure, b: &Closure) {
 }
 fn check(m: &Module, adapter: &Adapter, inc: &IncrementalClosure, seeds: &[Event]) -> Closure {
     let actual = adapter.normalize(inc.closure());
-    let expected = close_program(seeds.to_vec(), m, &mut Clock::default()).unwrap();
+    let expected = close_program_reference(seeds.to_vec(), m, &mut Clock::default()).unwrap();
     equivalent(&actual, &expected);
     // Producer identities are unchanged: Program + Rule + imported module.
     for proof in &actual.derivations {
@@ -395,7 +398,7 @@ fn guarded_derivative_preserves_canonical_product_bindings_and_all_justification
     let mut inc = IncrementalClosure::new(base, &adapter.rules, &mut clock);
     let change = inc.update(triggers, &mut clock);
     let actual = adapter.normalize(inc.closure());
-    let expected = close_program(input, &m, &mut Clock::default()).unwrap();
+    let expected = close_program_reference(input, &m, &mut Clock::default()).unwrap();
     equivalent(&actual, &expected);
     assert_eq!((actual.known.len(), actual.derivations.len()), (223, 244));
     assert_eq!(
@@ -429,7 +432,7 @@ fn guarded_derivative_temporal_bindings_are_canonical_for_every_pivot_and_update
         };
         fields[0].value = value.to_term();
         let all = base.iter().chain(&delta).cloned().collect::<Vec<_>>();
-        let expected = close_program(all.clone(), &m, &mut Clock::default()).unwrap();
+        let expected = close_program_reference(all.clone(), &m, &mut Clock::default()).unwrap();
         assert_eq!(expected.derivations.len(), 1);
         let binding = &expected.derivations[0]
             .record
@@ -454,6 +457,16 @@ fn guarded_derivative_temporal_bindings_are_canonical_for_every_pivot_and_update
             inc.update(added, &mut clock);
             equivalent(&adapter.normalize(inc.closure()), &expected);
             assert_eq!(inc.closure().derivations.len(), 1);
+        }
+        for (initial, added) in [
+            (base.clone(), delta.clone()),
+            (delta.clone(), base.clone()),
+            (vec![], all.clone()),
+        ] {
+            let mut clock = Clock::default();
+            let mut state = IncrementalProgramClosure::new(initial, &m, &mut clock).unwrap();
+            state.update(added, &mut clock);
+            equivalent(state.closure(), &expected);
         }
     }
     println!(
@@ -496,8 +509,16 @@ fn canonical_bindings_keep_distinct_witnesses_rules_and_program_origins() {
     distinct.proposition.time = TimeExpr::After(Box::new(distinct.proposition.time));
     all.extend([evidence, distinct]);
     let adapter = Adapter::new(&m);
-    let expected = close_program(all.clone(), &m, &mut Clock::default()).unwrap();
+    let expected = close_program_reference(all.clone(), &m, &mut Clock::default()).unwrap();
     assert_eq!(expected.derivations.len(), 4); // two Programs x two witnesses.
+    equivalent(
+        &close_program(all.clone(), &m, &mut Clock::default()).unwrap(),
+        &expected,
+    );
+    let mut program_clock = Clock::default();
+    let mut program_state = IncrementalProgramClosure::new(vec![], &m, &mut program_clock).unwrap();
+    program_state.update(all.clone(), &mut program_clock);
+    equivalent(program_state.closure(), &expected);
     let mut clock = Clock::default();
     let mut inc = IncrementalClosure::new(vec![], &adapter.rules, &mut clock);
     inc.update(all.clone(), &mut clock);
@@ -512,4 +533,126 @@ fn canonical_bindings_keep_distinct_witnesses_rules_and_program_origins() {
         assert_eq!(proofs.len(), 2);
         assert_ne!(proofs[0].record.antecedents, proofs[1].record.antecedents);
     }
+}
+
+#[test]
+fn program_derivative_exhaustively_preserves_448_input_splits_and_proof_multiplicity() {
+    let m = module("dynamic_incremental_programs.res");
+    let universe = ["base", "activate", "late", "alternative", "negativeTrigger"]
+        .into_iter()
+        .flat_map(|n| experiment(&m, n).input.clone())
+        .collect::<Vec<_>>();
+    let compare = |actual: &Closure, seeds: Vec<Event>| {
+        let expected = close_program_reference(seeds, &m, &mut Clock::default()).unwrap();
+        equivalent(actual, &expected);
+    };
+    let mut comparisons = 0;
+    for mask in 0..(1 << universe.len()) {
+        let seeds = universe
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| mask & (1 << i) != 0)
+            .map(|(_, e)| e.clone())
+            .collect::<Vec<_>>();
+        let mut clock = Clock::default();
+        let initial = IncrementalProgramClosure::new(seeds.clone(), &m, &mut clock).unwrap();
+        compare(initial.closure(), seeds.clone());
+        comparisons += 1;
+        for event in &universe {
+            let mut inc = initial.clone();
+            let mut clock = Clock(clock.0);
+            let before = inc.closure().derivations.clone();
+            let delta = inc.update(vec![event.clone()], &mut clock);
+            assert!(before.iter().all(|d| inc.closure().derivations.contains(d)));
+            let mut all = seeds.clone();
+            all.push(event.clone());
+            compare(inc.closure(), all);
+            assert_eq!(
+                inc.closure().derivations.len(),
+                before.len() + delta.derivations.len()
+            );
+            let before_clock = clock.0;
+            let duplicate = inc.update(vec![event.clone()], &mut clock);
+            assert!(
+                duplicate.known.is_empty()
+                    && duplicate.derivations.is_empty()
+                    && duplicate.activations.is_empty()
+            );
+            assert_eq!(duplicate.stats.rules_examined, 0);
+            assert_eq!(clock.0, before_clock);
+            comparisons += 1;
+        }
+    }
+    assert_eq!(comparisons, 448);
+    println!(
+        "448 production Program comparisons: exact facts, types, times, witnesses, bindings and proof multiplicities; stable previous stamps"
+    );
+}
+
+#[test]
+fn program_derivative_small_product_reaches_the_same_fixed_point_and_244_proofs() {
+    let m = module("peano_polynomial_product_scenario.res");
+    let seeds = experiment(&m, "partialProduct").input.clone();
+    let reference = close_program_reference(seeds.clone(), &m, &mut Clock::default()).unwrap();
+    let cold = close_program(seeds.clone(), &m, &mut Clock::default()).unwrap();
+    equivalent(&cold, &reference);
+    let (trigger, base): (Vec<_>, Vec<_>) = seeds
+        .into_iter()
+        .partition(|e| e.verb == "multiplyPolynomialFromP");
+    let mut clock = Clock::default();
+    let mut inc = IncrementalProgramClosure::new(base, &m, &mut clock).unwrap();
+    let change = inc.update(trigger, &mut clock);
+    equivalent(inc.closure(), &reference);
+    assert_eq!(
+        (inc.closure().known.len(), inc.closure().derivations.len()),
+        (223, 244)
+    );
+    assert!(!change.activations.is_empty());
+    for proof in &inc.closure().derivations {
+        if let Some(origin) = program_rule_origin(&m, &proof.record.rule) {
+            assert!(m.origin(&origin.rule).is_some());
+        }
+    }
+    println!(
+        "FIXED POINT: small product 223 events / 244 identical justifications; {} new activations, {} full initializations, {} rules examined",
+        change.activations.len(),
+        change.full_initializations,
+        change.stats.rules_examined
+    );
+}
+
+#[test]
+fn program_derivative_keeps_proof_only_changes_out_of_event_frontier() {
+    let m = module("dynamic_incremental_programs.res");
+    let mut clock = Clock::default();
+    let mut inc =
+        IncrementalProgramClosure::new(experiment(&m, "base").input.clone(), &m, &mut clock)
+            .unwrap();
+    let activation = inc.update(experiment(&m, "activate").input.clone(), &mut clock);
+    assert!(
+        activation
+            .activations
+            .iter()
+            .any(|a| a.behavior.name == "Root")
+    );
+    assert!(
+        activation
+            .activations
+            .iter()
+            .any(|a| a.behavior.name == "Branch")
+    );
+    let copies = |c: &Closure, v: &str| c.derivations.iter().filter(|d| d.event.verb == v).count();
+    let finished = copies(inc.closure(), "finished");
+    let delta = inc.update(experiment(&m, "alternative").input.clone(), &mut clock);
+    assert_eq!(copies(inc.closure(), "shared"), 2);
+    assert_eq!(copies(inc.closure(), "finished"), finished);
+    assert!(
+        !delta
+            .known
+            .iter()
+            .any(|e| e.verb == "shared" || e.verb == "finished")
+    );
+    assert!(delta.derivations.iter().any(|d| d.event.verb == "shared"));
+    assert!(delta.activations.is_empty());
+    println!("DeltaDerivations retained; an old shared Event is not rescheduled");
 }

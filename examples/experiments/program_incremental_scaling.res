@@ -229,4 +229,3 @@ experiment multiplications {
     }
     query residual productCompleted(r44) @ zeroTime
 }
-

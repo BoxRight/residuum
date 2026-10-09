@@ -160,4 +160,3 @@ experiment computedProductThenSum {
   }
   query residual coefficient(secondResult, after(zeroTime), after(after(after(after(after(zeroTime)))))) @ zeroTime
 }
-

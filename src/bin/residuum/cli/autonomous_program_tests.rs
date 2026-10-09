@@ -94,6 +94,13 @@ fn substitute_term(term: &Term, bindings: &BTreeMap<String, String>) -> Term {
             .get(name)
             .map(|c| Term::Const(c.clone()))
             .unwrap_or_else(|| term.clone()),
+        Term::Constructor {
+            constructor,
+            argument,
+        } => Term::Constructor {
+            constructor: *constructor,
+            argument: Box::new(substitute_term(argument, bindings)),
+        },
         Term::RecordLiteral { entity, fields } => Term::RecordLiteral {
             entity: entity.clone(),
             fields: fields
@@ -110,7 +117,11 @@ fn substitute_term(term: &Term, bindings: &BTreeMap<String, String>) -> Term {
 
 fn substitute_time(time: &TimeExpr, bindings: &BTreeMap<String, String>) -> TimeExpr {
     match time {
-        TimeExpr::At(name) => TimeExpr::At(bindings.get(name).unwrap_or(name).clone()),
+        TimeExpr::At(_) => time.clone(),
+        TimeExpr::Var(name) => bindings
+            .get(name)
+            .map(|value| TimeExpr::At(value.clone()))
+            .unwrap_or_else(|| time.clone()),
         TimeExpr::After(inner) => TimeExpr::After(Box::new(substitute_time(inner, bindings))),
     }
 }

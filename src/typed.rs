@@ -180,6 +180,10 @@ pub struct FieldAccess {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Term {
+    Constructor {
+        constructor: Constructor,
+        argument: Box<Term>,
+    },
     Var(String),
     Const(String),
     None,
@@ -498,6 +502,85 @@ impl PropositionKind {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TimeExpr {
+    /// A resolved temporal constant; never a substitution binder.
     At(String),
+    /// A temporal parameter, distinguished even from a homonymous constant.
+    Var(String),
     After(Box<TimeExpr>),
+}
+
+/// The only term constructor in this experimental extension.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Constructor {
+    After,
+}
+impl Constructor {
+    pub fn signature(self) -> (Type, Type) {
+        match self {
+            Self::After => (Type::PropositionTime, Type::PropositionTime),
+        }
+    }
+}
+impl TimeExpr {
+    /// Structural encoding; no evaluation or fresh identities.
+    pub fn to_term(&self) -> Term {
+        match self {
+            Self::At(name) => Term::Const(name.clone()),
+            Self::Var(name) => Term::Var(name.clone()),
+            Self::After(inner) => Term::Constructor {
+                constructor: Constructor::After,
+                argument: Box::new(inner.to_term()),
+            },
+        }
+    }
+    /// Structural decoding. The caller must already know the term has type
+    /// PropositionTime; a bare constant's declared type is checked by elaboration.
+    pub fn from_term(term: &Term) -> Option<Self> {
+        match term {
+            Term::Const(name) => Some(Self::At(name.clone())),
+            Term::Var(name) => Some(Self::Var(name.clone())),
+            Term::Constructor {
+                constructor: Constructor::After,
+                argument,
+            } => Some(Self::After(Box::new(Self::from_term(argument)?))),
+            _ => None,
+        }
+    }
+}
+impl SubstitutionValue {
+    /// Choose a representation from the elaborated parameter type, never from
+    /// a constant's spelling or the position in which a match was discovered.
+    /// Optional values and records remain terms; their temporal fields retain
+    /// the same structural encoding when substituted into a temporal parameter.
+    pub(crate) fn canonical_for_type(&self, ty: &Type) -> Option<Self> {
+        match (ty, self) {
+            (Type::PropositionTime, _) => self.as_time().map(Self::Time),
+            (_, Self::Term(term)) => Some(Self::Term(term.clone())),
+            (_, Self::Time(_)) => None,
+        }
+    }
+
+    pub(crate) fn as_term(&self) -> Term {
+        match self {
+            Self::Term(term) => term.clone(),
+            Self::Time(time) => time.to_term(),
+        }
+    }
+    pub(crate) fn as_time(&self) -> Option<TimeExpr> {
+        match self {
+            Self::Time(time) => Some(time.clone()),
+            Self::Term(term) => TimeExpr::from_term(term),
+        }
+    }
+}
+
+impl Term {
+    pub fn is_ground(&self) -> bool {
+        match self {
+            Self::Var(_) => false,
+            Self::Constructor { argument, .. } => argument.is_ground(),
+            Self::RecordLiteral { fields, .. } => fields.iter().all(|f| f.value.is_ground()),
+            Self::Const(_) | Self::None => true,
+        }
+    }
 }

@@ -14,6 +14,10 @@ pub struct FieldName(pub String);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
+    Constructor {
+        constructor: crate::typed::Constructor,
+        argument: Box<Value>,
+    },
     Object(ObjectId),
     Const(String),
     None,
@@ -277,6 +281,13 @@ fn materialize_term(
 ) -> Result<Value, Error> {
     match term {
         Term::Var(name) => variable(name),
+        Term::Constructor {
+            constructor,
+            argument,
+        } => Ok(Value::Constructor {
+            constructor: *constructor,
+            argument: Box::new(materialize_term(argument, variable)?),
+        }),
         Term::Const(name) => Ok(Value::Const(name.clone())),
         Term::None => Ok(Value::None),
         Term::RecordLiteral { entity, fields } => {

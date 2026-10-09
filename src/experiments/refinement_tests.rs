@@ -91,7 +91,7 @@ fn check_guarantee(rule: &Rule) -> Result<(), Error> {
     let Antecedent::Event(premise) = &clause.antecedent else {
         return Err(Error::new("finite refinement requires one owns premise"));
     };
-    let TimeExpr::At(time) = &premise.proposition.time else {
+    let TimeExpr::Var(time) = &premise.proposition.time else {
         return Err(Error::new(
             "finite refinement requires a plain premise time",
         ));
@@ -103,7 +103,7 @@ fn check_guarantee(rule: &Rule) -> Result<(), Error> {
     }
     fn root(time: &TimeExpr) -> &str {
         match time {
-            TimeExpr::At(name) => name,
+            TimeExpr::At(name) | TimeExpr::Var(name) => name,
             TimeExpr::After(inner) => root(inner),
         }
     }

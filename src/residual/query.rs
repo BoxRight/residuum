@@ -1,10 +1,10 @@
 use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
-use crate::derive::{substitute_antecedent, substitute_event, substitution_record};
+use crate::derive::{bind_typed, substitute_antecedent, substitute_event, substitution_record};
 use crate::elab::Error;
 use crate::typed::{
-    Antecedent, Event, ResidualRequirement, Rule, RuleBody, RuleRef, SubstitutionValue, Term,
+    Antecedent, Arg, Event, ResidualRequirement, Rule, RuleBody, RuleRef, SubstitutionValue, Term,
     TimeExpr,
 };
 
@@ -23,11 +23,7 @@ pub fn query_residual(
     let Some((antecedent, goal_bindings)) = match_goal(rule, goal) else {
         return Ok(Vec::new());
     };
-    let scope: BTreeSet<_> = rule
-        .parameters
-        .iter()
-        .map(|arg| arg.name.as_str())
-        .collect();
+    let scope = &rule.parameters;
     let reduced = reduce(
         &antecedent,
         known,
@@ -70,11 +66,7 @@ pub(super) fn match_goal(rule: &Rule, goal: &Event) -> Option<(Antecedent, Bindi
         RuleBody::HornClause(clause) => Cow::Borrowed(clause),
         RuleBody::ResidualClause(clause) => Cow::Owned(clause.unresiduate()),
     };
-    let scope: BTreeSet<_> = rule
-        .parameters
-        .iter()
-        .map(|arg| arg.name.as_str())
-        .collect();
+    let scope = &rule.parameters;
     let mut goal_bindings = Bindings::new();
     // Event equality is logical: an unresolved state interpretation must not
     // prevent this requirement from being resolved through another rule.
@@ -95,7 +87,7 @@ struct Reduction {
 fn reduce(
     antecedent: &Antecedent,
     known: &[Event],
-    scope: &BTreeSet<&str>,
+    scope: &[Arg],
     bindings: Bindings,
     evidence: Vec<Event>,
 ) -> Vec<Reduction> {
@@ -157,12 +149,7 @@ fn tensor(left: Antecedent, right: Antecedent) -> Antecedent {
 
 // Only lambda parameters are variables. Ground Term::Var identities in the goal
 // and evidence are opaque values; substituting then matching would rebind them.
-fn unify_event(
-    pattern: &Event,
-    event: &Event,
-    scope: &BTreeSet<&str>,
-    bindings: &mut Bindings,
-) -> bool {
+fn unify_event(pattern: &Event, event: &Event, scope: &[Arg], bindings: &mut Bindings) -> bool {
     pattern.verb == event.verb
         && pattern.polarity == event.polarity
         && pattern.proposition.kind == event.proposition.kind
@@ -171,12 +158,7 @@ fn unify_event(
             .args
             .iter()
             .zip(&event.args)
-            .all(|(pattern, value)| match pattern {
-                Term::Var(name) if scope.contains(name.as_str()) => {
-                    bind(name, SubstitutionValue::Term(value.clone()), bindings)
-                }
-                _ => pattern == value,
-            })
+            .all(|(pattern, value)| unify_term(pattern, value, scope, bindings))
         && unify_time(
             &pattern.proposition.time,
             &event.proposition.time,
@@ -185,29 +167,63 @@ fn unify_event(
         )
 }
 
-fn unify_time(
-    pattern: &TimeExpr,
-    value: &TimeExpr,
-    scope: &BTreeSet<&str>,
-    bindings: &mut Bindings,
-) -> bool {
+fn unify_term(pattern: &Term, value: &Term, scope: &[Arg], bindings: &mut Bindings) -> bool {
     match (pattern, value) {
-        (TimeExpr::At(name), _) if scope.contains(name.as_str()) => {
-            bind(name, SubstitutionValue::Time(value.clone()), bindings)
+        (Term::Var(name), _) if scope.iter().any(|p| p.name == *name) => {
+            (!matches!(value, Term::Constructor { .. }) || value.is_ground())
+                && bind_typed(
+                    scope.iter().find(|p| p.name == *name).unwrap(),
+                    SubstitutionValue::Term(value.clone()),
+                    bindings,
+                )
+                .is_some()
         }
-        (TimeExpr::After(pattern), TimeExpr::After(value)) => {
-            unify_time(pattern, value, scope, bindings)
+        (
+            Term::Constructor {
+                constructor: a,
+                argument: p,
+            },
+            Term::Constructor {
+                constructor: b,
+                argument: v,
+            },
+        ) => a == b && value.is_ground() && unify_term(p, v, scope, bindings),
+        (
+            Term::RecordLiteral {
+                entity: a,
+                fields: p,
+            },
+            Term::RecordLiteral {
+                entity: b,
+                fields: v,
+            },
+        ) => {
+            a == b
+                && p.len() == v.len()
+                && p.iter().zip(v).all(|(p, v)| {
+                    p.field == v.field && unify_term(&p.value, &v.value, scope, bindings)
+                })
         }
         _ => pattern == value,
     }
 }
 
-fn bind(name: &str, value: SubstitutionValue, bindings: &mut Bindings) -> bool {
-    match bindings.get(name) {
-        Some(existing) => *existing == value,
-        None => {
-            bindings.insert(name.into(), value);
-            true
+fn unify_time(
+    pattern: &TimeExpr,
+    value: &TimeExpr,
+    scope: &[Arg],
+    bindings: &mut Bindings,
+) -> bool {
+    match (pattern, value) {
+        (TimeExpr::Var(name), _) if scope.iter().any(|p| p.name == *name) => bind_typed(
+            scope.iter().find(|p| p.name == *name).unwrap(),
+            SubstitutionValue::Time(value.clone()),
+            bindings,
+        )
+        .is_some(),
+        (TimeExpr::After(pattern), TimeExpr::After(value)) => {
+            unify_time(pattern, value, scope, bindings)
         }
+        _ => pattern == value,
     }
 }

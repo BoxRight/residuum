@@ -206,7 +206,16 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
             .then(term.clone())
             .map(|(field, value)| SurfaceRecordFieldValue { field, value });
 
-        ident
+        let after = keyword("after")
+            .ignore_then(
+                term.clone()
+                    .delimited_by(just(Token::LParen), just(Token::RParen)),
+            )
+            .map(|argument| SurfaceTerm::Constructor {
+                constructor: crate::typed::Constructor::After,
+                argument: Box::new(argument),
+            });
+        let atomic = ident
             .clone()
             .then(
                 record_field
@@ -222,7 +231,10 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                 },
                 None if name == "none" => SurfaceTerm::None,
                 None => SurfaceTerm::Var(name),
-            })
+            });
+        // Both alternatives consume an identifier; recursion consumes `after(`
+        // before descending. Commas are mandatory inside every term list.
+        choice((after, atomic)).boxed()
     });
 
     let field_access = ident
@@ -292,8 +304,7 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
         .or_not()
         .then(ident.clone())
         .then(
-            ident
-                .clone()
+            term.clone()
                 .separated_by(just(Token::Comma))
                 .allow_trailing()
                 .delimited_by(just(Token::LParen), just(Token::RParen)),
@@ -308,7 +319,10 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
             verb,
             args,
             time,
-        });
+        })
+        // Event is a shared parser boundary. Erase combinator types here so
+        // recursive structured terms do not multiply them in every rule branch.
+        .boxed();
 
     // I consumes a token and produces a neutral witness independently of Known.
     // Trying the event first preserves I(...) as an ordinary verb application.
@@ -837,6 +851,14 @@ impl ManualParser {
 
     fn parse_term(&mut self) -> Result<SurfaceTerm, Error> {
         let name = self.expect_ident()?;
+        if name == "after" && self.eat(&Token::LParen) {
+            let argument = self.parse_term()?;
+            self.expect(&Token::RParen)?;
+            return Ok(SurfaceTerm::Constructor {
+                constructor: crate::typed::Constructor::After,
+                argument: Box::new(argument),
+            });
+        }
         if name == "none" {
             return Ok(SurfaceTerm::None);
         }
@@ -1049,7 +1071,7 @@ impl ManualParser {
         self.expect(&Token::LParen)?;
         let mut args = Vec::new();
         while !self.eat(&Token::RParen) {
-            args.push(self.expect_ident()?);
+            args.push(self.parse_term()?);
             self.eat(&Token::Comma);
         }
         let time = if self.eat(&Token::At) {

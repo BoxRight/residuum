@@ -315,7 +315,7 @@ fn unit_parser_requires_a_token_and_preserves_i_verb_applications() {
         panic!("I(...) is a timed event");
     };
     assert_eq!(event.verb, "I");
-    assert_eq!(event.proposition.time, TimeExpr::At("t".into()));
+    assert_eq!(event.proposition.time, TimeExpr::Var("t".into()));
     assert_eq!(
         query_residual(
             rule(&module, "eligibility"),
@@ -970,10 +970,10 @@ fn round_trip_preserves_grouping_signs_constants_and_effect_times() {
         Some(transition),
         "logical Event equality does not check transition preservation"
     );
-    assert_eq!(transition.input, StateTime::At(TimeExpr::At("t".into())));
+    assert_eq!(transition.input, StateTime::At(TimeExpr::Var("t".into())));
     assert_eq!(
         transition.output,
-        StateTime::At(TimeExpr::After(Box::new(TimeExpr::At("t".into()))))
+        StateTime::At(TimeExpr::After(Box::new(TimeExpr::Var("t".into()))))
     );
 }
 

@@ -17,7 +17,8 @@ pub use defaults::{
     BlockingScope, DefaultBlock, DefaultExtension, evaluate_defaults, select_active_rules,
 };
 pub use derive::{
-    ClosureDelta, DerivationClock, IncrementalClosure, IncrementalStats, close, close_program,
+    ClosureDelta, DerivationClock, IncrementalClosure, IncrementalProgramClosure, IncrementalStats,
+    ProgramActivation, ProgramClosureDelta, close, close_program, close_program_reference,
     derive_once, instantiate, instantiate_from_known, stamp,
 };
 pub use elab::{Error, elaborate_cnl, elaborate_formal};
@@ -394,7 +395,7 @@ mod tests {
                 Term::Var("creditor".to_string()),
             ]
         );
-        assert_eq!(price.proposition.time, TimeExpr::At("t".to_string()));
+        assert_eq!(price.proposition.time, TimeExpr::Var("t".to_string()));
 
         assert_eq!(object.verb, "agreesObject");
         assert_eq!(
@@ -405,7 +406,7 @@ mod tests {
                 Term::Var("debtor".to_string()),
             ]
         );
-        assert_eq!(object.proposition.time, TimeExpr::At("t".to_string()));
+        assert_eq!(object.proposition.time, TimeExpr::Var("t".to_string()));
 
         assert_eq!(clause.consequent.verb, "give");
         assert_eq!(
@@ -418,7 +419,7 @@ mod tests {
         );
         assert_eq!(
             clause.consequent.proposition.time,
-            TimeExpr::After(Box::new(TimeExpr::At("t".to_string())))
+            TimeExpr::After(Box::new(TimeExpr::Var("t".to_string())))
         );
     }
 
@@ -789,7 +790,7 @@ mod tests {
         let Antecedent::Event(premise) = &mut clause.antecedent else {
             panic!("expected unit antecedent");
         };
-        premise.proposition.time = TimeExpr::After(Box::new(TimeExpr::At("t".to_string())));
+        premise.proposition.time = TimeExpr::After(Box::new(TimeExpr::Var("t".to_string())));
         let mut seed = transfer_seed();
         let inner_time = TimeExpr::After(Box::new(TimeExpr::At("tau".to_string())));
         seed.proposition.time = TimeExpr::After(Box::new(inner_time.clone()));
@@ -1104,7 +1105,7 @@ mod tests {
             unit_antecedent(clause).proposition,
             PropositionType {
                 kind: PropositionKind::Seeded,
-                time: TimeExpr::At("t".to_string()),
+                time: TimeExpr::Var("t".to_string()),
             }
         );
     }
@@ -1128,7 +1129,7 @@ mod tests {
             clause.consequent.proposition,
             PropositionType {
                 kind: PropositionKind::Effect,
-                time: TimeExpr::After(Box::new(TimeExpr::At("t".to_string()))),
+                time: TimeExpr::After(Box::new(TimeExpr::Var("t".to_string()))),
             }
         );
     }
@@ -1150,8 +1151,8 @@ mod tests {
         assert_eq!(
             clause.consequent.transition,
             Some(StateTransitionType {
-                input: StateTime::At(TimeExpr::At("t".to_string())),
-                output: StateTime::At(TimeExpr::After(Box::new(TimeExpr::At("t".to_string())))),
+                input: StateTime::At(TimeExpr::Var("t".to_string())),
+                output: StateTime::At(TimeExpr::After(Box::new(TimeExpr::Var("t".to_string())))),
             })
         );
     }
@@ -1174,7 +1175,7 @@ mod tests {
             unit_antecedent(clause).transition,
             Some(StateTransitionType {
                 input: StateTime::Unresolved,
-                output: StateTime::At(TimeExpr::At("t".to_string())),
+                output: StateTime::At(TimeExpr::Var("t".to_string())),
             })
         );
     }
@@ -1197,14 +1198,14 @@ mod tests {
             unit_antecedent(clause).proposition,
             PropositionType {
                 kind: PropositionKind::Seeded,
-                time: TimeExpr::At("t".to_string()),
+                time: TimeExpr::Var("t".to_string()),
             }
         );
         assert_eq!(
             clause.consequent.proposition,
             PropositionType {
                 kind: PropositionKind::Effect,
-                time: TimeExpr::After(Box::new(TimeExpr::At("t".to_string()))),
+                time: TimeExpr::After(Box::new(TimeExpr::Var("t".to_string()))),
             }
         );
     }
@@ -2568,7 +2569,7 @@ mod tests {
                 event.proposition,
                 PropositionType {
                     kind: PropositionKind::Derived,
-                    time: TimeExpr::At("t".into()),
+                    time: TimeExpr::Var("t".into()),
                 }
             );
             assert!(event.transition.is_none());
@@ -2977,7 +2978,7 @@ mod tests {
         assert_eq!(denied.parameters, rule(&module, "transfer").parameters);
         assert_eq!(
             consequent.proposition.time,
-            TimeExpr::After(Box::new(TimeExpr::At("t".to_string())))
+            TimeExpr::After(Box::new(TimeExpr::Var("t".to_string())))
         );
         let bad_roles = FORMAL_EVIDENTIAL_NOT.replace(
             "~delivers(giver, object, receiver)",
@@ -3216,7 +3217,7 @@ mod tests {
         assert_eq!(declaration.kind, crate::typed::VerbKind::Derived);
         assert!(declaration.effect.is_none());
         let consequent = &horn_clause(rule(&module, "evidentialConflict")).consequent;
-        let time = TimeExpr::After(Box::new(TimeExpr::At("t".to_string())));
+        let time = TimeExpr::After(Box::new(TimeExpr::Var("t".to_string())));
         assert_eq!(consequent.polarity, Polarity::Positive);
         assert_eq!(
             consequent.proposition,
@@ -3692,3 +3693,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod temporal_term_tests;

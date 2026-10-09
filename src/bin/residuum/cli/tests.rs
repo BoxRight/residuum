@@ -284,3 +284,27 @@ fn cli_keeps_existing_errors_and_associated_program_semantics() {
             .contains("not assignable")
     );
 }
+
+#[path = "peano_after_tests.rs"]
+mod peano_after;
+
+#[path = "peano_multiplication_tests.rs"]
+mod peano_multiplication;
+
+#[path = "temporal_identity_tests.rs"]
+mod temporal_identity;
+
+#[path = "temporal_constructor_tests.rs"]
+mod temporal_constructors;
+
+#[path = "peano_polynomial_tests.rs"]
+mod peano_polynomials;
+
+#[path = "peano_polynomial_product_tests.rs"]
+mod peano_polynomial_products;
+
+#[path = "dynamic_incremental_contract_tests.rs"]
+mod dynamic_incremental_contract;
+
+#[path = "program_validation_tests.rs"]
+mod program_validation;

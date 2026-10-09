@@ -34,7 +34,11 @@ pub struct IncrementalClosure {
 
 impl IncrementalClosure {
     pub fn new<C: DerivationClock>(seeds: Vec<Event>, rules: &[Rule], clock: &mut C) -> Self {
-        let closure = super::close(seeds, rules, clock);
+        Self::new_with_clock(seeds, rules, clock)
+    }
+
+    fn new_with_clock(seeds: Vec<Event>, rules: &[Rule], clock: &mut dyn DerivationClock) -> Self {
+        let closure = super::close_with_programs(seeds, rules, &[], clock);
         let known_keys = closure.known.iter().cloned().collect();
         let seen = closure
             .derivations
@@ -64,6 +68,14 @@ impl IncrementalClosure {
         additions: Vec<Event>,
         clock: &mut C,
     ) -> ClosureDelta {
+        self.update_with_clock(additions, clock)
+    }
+
+    fn update_with_clock(
+        &mut self,
+        additions: Vec<Event>,
+        clock: &mut dyn DerivationClock,
+    ) -> ClosureDelta {
         let mut delta = ClosureDelta::default();
         let mut frontier = Vec::new();
         for event in additions {
@@ -78,12 +90,22 @@ impl IncrementalClosure {
             let mut next = Vec::new();
             for rule in &self.rules {
                 delta.stats.rules_examined += 1;
-                for unstamped in
-                    instantiate_delta(rule, &self.closure.known, &frontier, &mut delta.stats)
-                {
-                    if self.seen.contains(&unstamped) {
+                #[cfg(test)]
+                let matching = super::profile::start();
+                let candidates =
+                    instantiate_delta(rule, &self.closure.known, &frontier, &mut delta.stats);
+                #[cfg(test)]
+                super::profile::rule(&rule.name, false, matching, candidates.len());
+                for unstamped in candidates {
+                    #[cfg(test)]
+                    let duplicate = super::profile::contains(&self.seen, &unstamped);
+                    #[cfg(not(test))]
+                    let duplicate = self.seen.contains(&unstamped);
+                    if duplicate {
                         continue;
                     }
+                    #[cfg(test)]
+                    let retention = super::profile::start();
                     self.seen.push(unstamped.clone());
                     let is_new = self.known_keys.insert(unstamped.event.clone());
                     let derived = stamp(unstamped, clock.next_derivation_time());
@@ -94,8 +116,16 @@ impl IncrementalClosure {
                     }
                     self.closure.derivations.push(derived.clone());
                     delta.derivations.push(derived);
+                    #[cfg(test)]
+                    super::profile::phase("retention", retention);
                 }
             }
+            #[cfg(test)]
+            super::profile::round(
+                self.closure.known.len(),
+                self.closure.derivations.len(),
+                next.len(),
+            );
             frontier = next;
         }
         delta
@@ -123,16 +153,39 @@ fn instantiate_delta(
         RuleBody::HornClause(clause) => std::borrow::Cow::Borrowed(clause),
         RuleBody::ResidualClause(clause) => std::borrow::Cow::Owned(clause.unresiduate()),
     };
+    let candidates: Vec<_> = match_delta_antecedents(
+        &body.antecedent,
+        &rule.parameters,
+        super::KnownView::linear(known),
+        super::KnownView::linear(delta),
+        &std::collections::BTreeMap::new(),
+        stats,
+    )
+    .into_iter()
+    .filter_map(|matched| finish_instantiation(rule, &body.consequent, matched))
+    .collect();
+    stats.full_matches += candidates.len();
+    candidates
+}
+
+pub(super) fn match_delta_antecedents(
+    antecedent: &Antecedent,
+    parameters: &[crate::typed::Arg],
+    known: super::KnownView<'_>,
+    delta: super::KnownView<'_>,
+    initial: &std::collections::BTreeMap<String, crate::typed::SubstitutionValue>,
+    stats: &mut IncrementalStats,
+) -> Vec<AntecedentMatch> {
     let mut atoms = Vec::new();
-    leaves(&body.antecedent, &mut atoms);
+    leaves(antecedent, &mut atoms);
     let mut result = Vec::new();
     // For each conjunct position, anchor it in the new frontier first. Other
     // conjuncts use Known with the same bindings. Unit has no event position.
     // Restoring the original witness order preserves forward provenance.
     for (pivot, pattern) in atoms.iter().enumerate() {
-        for event in delta {
-            let mut bindings = std::collections::BTreeMap::new();
-            if match_event(pattern, event, &rule.parameters, &mut bindings).is_none() {
+        for event in delta.candidates(pattern) {
+            let mut bindings = initial.clone();
+            if match_event(pattern, event, parameters, &mut bindings).is_none() {
                 continue;
             }
             stats.delta_pivot_matches += 1;
@@ -145,9 +198,9 @@ fn instantiate_delta(
                 }
                 let mut joined = Vec::new();
                 for (bindings, witnesses) in matches {
-                    for candidate in known {
+                    for candidate in known.candidates(atom) {
                         let mut bound = bindings.clone();
-                        if match_event(atom, candidate, &rule.parameters, &mut bound).is_none() {
+                        if match_event(atom, candidate, parameters, &mut bound).is_none() {
                             continue;
                         }
                         let mut witness = witnesses.clone();
@@ -158,20 +211,13 @@ fn instantiate_delta(
                 matches = joined;
             }
             for (bindings, witnesses) in matches {
-                if let Some(derivation) = finish_instantiation(
-                    rule,
-                    &body.consequent,
-                    AntecedentMatch {
-                        substitutions: bindings,
-                        antecedents: witnesses
-                            .into_iter()
-                            .map(|event| event.expect("complete witness"))
-                            .collect(),
-                    },
-                ) {
-                    stats.full_matches += 1;
-                    result.push(derivation);
-                }
+                result.push(AntecedentMatch {
+                    substitutions: bindings,
+                    antecedents: witnesses
+                        .into_iter()
+                        .map(|event| event.expect("complete witness"))
+                        .collect(),
+                });
             }
         }
     }

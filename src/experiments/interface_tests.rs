@@ -52,7 +52,7 @@ mod checker {
         fn variables(event: &Event) -> BTreeSet<String> {
             fn time_name(time: &TimeExpr) -> &str {
                 match time {
-                    TimeExpr::At(name) => name,
+                    TimeExpr::At(name) | TimeExpr::Var(name) => name,
                     TimeExpr::After(inner) => time_name(inner),
                 }
             }

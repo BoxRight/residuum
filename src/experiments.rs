@@ -349,19 +349,24 @@ pub fn render_event(event: &Event) -> String {
         event
             .args
             .iter()
-            .map(|term| match term {
-                Term::Var(name) | Term::Const(name) => name.clone(),
-                Term::None => "none".into(),
-                Term::RecordLiteral { entity, .. } => format!("{entity} {{...}}"),
-            })
+            .map(render_term)
             .collect::<Vec<_>>()
             .join(", "),
         render_time(&event.proposition.time)
     )
 }
+pub fn render_term(term: &Term) -> String {
+    match term {
+        Term::Var(name) | Term::Const(name) => name.clone(),
+        Term::None => "none".into(),
+        Term::RecordLiteral { entity, .. } => format!("{entity} {{...}}"),
+        Term::Constructor { argument, .. } => format!("after({})", render_term(argument)),
+    }
+}
 fn render_time(time: &TimeExpr) -> String {
     match time {
         TimeExpr::At(name) => name.clone(),
+        TimeExpr::Var(name) => format!("?{name}"),
         TimeExpr::After(time) => format!("after({})", render_time(time)),
     }
 }

@@ -144,6 +144,13 @@ fn substitute_term(term: &Term, substitution: &BTreeMap<String, Term>) -> Term {
             .get(name)
             .cloned()
             .unwrap_or_else(|| term.clone()),
+        Term::Constructor {
+            constructor,
+            argument,
+        } => Term::Constructor {
+            constructor: *constructor,
+            argument: Box::new(substitute_term(argument, substitution)),
+        },
         Term::RecordLiteral { entity, fields } => Term::RecordLiteral {
             entity: entity.clone(),
             fields: fields
@@ -194,8 +201,7 @@ pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, 
             .iter()
             .map(|b| (b.parameter.clone(), substitute_term(&b.value, &shared)))
             .collect();
-        let mut term_substitution = BTreeMap::new();
-        let mut time_substitution = BTreeMap::new();
+        let mut substitution = BTreeMap::new();
         let mut parameters: Vec<_> = program
             .parameters
             .iter()
@@ -213,27 +219,15 @@ pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, 
                 });
                 Term::Var(name)
             });
-            term_substitution.insert(p.name.clone(), SubstitutionValue::Term(value.clone()));
-            if p.ty == Type::PropositionTime {
-                let name = match value {
-                    Term::Var(name) | Term::Const(name) => name,
-                    _ => {
-                        return Err(Error::new(
-                            "temporal binding must be a parameter or constant",
-                        ));
-                    }
-                };
-                time_substitution
-                    .insert(p.name.clone(), SubstitutionValue::Time(TimeExpr::At(name)));
-            }
+            let value = SubstitutionValue::Term(value)
+                .canonical_for_type(&p.ty)
+                .ok_or_else(|| Error::new("temporal binding must be a PropositionTime term"))?;
+            substitution.insert(p.name.clone(), value);
         }
         output.push(Rule {
             name: format!("{}::{index}::{}", program.identity, original.name),
             parameters,
-            body: substitute_rule_body(
-                &substitute_rule_body(&original.body, &term_substitution),
-                &time_substitution,
-            ),
+            body: substitute_rule_body(&original.body, &substitution),
         });
     }
     Ok(output)

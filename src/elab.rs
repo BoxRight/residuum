@@ -816,11 +816,8 @@ fn lower_rule(
                     args.len()
                 )));
             }
-            // A PropositionTime constant can occur both as a verb argument
-            // (Term) and as an index (TimeExpr). Replace both positions without
-            // converting runtime time expressions into new term constructors.
-            let mut term_substitution = BTreeMap::new();
-            let mut time_substitution = BTreeMap::new();
+            // One typed value substitutes into both argument and index positions.
+            let mut substitution = BTreeMap::new();
             for (arg, parameter) in args.iter().zip(&base.parameters) {
                 let actual_ty = constants.get(arg).ok_or_else(|| {
                     Error::new(format!("unknown constant `{arg}` in rule application"))
@@ -831,24 +828,15 @@ fn lower_rule(
                         parameter.name
                     )));
                 }
-                term_substitution.insert(
-                    parameter.name.clone(),
-                    SubstitutionValue::Term(Term::Const(arg.clone())),
-                );
-                if parameter.ty == Type::PropositionTime {
-                    time_substitution.insert(
-                        parameter.name.clone(),
-                        SubstitutionValue::Time(TimeExpr::At(arg.clone())),
-                    );
-                }
+                let value = SubstitutionValue::Term(Term::Const(arg.clone()))
+                    .canonical_for_type(&parameter.ty)
+                    .ok_or_else(|| Error::new("invalid typed rule binding"))?;
+                substitution.insert(parameter.name.clone(), value);
             }
             Ok(Rule {
                 name,
                 parameters: base.parameters[args.len()..].to_vec(),
-                body: substitute_rule_body(
-                    &substitute_rule_body(&base.body, &term_substitution),
-                    &time_substitution,
-                ),
+                body: substitute_rule_body(&base.body, &substitution),
             })
         }
     }

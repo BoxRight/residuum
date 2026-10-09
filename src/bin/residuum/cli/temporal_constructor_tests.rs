@@ -146,7 +146,7 @@ fn computed_constructor_provenance_preserves_imports_rules_and_programs() {
         .unwrap();
     assert_eq!(
         resume.record.substitution.bindings[0].value,
-        SubstitutionValue::Term(peano(5).to_term())
+        SubstitutionValue::Time(peano(5))
     );
     let products: Vec<_> = c
         .derivations

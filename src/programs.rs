@@ -201,8 +201,7 @@ pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, 
             .iter()
             .map(|b| (b.parameter.clone(), substitute_term(&b.value, &shared)))
             .collect();
-        let mut term_substitution = BTreeMap::new();
-        let mut time_substitution = BTreeMap::new();
+        let mut substitution = BTreeMap::new();
         let mut parameters: Vec<_> = program
             .parameters
             .iter()
@@ -220,20 +219,15 @@ pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, 
                 });
                 Term::Var(name)
             });
-            term_substitution.insert(p.name.clone(), SubstitutionValue::Term(value.clone()));
-            if p.ty == Type::PropositionTime {
-                let time = TimeExpr::from_term(&value)
-                    .ok_or_else(|| Error::new("temporal binding must be a PropositionTime term"))?;
-                time_substitution.insert(p.name.clone(), SubstitutionValue::Time(time));
-            }
+            let value = SubstitutionValue::Term(value)
+                .canonical_for_type(&p.ty)
+                .ok_or_else(|| Error::new("temporal binding must be a PropositionTime term"))?;
+            substitution.insert(p.name.clone(), value);
         }
         output.push(Rule {
             name: format!("{}::{index}::{}", program.identity, original.name),
             parameters,
-            body: substitute_rule_body(
-                &substitute_rule_body(&original.body, &term_substitution),
-                &time_substitution,
-            ),
+            body: substitute_rule_body(&original.body, &substitution),
         });
     }
     Ok(output)

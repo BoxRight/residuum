@@ -78,12 +78,22 @@ impl IncrementalClosure {
             let mut next = Vec::new();
             for rule in &self.rules {
                 delta.stats.rules_examined += 1;
-                for unstamped in
-                    instantiate_delta(rule, &self.closure.known, &frontier, &mut delta.stats)
-                {
-                    if self.seen.contains(&unstamped) {
+                #[cfg(test)]
+                let matching = super::profile::start();
+                let candidates =
+                    instantiate_delta(rule, &self.closure.known, &frontier, &mut delta.stats);
+                #[cfg(test)]
+                super::profile::rule(&rule.name, false, matching, candidates.len());
+                for unstamped in candidates {
+                    #[cfg(test)]
+                    let duplicate = super::profile::contains(&self.seen, &unstamped);
+                    #[cfg(not(test))]
+                    let duplicate = self.seen.contains(&unstamped);
+                    if duplicate {
                         continue;
                     }
+                    #[cfg(test)]
+                    let retention = super::profile::start();
                     self.seen.push(unstamped.clone());
                     let is_new = self.known_keys.insert(unstamped.event.clone());
                     let derived = stamp(unstamped, clock.next_derivation_time());
@@ -94,8 +104,16 @@ impl IncrementalClosure {
                     }
                     self.closure.derivations.push(derived.clone());
                     delta.derivations.push(derived);
+                    #[cfg(test)]
+                    super::profile::phase("retention", retention);
                 }
             }
+            #[cfg(test)]
+            super::profile::round(
+                self.closure.known.len(),
+                self.closure.derivations.len(),
+                next.len(),
+            );
             frontier = next;
         }
         delta

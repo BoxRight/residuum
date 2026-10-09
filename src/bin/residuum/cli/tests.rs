@@ -302,3 +302,6 @@ mod peano_polynomials;
 
 #[path = "peano_polynomial_product_tests.rs"]
 mod peano_polynomial_products;
+
+#[path = "dynamic_incremental_contract_tests.rs"]
+mod dynamic_incremental_contract;

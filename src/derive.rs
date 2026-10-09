@@ -2,6 +2,12 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 
 mod incremental;
+mod known_index;
+use known_index::{KnownIndex, KnownView};
+#[cfg(test)]
+mod profile;
+#[cfg(test)]
+mod profile_tests;
 pub use incremental::{ClosureDelta, IncrementalClosure, IncrementalStats};
 
 use crate::typed::{
@@ -22,15 +28,25 @@ pub fn instantiate(rule: &Rule, antecedent: &Event) -> Option<UnstampedDerivatio
 }
 
 pub fn instantiate_from_known(rule: &Rule, known: &[Event]) -> Vec<UnstampedDerivation> {
+    instantiate_from_view(rule, KnownView::linear(known))
+}
+
+fn instantiate_from_view(rule: &Rule, known: KnownView<'_>) -> Vec<UnstampedDerivation> {
     // Forward inference consumes the Horn view; it does not assert or query a residual.
     let clause = match &rule.body {
         RuleBody::HornClause(clause) => Cow::Borrowed(clause),
         RuleBody::ResidualClause(clause) => Cow::Owned(clause.unresiduate()),
     };
-    match_antecedents(&clause.antecedent, known, &rule.parameters)
-        .into_iter()
-        .filter_map(|matched| finish_instantiation(rule, &clause.consequent, matched))
-        .collect()
+    match_antecedents_in(
+        &clause.antecedent,
+        known,
+        &rule.parameters,
+        BTreeMap::new(),
+        Vec::new(),
+    )
+    .into_iter()
+    .filter_map(|matched| finish_instantiation(rule, &clause.consequent, matched))
+    .collect()
 }
 
 fn finish_instantiation(
@@ -177,6 +193,8 @@ pub fn close_program<C: DerivationClock>(
     clock: &mut C,
 ) -> Result<Closure, crate::elab::Error> {
     use crate::elab::Error;
+    #[cfg(test)]
+    let preparation = profile::start();
     if module
         .declarations
         .iter()
@@ -260,6 +278,8 @@ pub fn close_program<C: DerivationClock>(
             _ => None,
         })
         .collect();
+    #[cfg(test)]
+    profile::phase("preparation", preparation);
     Ok(close_with_programs(seeds, &ordinary, &programs, clock))
 }
 
@@ -277,13 +297,13 @@ struct ActivatedProgram<'a> {
 
 fn instantiate_program(
     program: &ActivatedProgram<'_>,
-    known: &[Event],
+    known: KnownView<'_>,
 ) -> Vec<UnstampedDerivation> {
     let clause = match &program.rule.body {
         RuleBody::HornClause(clause) => Cow::Borrowed(clause),
         RuleBody::ResidualClause(clause) => Cow::Owned(clause.unresiduate()),
     };
-    match_antecedents_with(
+    match_antecedents_in(
         &clause.antecedent,
         known,
         &program.rule.parameters,
@@ -315,6 +335,7 @@ fn close_with_programs<C: DerivationClock>(
         .into_iter()
         .filter(|event| known_keys.insert(event.clone()))
         .collect();
+    let mut known_index = KnownIndex::new(&known);
     let mut frontier = known.clone();
     let mut derivations = Vec::new();
     let mut seen_unstamped = Vec::new();
@@ -326,6 +347,8 @@ fn close_with_programs<C: DerivationClock>(
         initial_round = false;
         let mut next_frontier = Vec::new();
 
+        #[cfg(test)]
+        let activation = profile::start();
         for trigger in &frontier {
             for source in programs {
                 let verb = source.verb;
@@ -335,21 +358,29 @@ fn close_with_programs<C: DerivationClock>(
                 {
                     continue;
                 }
-                let mut bindings: BTreeMap<_, _> = source
-                    .parameters
-                    .iter()
-                    .zip(&trigger.args)
-                    .map(|(parameter, value)| {
-                        (
-                            parameter.name.clone(),
-                            SubstitutionValue::Term(value.clone()),
+                let mut bindings = BTreeMap::new();
+                let valid =
+                    source
+                        .parameters
+                        .iter()
+                        .zip(&trigger.args)
+                        .all(|(parameter, value)| {
+                            bind_typed(
+                                parameter,
+                                SubstitutionValue::Term(value.clone()),
+                                &mut bindings,
+                            )
+                            .is_some()
+                        })
+                        && bind_typed(
+                            source.parameters.last().unwrap(),
+                            SubstitutionValue::Time(trigger.proposition.time.clone()),
+                            &mut bindings,
                         )
-                    })
-                    .collect();
-                bindings.insert(
-                    source.parameters.last().unwrap().name.clone(),
-                    SubstitutionValue::Time(trigger.proposition.time.clone()),
-                );
+                        .is_some();
+                if !valid {
+                    continue;
+                }
                 for rule in &source.rules {
                     activated.push(ActivatedProgram {
                         rule,
@@ -360,31 +391,58 @@ fn close_with_programs<C: DerivationClock>(
             }
         }
 
+        #[cfg(test)]
+        profile::activation(activation, frontier.len(), activated.len());
         let sources = rules.iter().map(|rule| (rule, None)).chain(
             activated
                 .iter()
                 .map(|program| (program.rule, Some(program))),
         );
         for (rule, program) in sources {
-            let candidates = match program {
-                Some(program) => instantiate_program(program, &known),
-                None => instantiate_from_known(rule, &known),
+            #[cfg(test)]
+            let matching = profile::start();
+            let evidence = KnownView {
+                events: &known,
+                index: Some(&known_index),
             };
+            #[cfg(test)]
+            let evidence = if profile::scan_known() {
+                KnownView::linear(&known)
+            } else {
+                evidence
+            };
+            let candidates = match program {
+                Some(program) => instantiate_program(program, evidence),
+                None => instantiate_from_view(rule, evidence),
+            };
+            #[cfg(test)]
+            profile::rule(&rule.name, program.is_some(), matching, candidates.len());
             for unstamped in candidates {
-                if seen_unstamped.contains(&unstamped) {
+                #[cfg(test)]
+                let duplicate = profile::contains(&seen_unstamped, &unstamped);
+                #[cfg(not(test))]
+                let duplicate = seen_unstamped.contains(&unstamped);
+                if duplicate {
                     continue;
                 }
+                #[cfg(test)]
+                let retention = profile::start();
                 seen_unstamped.push(unstamped.clone());
                 let is_new = known_keys.insert(unstamped.event.clone());
                 let derived = stamp(unstamped, clock.next_derivation_time());
                 if is_new {
+                    known_index.insert(known.len(), &derived.event);
                     known.push(derived.event.clone());
                     next_frontier.push(derived.event.clone());
                 }
                 derivations.push(derived);
+                #[cfg(test)]
+                profile::phase("retention", retention);
             }
         }
 
+        #[cfg(test)]
+        profile::round(known.len(), derivations.len(), next_frontier.len());
         frontier = next_frontier;
     }
 
@@ -412,13 +470,39 @@ pub(crate) fn match_antecedents_with(
     substitutions: BTreeMap<String, SubstitutionValue>,
     antecedents: Vec<Event>,
 ) -> Vec<AntecedentMatch> {
+    // Canonicalize externally supplied constraints before even a Unit match.
+    let mut canonical = BTreeMap::new();
+    for (name, value) in substitutions {
+        let Some(parameter) = parameters.iter().find(|p| p.name == name) else {
+            return Vec::new();
+        };
+        if bind_typed(parameter, value, &mut canonical).is_none() {
+            return Vec::new();
+        }
+    }
+    match_antecedents_in(
+        antecedent,
+        KnownView::linear(known),
+        parameters,
+        canonical,
+        antecedents,
+    )
+}
+
+fn match_antecedents_in(
+    antecedent: &Antecedent,
+    known: KnownView<'_>,
+    parameters: &[Arg],
+    substitutions: BTreeMap<String, SubstitutionValue>,
+    antecedents: Vec<Event>,
+) -> Vec<AntecedentMatch> {
     match antecedent {
         Antecedent::Unit => vec![AntecedentMatch {
             antecedents,
             substitutions,
         }],
         Antecedent::Event(pattern) => known
-            .iter()
+            .candidates(pattern)
             .filter_map(|event| {
                 let mut substitutions = substitutions.clone();
                 match_event(pattern, event, parameters, &mut substitutions)?;
@@ -431,10 +515,10 @@ pub(crate) fn match_antecedents_with(
             })
             .collect(),
         Antecedent::And(left, right) => {
-            match_antecedents_with(left, known, parameters, substitutions, antecedents)
+            match_antecedents_in(left, known, parameters, substitutions, antecedents)
                 .into_iter()
                 .flat_map(|matched| {
-                    match_antecedents_with(
+                    match_antecedents_in(
                         right,
                         known,
                         parameters,
@@ -453,22 +537,35 @@ fn match_event(
     parameters: &[Arg],
     substitutions: &mut BTreeMap<String, SubstitutionValue>,
 ) -> Option<()> {
+    #[cfg(test)]
+    profile::probe(false);
     if pattern.polarity != event.polarity
         || pattern.verb != event.verb
         || pattern.args.len() != event.args.len()
     {
+        #[cfg(test)]
+        profile::probe(true);
         return None;
     }
 
     for (pattern, value) in pattern.args.iter().zip(&event.args) {
-        bind_term(pattern, value, parameters, substitutions)?;
+        if bind_term(pattern, value, parameters, substitutions).is_none() {
+            #[cfg(test)]
+            profile::structural_reject();
+            return None;
+        }
     }
-    bind_time(
+    let result = bind_time(
         &pattern.proposition.time,
         &event.proposition.time,
         parameters,
         substitutions,
-    )
+    );
+    #[cfg(test)]
+    if result.is_none() {
+        profile::structural_reject();
+    }
+    result
 }
 
 fn bind_term(
@@ -482,7 +579,11 @@ fn bind_term(
             if matches!(value, Term::Constructor { .. }) && !value.is_ground() {
                 return None;
             }
-            bind(name, SubstitutionValue::Term(value.clone()), substitutions)
+            bind_typed(
+                parameters.iter().find(|p| p.name == *name)?,
+                SubstitutionValue::Term(value.clone()),
+                substitutions,
+            )
         }
         Term::Constructor {
             constructor,
@@ -523,7 +624,11 @@ fn bind_time(
 ) -> Option<()> {
     match (pattern, value) {
         (TimeExpr::Var(name), _) if parameters.iter().any(|parameter| parameter.name == *name) => {
-            bind(name, SubstitutionValue::Time(value.clone()), substitutions)
+            bind_typed(
+                parameters.iter().find(|p| p.name == *name)?,
+                SubstitutionValue::Time(value.clone()),
+                substitutions,
+            )
         }
         (TimeExpr::After(pattern_inner), TimeExpr::After(value_inner)) => {
             bind_time(pattern_inner, value_inner, parameters, substitutions)
@@ -532,17 +637,21 @@ fn bind_time(
     }
 }
 
-fn bind(
-    name: &str,
+/// Shared insertion boundary for ordinary, pivoted and residual matching.
+/// Stored values are canonical before substitution, provenance and deduplication.
+pub(crate) fn bind_typed(
+    parameter: &Arg,
     value: SubstitutionValue,
     substitutions: &mut BTreeMap<String, SubstitutionValue>,
 ) -> Option<()> {
-    if let Some(existing) = substitutions.get(name) {
-        existing.compatible(&value).then_some(())
-    } else {
-        substitutions.insert(name.to_string(), value);
-        Some(())
+    let value = value.canonical_for_type(&parameter.ty)?;
+    if let Some(existing) = substitutions.get(&parameter.name) {
+        if existing.canonical_for_type(&parameter.ty)? != value {
+            return None;
+        }
     }
+    substitutions.insert(parameter.name.clone(), value);
+    Some(())
 }
 
 pub(crate) fn substitute_antecedent(

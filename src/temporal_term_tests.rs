@@ -115,3 +115,82 @@ fn constructor_parser_preserves_surface_ast_agreement_with_manual_parser() {
         );
     }
 }
+
+#[test]
+fn canonical_typed_bindings_preserve_identity_and_normalize_initial_constraints() {
+    use crate::derive::{bind_typed, match_antecedents_with};
+    use crate::typed::{Antecedent, Arg, Type};
+    let time = Arg {
+        name: "t".into(),
+        ty: Type::PropositionTime,
+    };
+    for value in samples() {
+        let expected = SubstitutionValue::Time(value.clone());
+        for representation in [expected.clone(), SubstitutionValue::Term(value.to_term())] {
+            assert_eq!(
+                representation.canonical_for_type(&time.ty),
+                Some(expected.clone())
+            );
+            assert_eq!(
+                expected.canonical_for_type(&time.ty),
+                Some(expected.clone())
+            );
+            let mut bindings = BTreeMap::new();
+            bind_typed(&time, representation.clone(), &mut bindings).unwrap();
+            bind_typed(&time, expected.clone(), &mut bindings).unwrap();
+            assert_eq!(bindings["t"], expected);
+            let matches = match_antecedents_with(
+                &Antecedent::Unit,
+                &[],
+                std::slice::from_ref(&time),
+                BTreeMap::from([("t".into(), representation)]),
+                vec![],
+            );
+            assert_eq!(matches.len(), 1);
+            assert_eq!(matches[0].substitutions["t"], expected);
+        }
+    }
+    let mut bindings = BTreeMap::new();
+    bind_typed(
+        &time,
+        SubstitutionValue::Time(TimeExpr::At("t".into())),
+        &mut bindings,
+    )
+    .unwrap();
+    assert!(
+        bind_typed(
+            &time,
+            SubstitutionValue::Time(TimeExpr::Var("t".into())),
+            &mut bindings
+        )
+        .is_none()
+    );
+    assert!(bind_typed(&time, SubstitutionValue::Term(Term::None), &mut bindings).is_none());
+    let entity = Arg {
+        name: "entity".into(),
+        ty: Type::Entity("Thing".into()),
+    };
+    bind_typed(
+        &entity,
+        SubstitutionValue::Term(Term::Const("t".into())),
+        &mut bindings,
+    )
+    .unwrap();
+    assert_eq!(
+        bindings["entity"],
+        SubstitutionValue::Term(Term::Const("t".into()))
+    );
+    assert!(
+        bind_typed(
+            &entity,
+            SubstitutionValue::Time(TimeExpr::At("t".into())),
+            &mut bindings
+        )
+        .is_none()
+    );
+    let optional = Type::Optional(Box::new(Type::PropositionTime));
+    assert_eq!(
+        SubstitutionValue::Term(Term::None).canonical_for_type(&optional),
+        Some(SubstitutionValue::Term(Term::None))
+    );
+}

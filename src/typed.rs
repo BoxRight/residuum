@@ -548,6 +548,18 @@ impl TimeExpr {
     }
 }
 impl SubstitutionValue {
+    /// Choose a representation from the elaborated parameter type, never from
+    /// a constant's spelling or the position in which a match was discovered.
+    /// Optional values and records remain terms; their temporal fields retain
+    /// the same structural encoding when substituted into a temporal parameter.
+    pub(crate) fn canonical_for_type(&self, ty: &Type) -> Option<Self> {
+        match (ty, self) {
+            (Type::PropositionTime, _) => self.as_time().map(Self::Time),
+            (_, Self::Term(term)) => Some(Self::Term(term.clone())),
+            (_, Self::Time(_)) => None,
+        }
+    }
+
     pub(crate) fn as_term(&self) -> Term {
         match self {
             Self::Term(term) => term.clone(),
@@ -559,9 +571,6 @@ impl SubstitutionValue {
             Self::Time(time) => Some(time.clone()),
             Self::Term(term) => TimeExpr::from_term(term),
         }
-    }
-    pub(crate) fn compatible(&self, other: &Self) -> bool {
-        self.as_term() == other.as_term()
     }
 }
 

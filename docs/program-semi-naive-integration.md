@@ -184,4 +184,6 @@ RESIDUUM_PROFILE_PRODUCT=principalProduct python3 scripts/test_safe.py --test-ta
 
 No se añadió Differential Dataflow, derivada composicional, nuevas primitivas,
 sintaxis, consistency, prioridades, retractación ni cambios al runtime de State.
-La integración queda sin commit, sobre el checkpoint `c7d2895`.
+La integración se registró posteriormente en `3bc5082`, sobre `c7d2895`.
+La siguiente etapa separa [corrección y escala](program-incremental-correctness-and-scaling.md)
+sin añadir optimizaciones al evaluador.

@@ -410,3 +410,79 @@ fn profile_semi_naive_polynomial_product_fixture() {
         c.derivations.len()
     );
 }
+
+#[test]
+fn bounded_program_scaling_observes_work_without_changing_evaluation() {
+    let name = std::env::var("RESIDUUM_SCALING_CASE").unwrap_or_else(|_| "depth0".into());
+    assert!(
+        [
+            "depth0",
+            "depth2",
+            "depth4",
+            "jobs4",
+            "jobs9",
+            "jobs25",
+            "multiplications",
+            "proofs1",
+            "proofs4",
+            "proofs16",
+        ]
+        .contains(&name.as_str())
+    );
+    let evaluator =
+        std::env::var("RESIDUUM_SCALING_EVALUATOR").unwrap_or_else(|_| "incremental".into());
+    assert!(["incremental", "reference"].contains(&evaluator.as_str()));
+    let module = load(if name.starts_with("proofs") {
+        "program_proof_scaling.res"
+    } else {
+        "program_incremental_scaling.res"
+    });
+    let e = module
+        .declarations
+        .iter()
+        .find_map(|d| match d {
+            Declaration::Experiment(e) if e.name == name => Some(e),
+            _ => None,
+        })
+        .unwrap();
+    let session = profile::Session::new("bounded-program-scaling");
+    let c = if evaluator == "incremental" {
+        close_program(e.input.clone(), &module, &mut Clock::default())
+    } else {
+        close_program_reference(e.input.clone(), &module, &mut Clock::default())
+    }
+    .unwrap();
+    let stats = session.finish();
+    assert!(c.known.contains(&e.goal));
+    assert_eq!(stats.candidates - stats.duplicates, c.derivations.len());
+    let requests = e
+        .input
+        .iter()
+        .filter(|e| e.verb == "add" || e.verb == "multiply")
+        .count();
+    let completed = c
+        .known
+        .iter()
+        .filter(|e| e.verb == "completed" || e.verb == "productCompleted")
+        .count();
+    // In multiplication, completed also observes nested addition invocations.
+    assert!(completed >= requests);
+    if name.starts_with("proofs") {
+        let n: usize = name[6..].parse().unwrap();
+        assert_eq!(
+            (c.known.len(), c.derivations.len(), stats.activated),
+            (2, n, n)
+        );
+    }
+    println!(
+        "SCALING case={name} evaluator={evaluator} seeds={} requests={requests} events={} proofs={} activated_rules={} probes={} candidates={} duplicates={} evaluations={}",
+        e.input.len(),
+        c.known.len(),
+        c.derivations.len(),
+        stats.activated,
+        stats.probes,
+        stats.candidates,
+        stats.duplicates,
+        stats.evaluations
+    );
+}

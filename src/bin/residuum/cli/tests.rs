@@ -299,3 +299,6 @@ mod temporal_constructors;
 
 #[path = "peano_polynomial_tests.rs"]
 mod peano_polynomials;
+
+#[path = "peano_polynomial_product_tests.rs"]
+mod peano_polynomial_products;

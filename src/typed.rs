@@ -72,6 +72,46 @@ pub struct Experiment {
     pub input: Vec<Event>,
     pub query_kind: ExperimentQueryKind,
     pub goal: Event,
+    /// Additive query configuration; default retains the legacy experiment path.
+    pub query_options: QueryOptions,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct QueryOptions {
+    pub active: bool,
+    pub scope: Option<HornQueryScope>,
+    pub bindings: Vec<QueryBinding>,
+}
+
+impl QueryOptions {
+    pub fn is_legacy(&self) -> bool {
+        !self.active && self.scope.is_none() && self.bindings.is_empty()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum QueryParameterScope {
+    Rule(RuleRef),
+    /// A remaining shared parameter of this resolved Program identity.
+    Program(ProgramRef),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QueryBinding {
+    pub scope: QueryParameterScope,
+    pub parameter: String,
+    /// Runtime Var identities carry a caller-supplied type. Constants and
+    /// structured values are also checked against their module declarations.
+    pub ty: Type,
+    pub value: SubstitutionValue,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HornQueryScope {
+    /// Exactly these ordinary Rule declarations; no implicit dependency slicing.
+    Rules(Vec<RuleRef>),
+    /// Exactly the compiled RuleUses, preserving their original producer names.
+    Program(ProgramRef),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

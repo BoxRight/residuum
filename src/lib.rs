@@ -28,10 +28,12 @@ pub use residual::{
     Abducible, AbductionFailure, ActiveProgramResidualQuery, CertifiedActiveExplanation,
     HornQueryScope, ProgramResidualQuery, QueryBinding, QueryParameterScope, QueryWithBindings,
     RequirementFormula, ResidualActivation, ResidualExplanation, ResidualProof, SearchLimits,
-    SearchMetrics, query_active_program_residual, query_active_program_residual_with_abducibles,
-    query_active_program_residual_with_bindings, query_program_residual,
-    query_program_residual_with_abducibles, query_program_residual_with_bindings, query_residual,
-    query_residual_with_bindings, residuate, unresiduate,
+    SearchMetrics, query_active_program_residual,
+    query_active_program_residual_in_scope_with_bindings,
+    query_active_program_residual_with_abducibles, query_active_program_residual_with_bindings,
+    query_program_residual, query_program_residual_with_abducibles,
+    query_program_residual_with_bindings, query_residual, query_residual_with_bindings, residuate,
+    unresiduate,
 };
 pub use runtime::execute_effect;
 pub use typed::{Module, ResidualRequirement};

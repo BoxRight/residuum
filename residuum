@@ -7,7 +7,7 @@ import sys
 
 USAGE = """Usage: residuum <run|query|explain> <case.res>
   run      Forward closure and goals; no state execution
-  query    Declared residual or FOUR queries
+  query    Declared residual, active residual or FOUR queries
   explain  Forward justifications and default selection
 """
 

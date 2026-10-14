@@ -3,14 +3,19 @@ use crate::surface::{
     FormalArg, FormalConst, FormalDeclaration, FormalDefault, FormalEntity, FormalExperiment,
     FormalField, FormalModule, FormalProgram, FormalRule, FormalVerb, SurfaceAntecedent,
     SurfaceDefaultBody, SurfaceEffect, SurfaceEvent, SurfaceFieldAccess, SurfaceProgramBody,
-    SurfaceRecordFieldValue, SurfaceRuleBody, SurfaceRuleUse, SurfaceStateOperation, SurfaceTerm,
-    SurfaceTime, SurfaceVerbKind,
+    SurfaceQueryBinding, SurfaceQueryOptions, SurfaceQueryScope, SurfaceRecordFieldValue,
+    SurfaceRuleBody, SurfaceRuleUse, SurfaceStateOperation, SurfaceTerm, SurfaceTime,
+    SurfaceVerbKind,
 };
-use crate::typed::{ExperimentInputKind, ExperimentQueryKind, Polarity, Type};
+use crate::typed::{
+    BehaviorKind, BehaviorRef, ExperimentInputKind, ExperimentQueryKind, Polarity, Type,
+};
 use chumsky::prelude::*;
 
 #[cfg(test)]
 mod comment_tests;
+#[cfg(test)]
+mod query_tests;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Token {
@@ -443,6 +448,66 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
     // Each list item consumes an event; internal commas are mandatory. Only
     // the final comma is optional. Box this new declaration at its boundary
     // to keep its combinator type out of the existing declaration choice.
+    let query_scope = keyword("using")
+        .ignore_then(choice((
+            keyword("rules")
+                .ignore_then(
+                    ident
+                        .clone()
+                        .separated_by(just(Token::Comma))
+                        .allow_trailing()
+                        .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+                )
+                .map(SurfaceQueryScope::Rules),
+            keyword("program")
+                .ignore_then(ident.clone())
+                .map(SurfaceQueryScope::Program),
+        )))
+        .boxed();
+    let query_binding = choice((
+        keyword("rule").to(BehaviorKind::Rule),
+        keyword("program").to(BehaviorKind::Program),
+    ))
+    .then(ident.clone())
+    .then_ignore(just(Token::Dot))
+    .then(ident.clone())
+    .then_ignore(just(Token::Equal))
+    .then(term.clone())
+    .map(|(((kind, name), parameter), value)| SurfaceQueryBinding {
+        scope: BehaviorRef { name, kind },
+        parameter,
+        value,
+    })
+    .boxed();
+    let query_bindings = keyword("with")
+        .ignore_then(
+            query_binding
+                .separated_by(just(Token::Comma))
+                .allow_trailing()
+                .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+        )
+        .boxed();
+    let query = keyword("query")
+        .ignore_then(keyword("active").or_not())
+        .then(choice((
+            keyword("residual").to(ExperimentQueryKind::Residual),
+            keyword("fourFusion").to(ExperimentQueryKind::FourFusion),
+        )))
+        .then(event.clone())
+        .then(query_scope.or_not())
+        .then(query_bindings.or_not())
+        .map(|((((active, kind), goal), scope), bindings)| {
+            (
+                kind,
+                goal,
+                SurfaceQueryOptions {
+                    active: active.is_some(),
+                    scope,
+                    bindings,
+                },
+            )
+        })
+        .boxed();
     let experiment = keyword("experiment")
         .ignore_then(ident.clone())
         .then(
@@ -457,23 +522,21 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                     .allow_trailing()
                     .delimited_by(just(Token::LBrace), just(Token::RBrace)),
             )
-            .then_ignore(keyword("query"))
-            .then(choice((
-                keyword("residual").to(ExperimentQueryKind::Residual),
-                keyword("fourFusion").to(ExperimentQueryKind::FourFusion),
-            )))
-            .then(event.clone())
+            .then(query)
             .delimited_by(just(Token::LBrace), just(Token::RBrace)),
         )
-        .map(|(name, (((input_kind, input), query_kind), goal))| {
-            FormalDeclaration::Experiment(FormalExperiment {
-                name,
-                input_kind,
-                input,
-                query_kind,
-                goal,
-            })
-        })
+        .map(
+            |(name, ((input_kind, input), (query_kind, goal, query_options)))| {
+                FormalDeclaration::Experiment(FormalExperiment {
+                    name,
+                    input_kind,
+                    input,
+                    query_kind,
+                    goal,
+                    query_options,
+                })
+            },
+        )
         .boxed();
 
     let import = keyword("import")
@@ -1116,12 +1179,80 @@ impl ManualParser {
             }
         }
         self.expect_ident_value("query")?;
+        let active = if self.peek_ident()? == "active" {
+            self.expect_ident_value("active")?;
+            true
+        } else {
+            false
+        };
         let query_kind = match self.expect_ident()?.as_str() {
             "residual" => ExperimentQueryKind::Residual,
             "fourFusion" => ExperimentQueryKind::FourFusion,
             _ => return Err(Error::new("expected residual or fourFusion")),
         };
         let goal = self.parse_event()?;
+        let scope = if matches!(self.tokens.get(self.pos),Some(Token::Ident(name)) if name=="using")
+        {
+            self.expect_ident_value("using")?;
+            Some(match self.expect_ident()?.as_str() {
+                "program" => SurfaceQueryScope::Program(self.expect_ident()?),
+                "rules" => {
+                    self.expect(&Token::LBrace)?;
+                    let mut rules = Vec::new();
+                    if !self.eat(&Token::RBrace) {
+                        loop {
+                            rules.push(self.expect_ident()?);
+                            if self.eat(&Token::RBrace) {
+                                break;
+                            }
+                            self.expect(&Token::Comma)?;
+                            if self.eat(&Token::RBrace) {
+                                break;
+                            }
+                        }
+                    }
+                    SurfaceQueryScope::Rules(rules)
+                }
+                _ => return Err(Error::new("expected rules or program query scope")),
+            })
+        } else {
+            None
+        };
+        let bindings = if matches!(self.tokens.get(self.pos),Some(Token::Ident(name)) if name=="with")
+        {
+            self.expect_ident_value("with")?;
+            self.expect(&Token::LBrace)?;
+            let mut bindings = Vec::new();
+            if !self.eat(&Token::RBrace) {
+                loop {
+                    let kind = match self.expect_ident()?.as_str() {
+                        "rule" => BehaviorKind::Rule,
+                        "program" => BehaviorKind::Program,
+                        _ => return Err(Error::new("expected rule or program binding scope")),
+                    };
+                    let name = self.expect_ident()?;
+                    self.expect(&Token::Dot)?;
+                    let parameter = self.expect_ident()?;
+                    self.expect(&Token::Equal)?;
+                    let value = self.parse_term()?;
+                    bindings.push(SurfaceQueryBinding {
+                        scope: BehaviorRef { name, kind },
+                        parameter,
+                        value,
+                    });
+                    if self.eat(&Token::RBrace) {
+                        break;
+                    }
+                    self.expect(&Token::Comma)?;
+                    if self.eat(&Token::RBrace) {
+                        break;
+                    }
+                }
+            }
+            Some(bindings)
+        } else {
+            None
+        };
         self.expect(&Token::RBrace)?;
         Ok(FormalExperiment {
             name,
@@ -1129,6 +1260,11 @@ impl ManualParser {
             input,
             query_kind,
             goal,
+            query_options: SurfaceQueryOptions {
+                active,
+                scope,
+                bindings,
+            },
         })
     }
 

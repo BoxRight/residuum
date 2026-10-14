@@ -23,7 +23,9 @@ unchanged. The CLI integration remains a proposal in
 
 ## Actual reuse
 
-Locations below refer to this branch. Internal paths are included because an
+Locations below were recorded before the source syntax extension. The current
+[source syntax review](residual-query-source-bindings.md#reuse-audit) records
+its actual paths and additional shared helpers. Internal paths are included because an
 interface wrapper alone does not establish reuse.
 
 | New component | Existing component reused | Actual call path | New logic and why it is necessary |
@@ -229,7 +231,8 @@ proposal before implementation.
 
 **The standalone bindings branch is ready for integration review under these
 documented contracts.** The two previously unverified boundaries no longer
-require a semantic decision for this change. CLI integration remains a proposal
-as requested; the implemented surface is the additive Rust API. No merge or push
+require a semantic decision for this change. The later agreed source/CLI
+integration is now implemented and covered in the
+[source query review](residual-query-source-bindings.md). No merge or push
 has occurred. The stepwise worktree remains separately paused, unchanged and
 unverified; its broad audit refactors are not prerequisites for this branch.

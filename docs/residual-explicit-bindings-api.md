@@ -114,18 +114,20 @@ No policy change is included or required for these regressions. Permutation
 normalization or widening positional Program application would require a
 separate policy proposal and review before implementation.
 
-## Minimal CLI integration proposal
+## Source and CLI interface
 
-Keep the existing `query` command and Formal syntax. A future adapter can add
-repeatable `--bind rule:Rule.parameter=value` and
-`--bind program:Program.parameter=value`, with `--rules r1,r2` for explicit Horn
-selection and `--active` for executable associations. Values should use the
-existing term parser and module type declarations, preserving explicit constant
-and runtime-identity distinctions. Program selection should be explicit as well.
-Without those options, dispatch and output must remain unchanged.
+The agreed `.res` extension is now implemented: `using rules { ... }`,
+`using program P`, scoped `with { rule r.parameter = value }` /
+`with { program P.parameter = value }`, and `query active residual ...`.
+Types are checked through the existing source term elaborator and binding APIs.
+Explicit bindings require an explicit search scope. Existing queries without
+these clauses retain their legacy path and behavior.
 
-This branch provides the Rust interface; it does not change command or source
-syntax. It does not alter defaults, State, forward semantics or ontology files.
+See [the source syntax and reuse review](residual-query-source-bindings.md) for
+complete examples, supported fragment, errors, call paths and verification.
+The CLI command remains `./residuum query case.res`. Stepwise flags remain on
+the separately preserved branch. Defaults, State, forward semantics and ontology
+files are unchanged.
 
 ## Verification
 

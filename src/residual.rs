@@ -8,9 +8,11 @@ mod bindings;
 mod query;
 pub use bindings::{
     HornQueryScope, QueryBinding, QueryParameterScope, QueryWithBindings,
+    query_active_program_residual_in_scope_with_bindings,
     query_active_program_residual_with_bindings, query_program_residual_with_bindings,
     query_residual_with_bindings,
 };
+pub(crate) use bindings::{query_parameter_type, scoped_rules, validate_query_options};
 pub use query::query_residual;
 mod active;
 mod program;

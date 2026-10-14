@@ -16,7 +16,7 @@ mod default_output;
 
 pub const USAGE: &str = "Usage: residuum <run|query|explain> <case.res>\n\
     run      Forward closure and goals; no state execution\n\
-    query    Declared residual or FOUR queries\n\
+    query    Declared residual, active residual or FOUR queries\n\
     explain  Forward justifications and default selection\n";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

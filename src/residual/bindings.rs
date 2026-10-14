@@ -12,30 +12,8 @@ use crate::programs::{
 };
 use crate::typed::*;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum QueryParameterScope {
-    Rule(RuleRef),
-    /// A remaining shared parameter of this resolved Program identity.
-    Program(ProgramRef),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QueryBinding {
-    pub scope: QueryParameterScope,
-    pub parameter: String,
-    /// Runtime Var identities carry a caller-supplied type. Constants and
-    /// structured values are also checked against their module declarations.
-    pub ty: Type,
-    pub value: SubstitutionValue,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HornQueryScope {
-    /// Exactly these ordinary Rule declarations; no implicit dependency slicing.
-    Rules(Vec<RuleRef>),
-    /// Exactly the compiled RuleUses, preserving their original producer names.
-    Program(ProgramRef),
-}
+// Preserve the existing public paths while sharing the interface data with TypedAST.
+pub use crate::typed::{HornQueryScope, QueryBinding, QueryParameterScope};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryWithBindings<T> {
@@ -96,27 +74,8 @@ pub fn query_program_residual_with_bindings(
             "bound residual queries require a monotonic module without defaults",
         ));
     }
-    let rules = match scope {
-        HornQueryScope::Rules(references) => {
-            let mut selected = BTreeSet::new();
-            let mut rules = Vec::new();
-            for reference in references {
-                if !selected.insert(&reference.name) {
-                    return Err(Error::new("duplicate query scope rule"));
-                }
-                rules.push(find_rule(module, &reference.name)?.clone());
-            }
-            rules
-        }
-        HornQueryScope::Program(reference) => {
-            compile_program(find_program(module, &reference.name)?, module)?
-        }
-    };
-    let mut view = module.clone();
-    view.declarations
-        .retain(|d| !matches!(d, Declaration::Rule(_)));
-    view.declarations
-        .extend(rules.iter().cloned().map(Declaration::Rule));
+    let rules = scoped_rules(module, scope)?;
+    let view = horn_view(module, &rules);
     if bindings.is_empty() {
         let query = match allowed {
             None => super::query_program_residual(&view, evidence, goal, limits),
@@ -145,6 +104,35 @@ pub fn query_program_residual_with_bindings(
     })
 }
 
+/// The exact existing Horn scope selection, shared with source orchestration.
+pub(crate) fn scoped_rules(module: &Module, scope: &HornQueryScope) -> Result<Vec<Rule>, Error> {
+    match scope {
+        HornQueryScope::Rules(references) => {
+            let mut selected = BTreeSet::new();
+            let mut rules = Vec::new();
+            for reference in references {
+                if !selected.insert(&reference.name) {
+                    return Err(Error::new("duplicate query scope rule"));
+                }
+                rules.push(find_rule(module, &reference.name)?.clone());
+            }
+            Ok(rules)
+        }
+        HornQueryScope::Program(reference) => {
+            compile_program(find_program(module, &reference.name)?, module)
+        }
+    }
+}
+
+fn horn_view(module: &Module, rules: &[Rule]) -> Module {
+    let mut view = module.clone();
+    view.declarations
+        .retain(|d| !matches!(d, Declaration::Rule(_)));
+    view.declarations
+        .extend(rules.iter().cloned().map(Declaration::Rule));
+    view
+}
+
 /// Guarded search followed by hypothetical sufficiency against the unchanged
 /// original close_program. Supplied bindings never become activation evidence.
 pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
@@ -156,7 +144,46 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
     allowed: Option<&[Abducible]>,
     clock: &mut C,
 ) -> Result<QueryWithBindings<ActiveProgramResidualQuery>, Error> {
-    if bindings.is_empty() {
+    active_query(
+        module, None, evidence, goal, bindings, limits, allowed, clock,
+    )
+}
+
+/// Restrict the original guarded search producers, retaining their guards.
+/// Certification still runs close_program over the unchanged original module.
+pub fn query_active_program_residual_in_scope_with_bindings<C: DerivationClock>(
+    module: &Module,
+    scope: &HornQueryScope,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+    clock: &mut C,
+) -> Result<QueryWithBindings<ActiveProgramResidualQuery>, Error> {
+    active_query(
+        module,
+        Some(scope),
+        evidence,
+        goal,
+        bindings,
+        limits,
+        allowed,
+        clock,
+    )
+}
+
+fn active_query<C: DerivationClock>(
+    module: &Module,
+    scope: Option<&HornQueryScope>,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+    clock: &mut C,
+) -> Result<QueryWithBindings<ActiveProgramResidualQuery>, Error> {
+    if scope.is_none() && bindings.is_empty() {
         let query = match allowed {
             None => super::query_active_program_residual(module, evidence, goal, limits, clock),
             Some(allowed) => super::query_active_program_residual_with_abducibles(
@@ -168,7 +195,7 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
             bindings: Vec::new(),
         });
     }
-    let (view, templates) = guarded_view(module)?;
+    let (view, templates) = active_view(module, scope)?;
     let rules: Vec<_> = view
         .declarations
         .iter()
@@ -177,6 +204,7 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
             _ => None,
         })
         .collect();
+    let constrained = !bindings.is_empty();
     let (constraints, bindings) = resolve(module, &rules, &templates, bindings)?;
     preflight(&rules, goal, &constraints)?;
     let defaults = default_abducibles(module);
@@ -186,12 +214,123 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
         goal,
         allowed.unwrap_or(&defaults),
         limits,
-        Some(&constraints),
+        constrained.then_some(&constraints),
     )?;
     Ok(QueryWithBindings {
         query: certify(module, evidence, goal, search, &templates, clock)?,
         bindings,
     })
+}
+
+fn active_view(
+    module: &Module,
+    scope: Option<&HornQueryScope>,
+) -> Result<(Module, BTreeMap<String, super::ResidualActivation>), Error> {
+    let (mut view, mut templates) = guarded_view(module)?;
+    if let Some(scope) = scope {
+        let selected: BTreeSet<_> = scoped_rules(module, scope)?
+            .into_iter()
+            .map(|r| r.name)
+            .collect();
+        view.declarations.retain(|d| match d {
+            Declaration::Rule(r) => {
+                let producer = templates.get(&r.name);
+                let source = producer
+                    .and_then(|t| t.program_origin.as_ref())
+                    .map(|o| o.rule.as_str());
+                selected.contains(producer.map(|t| t.rule.name.as_str()).unwrap_or(&r.name))
+                    || (matches!(scope, HornQueryScope::Rules(_))
+                        && source.is_some_and(|s| selected.contains(s)))
+            }
+            _ => true,
+        });
+        let names: BTreeSet<_> = view
+            .declarations
+            .iter()
+            .filter_map(|d| match d {
+                Declaration::Rule(r) => Some(r.name.as_str()),
+                _ => None,
+            })
+            .collect();
+        templates.retain(|name, _| names.contains(name.as_str()));
+    }
+    Ok((view, templates))
+}
+
+/// Source adapter validation only: no search, hypotheses or closure at elaboration.
+pub(crate) fn validate_query_options(
+    module: &Module,
+    options: &mut QueryOptions,
+    goal: &Event,
+) -> Result<(), Error> {
+    if options.is_legacy() {
+        return Ok(());
+    }
+    if options.scope.is_none() && !options.bindings.is_empty() {
+        return Err(Error::new(
+            "explicit query bindings require an explicit search scope",
+        ));
+    }
+    let (rules, templates) = if options.active {
+        let (view, templates) = active_view(module, options.scope.as_ref())?;
+        (
+            view.declarations
+                .into_iter()
+                .filter_map(|d| match d {
+                    Declaration::Rule(r) => Some(r),
+                    _ => None,
+                })
+                .collect(),
+            templates,
+        )
+    } else {
+        (
+            scoped_rules(
+                module,
+                options
+                    .scope
+                    .as_ref()
+                    .ok_or_else(|| Error::new("scoped residual query requires a search scope"))?,
+            )?,
+            BTreeMap::new(),
+        )
+    };
+    let (constraints, bindings) = resolve(module, &rules, &templates, &options.bindings)?;
+    preflight(&rules, goal, &constraints)?;
+    options.bindings = bindings;
+    Ok(())
+}
+
+pub(crate) fn query_parameter_type(
+    module: &Module,
+    scope: &QueryParameterScope,
+    name: &str,
+) -> Result<Type, Error> {
+    Ok(binding_parameter(module, &[], scope, name)?.ty.clone())
+}
+
+fn binding_parameter<'a>(
+    module: &'a Module,
+    rules: &'a [Rule],
+    scope: &QueryParameterScope,
+    name: &str,
+) -> Result<&'a Arg, Error> {
+    let (identity, parameters) = match scope {
+        QueryParameterScope::Program(p) => (&p.name, &find_program(module, &p.name)?.parameters),
+        QueryParameterScope::Rule(r) => (
+            &r.name,
+            &rules
+                .iter()
+                .find(|candidate| candidate.name == r.name)
+                .or_else(|| find_rule(module, &r.name).ok())
+                .ok_or_else(|| Error::new(format!("unknown query rule `{}`", r.name)))?
+                .parameters,
+        ),
+    };
+    parameters
+        .iter()
+        .find(|p| p.name == name)
+        .ok_or_else(|| Error::new(format!("unknown query parameter `{identity}.{name}`")))
 }
 
 pub(super) fn default_abducibles(module: &Module) -> Vec<Abducible> {
@@ -254,26 +393,7 @@ fn resolve(
                 binding.parameter
             )));
         }
-        let declared = if is_program {
-            &find_program(module, identity)?.parameters
-        } else {
-            // A standalone Rule need not be a member of the supplied environment.
-            &rules
-                .iter()
-                .find(|r| r.name == *identity)
-                .or_else(|| find_rule(module, identity).ok())
-                .ok_or_else(|| Error::new(format!("unknown query rule `{identity}`")))?
-                .parameters
-        };
-        let parameter = declared
-            .iter()
-            .find(|p| p.name == binding.parameter)
-            .ok_or_else(|| {
-                Error::new(format!(
-                    "unknown query parameter `{identity}.{}`",
-                    binding.parameter
-                ))
-            })?;
+        let parameter = binding_parameter(module, rules, &binding.scope, &binding.parameter)?;
         check_type(&binding.ty, module)?;
         check_value(&binding.value, &binding.ty, module)?;
         if !rule_type_assignable(&binding.ty, &parameter.ty, &module.declarations) {

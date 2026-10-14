@@ -39,6 +39,9 @@ mod programs;
 #[path = "temporal_beta_tests.rs"]
 mod temporal_beta;
 
+#[path = "query_binding_syntax_tests.rs"]
+mod query_binding_syntax;
+
 #[path = "module_tests.rs"]
 mod modules;
 

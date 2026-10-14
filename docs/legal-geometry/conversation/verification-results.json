@@ -1,0 +1,147 @@
+[
+  {
+    "stage_label": "compile",
+    "report": "target/test-diagnostics/20261011T045728382507Z-119499",
+    "request": {
+      "stage": "compile",
+      "name": "compile only",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--no-run",
+        "--bin",
+        "residuum",
+        "--jobs",
+        "1",
+        "--message-format=json"
+      ],
+      "timeout": 45
+    },
+    "result": {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 6.780600945000515,
+      "peak_rss_bytes": 556163072,
+      "cgroup_peak_bytes": 568856576,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null
+    },
+    "scope": "",
+    "output": "{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.59\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.59/Cargo.toml\",\"target\":{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.59/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[\"simd\"],\"filenames\":[\"/home/maitreya/residuum/target/debug/build/zerocopy-bbacd24acf5dae7f/build-script-build\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#version_check@0.9.5\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.5/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"version_check\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.5/src/lib.rs\",\"edition\":\"2015\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libversion_check-6b00941a69b519c4.rlib\",\"/home/maitreya/residuum/target/debug/deps/libversion_check-6b00941a69b519c4.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#ahash@0.8.12\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ahash-0.8.12/Cargo.toml\",\"target\":{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ahash-0.8.12/build.rs\",\"edition\":\"2018\",\"doc\":false,\"doctest\":false,\"test\":false},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/build/ahash-cbd677a8676a6e06/build-script-build\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"build-script-executed\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.59\",\"linked_libs\":[],\"linked_paths\":[],\"cfgs\":[\"no_zerocopy_simd_x86_avx12_1_89_0\"],\"env\":[],\"out_dir\":\"/home/maitreya/residuum/target/debug/build/zerocopy-0cbcf91c41882129/out\"}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.59\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.59/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"zerocopy\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.59/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[\"simd\"],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libzerocopy-429f9f41f42e89ba.rlib\",\"/home/maitreya/residuum/target/debug/deps/libzerocopy-429f9f41f42e89ba.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"build-script-executed\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#ahash@0.8.12\",\"linked_libs\":[],\"linked_paths\":[],\"cfgs\":[\"folded_multiply\"],\"env\":[],\"out_dir\":\"/home/maitreya/residuum/target/debug/build/ahash-ba584a792e902f2b/out\"}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/once_cell-1.21.4/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"once_cell\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/once_cell-1.21.4/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[\"alloc\",\"race\"],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libonce_cell-34d2a89cacf7e75f.rlib\",\"/home/maitreya/residuum/target/debug/deps/libonce_cell-34d2a89cacf7e75f.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.5\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cfg-if-1.0.5/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"cfg_if\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cfg-if-1.0.5/src/lib.rs\",\"edition\":\"2018\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libcfg_if-96d56312b3d0338e.rlib\",\"/home/maitreya/residuum/target/debug/deps/libcfg_if-96d56312b3d0338e.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#ahash@0.8.12\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ahash-0.8.12/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"ahash\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ahash-0.8.12/src/lib.rs\",\"edition\":\"2018\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libahash-8affb269a30e2c0a.rlib\",\"/home/maitreya/residuum/target/debug/deps/libahash-8affb269a30e2c0a.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#allocator-api2@0.2.21\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/allocator-api2-0.2.21/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"allocator_api2\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/allocator-api2-0.2.21/src/lib.rs\",\"edition\":\"2018\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[\"alloc\"],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/liballocator_api2-d08d1520023d046b.rlib\",\"/home/maitreya/residuum/target/debug/deps/liballocator_api2-d08d1520023d046b.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#hashbrown@0.14.5\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hashbrown-0.14.5/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"hashbrown\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hashbrown-0.14.5/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[\"ahash\",\"allocator-api2\",\"default\",\"inline-more\"],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libhashbrown-54666c9848d879a2.rlib\",\"/home/maitreya/residuum/target/debug/deps/libhashbrown-54666c9848d879a2.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"registry+https://github.com/rust-lang/crates.io-index#chumsky@0.9.3\",\"manifest_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chumsky-0.9.3/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"chumsky\",\"src_path\":\"/home/maitreya/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chumsky-0.9.3/src/lib.rs\",\"edition\":\"2018\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libchumsky-e7557407df0f0995.rlib\",\"/home/maitreya/residuum/target/debug/deps/libchumsky-e7557407df0f0995.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/maitreya/residuum#0.1.0\",\"manifest_path\":\"/home/maitreya/residuum/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"residuum\",\"src_path\":\"/home/maitreya/residuum/src/lib.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/libresiduum-886ede33ab0e640a.rlib\",\"/home/maitreya/residuum/target/debug/deps/libresiduum-886ede33ab0e640a.rmeta\"],\"executable\":null,\"fresh\":true}\n   Compiling residuum v0.1.0 (/home/maitreya/residuum)\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/maitreya/residuum#0.1.0\",\"manifest_path\":\"/home/maitreya/residuum/Cargo.toml\",\"target\":{\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"name\":\"residuum\",\"src_path\":\"/home/maitreya/residuum/src/bin/residuum.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":false,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":true},\"features\":[],\"filenames\":[\"/home/maitreya/residuum/target/debug/deps/residuum-f5f0059bb1094ae1\"],\"executable\":\"/home/maitreya/residuum/target/debug/deps/residuum-f5f0059bb1094ae1\",\"fresh\":false}\n{\"reason\":\"build-finished\",\"success\":true}\n    Finished `test` profile [unoptimized] target(s) in 6.72s\n"
+  },
+  {
+    "stage_label": "versions",
+    "report": "target/test-diagnostics/20261011T045739655146Z-119779",
+    "request": {
+      "stage": "test",
+      "name": "cli::tests::legal_geometry::conversation::seventh_external_valuation_updates_versions_meet_and_minimax_questions",
+      "command": [
+        "/home/maitreya/residuum/target/debug/deps/residuum-f5f0059bb1094ae1",
+        "--exact",
+        "cli::tests::legal_geometry::conversation::seventh_external_valuation_updates_versions_meet_and_minimax_questions",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "timeout": 15
+    },
+    "result": {
+      "name": "cli::tests::legal_geometry::conversation::seventh_external_valuation_updates_versions_meet_and_minimax_questions",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 0.6137808739995307,
+      "peak_rss_bytes": 15892480,
+      "cgroup_peak_bytes": 10747904,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null
+    },
+    "scope": "",
+    "output": "\nrunning 1 test\ntest cli::tests::legal_geometry::conversation::seventh_external_valuation_updates_versions_meet_and_minimax_questions ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 150 filtered out; finished in 0.59s\n\n"
+  },
+  {
+    "stage_label": "diagnostics",
+    "report": "target/test-diagnostics/20261011T045747490275Z-120624",
+    "request": {
+      "stage": "test",
+      "name": "cli::tests::legal_geometry::conversation::empty_version_spaces_have_distinct_diagnostics_without_inventing_functions",
+      "command": [
+        "/home/maitreya/residuum/target/debug/deps/residuum-f5f0059bb1094ae1",
+        "--exact",
+        "cli::tests::legal_geometry::conversation::empty_version_spaces_have_distinct_diagnostics_without_inventing_functions",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "timeout": 15
+    },
+    "result": {
+      "name": "cli::tests::legal_geometry::conversation::empty_version_spaces_have_distinct_diagnostics_without_inventing_functions",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 0.5928823140002351,
+      "peak_rss_bytes": 16101376,
+      "cgroup_peak_bytes": 10764288,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null
+    },
+    "scope": "",
+    "output": "\nrunning 1 test\ntest cli::tests::legal_geometry::conversation::empty_version_spaces_have_distinct_diagnostics_without_inventing_functions ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 150 filtered out; finished in 0.58s\n\n"
+  },
+  {
+    "stage_label": "conservation",
+    "report": "target/test-diagnostics/20261011T045753570780Z-120668",
+    "request": {
+      "stage": "test",
+      "name": "cli::tests::legal_geometry::conversation::conversational_learning_keeps_norm_known_times_and_legal_provenance_intact",
+      "command": [
+        "/home/maitreya/residuum/target/debug/deps/residuum-f5f0059bb1094ae1",
+        "--exact",
+        "cli::tests::legal_geometry::conversation::conversational_learning_keeps_norm_known_times_and_legal_provenance_intact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "timeout": 15
+    },
+    "result": {
+      "name": "cli::tests::legal_geometry::conversation::conversational_learning_keeps_norm_known_times_and_legal_provenance_intact",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 0.5737384550002389,
+      "peak_rss_bytes": 15974400,
+      "cgroup_peak_bytes": 11808768,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null
+    },
+    "scope": "",
+    "output": "\nrunning 1 test\ntest cli::tests::legal_geometry::conversation::conversational_learning_keeps_norm_known_times_and_legal_provenance_intact ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 150 filtered out; finished in 0.56s\n\n"
+  }
+]

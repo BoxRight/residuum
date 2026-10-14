@@ -1,0 +1,11 @@
+{
+  "candidate_clauses": 64,
+  "historic_survivors": 16,
+  "original_case_equivalences": 384,
+  "geometry_models": 65,
+  "geometry_points": 13,
+  "geometry_states": 532480,
+  "engine_geometry_comparisons": 2094,
+  "individual_tests_passed": 6,
+  "protected_files": 263
+}

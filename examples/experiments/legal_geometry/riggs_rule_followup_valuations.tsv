@@ -1,0 +1,4 @@
+turn	case	answer	source	status	rationale
+includeWithoutPurpose	killingWithoutAcquisitionPurpose	true	stipulation:riggs-rule-learning/without-purpose/include	hypothetical_external_assumption	Examine whether beneficiary wrongdoing causally linked to acquisition suffices despite explicitly denied acquisition purpose.
+excludeWithoutPurpose	killingWithoutAcquisitionPurpose	false	stipulation:riggs-rule-learning/without-purpose/exclude	hypothetical_external_assumption	Examine whether acquisition purpose is necessary for the proposed impediment in this delimited dossier.
+suspendWithoutPurpose	killingWithoutAcquisitionPurpose	pending	stipulation:riggs-rule-learning/without-purpose/pending	hypothetical_external_assumption	No external legal assessment supplied; keep every historically compatible rule.

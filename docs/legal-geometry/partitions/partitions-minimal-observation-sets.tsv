@@ -1,0 +1,12 @@
+protocol	target_partition	size	cardinality_minimum	observations
+theory_events	012345678	4	true	APV;AM;AD;AP
+seeded_events	012341536	4	true	seed_036:B+A;seed_052:B+P+A;seed_040:M+A;seed_048:P+A
+seeded_events	012341536	4	true	seed_036:B+A;seed_052:B+P+A;seed_040:M+A;seed_112:P+A+N
+seeded_events	012341536	4	true	seed_036:B+A;seed_116:B+P+A+N;seed_040:M+A;seed_048:P+A
+seeded_events	012341536	4	true	seed_036:B+A;seed_116:B+P+A+N;seed_040:M+A;seed_112:P+A+N
+seeded_events	012341536	4	true	seed_100:B+A+N;seed_052:B+P+A;seed_040:M+A;seed_048:P+A
+seeded_events	012341536	4	true	seed_100:B+A+N;seed_052:B+P+A;seed_040:M+A;seed_112:P+A+N
+seeded_events	012341536	4	true	seed_100:B+A+N;seed_116:B+P+A+N;seed_040:M+A;seed_048:P+A
+seeded_events	012341536	4	true	seed_100:B+A+N;seed_116:B+P+A+N;seed_040:M+A;seed_112:P+A+N
+theory_provenance	012345678	3	true	AM;AD;APV
+seeded_provenance	012345678	1	true	seed_127:O+R+B+M+P+A+N

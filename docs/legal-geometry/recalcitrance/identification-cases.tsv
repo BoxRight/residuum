@@ -1,0 +1,6 @@
+case	witness_h1	witness_h2	other_cases_agree	external_answer
+R	H032	H065	true	pending
+OR	H065	H120	true	pending
+OP	H032	H033	true	pending
+RP	H065	H066	true	pending
+ORP	H126	H128	true	pending

@@ -1,0 +1,195 @@
+{
+  "compile_runs": [
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 4.336819853000634,
+      "peak_rss_bytes": 437501952,
+      "cgroup_peak_bytes": 450252800,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T230731083359Z-268212"
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 101,
+      "elapsed_seconds": 0.6318221290021029,
+      "peak_rss_bytes": 279699456,
+      "cgroup_peak_bytes": 256651264,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": "nonzero_exit",
+      "report": "20261011T231133033617Z-273108"
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 3.519530952999048,
+      "peak_rss_bytes": 410873856,
+      "cgroup_peak_bytes": 422477824,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231148759662Z-273379"
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 3.5013718709997192,
+      "peak_rss_bytes": 418033664,
+      "cgroup_peak_bytes": 460591104,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231528048999Z-278046"
+    }
+  ],
+  "individual_tests": [
+    {
+      "name": "cli::tests::legal_geometry::riggs::rule_learning::generated_relational_rules_learn_from_historical_outcome_preserving_reference",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 1.9337928160020965,
+      "peak_rss_bytes": 16809984,
+      "cgroup_peak_bytes": 19435520,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231554767493Z-278718"
+    },
+    {
+      "name": "cli::tests::legal_geometry::riggs::rule_learning::learned_rule_partitions_and_counterfactual_questions_preserve_indetermination",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 1.5873850130010396,
+      "peak_rss_bytes": 16044032,
+      "cgroup_peak_bytes": 12054528,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231602218352Z-278766"
+    },
+    {
+      "name": "cli::tests::legal_geometry::riggs::rule_learning::candidate_theories_check_geometry_extreme_bases_and_seed_frontiers",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 1.9131499619979877,
+      "peak_rss_bytes": 19271680,
+      "cgroup_peak_bytes": 22851584,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231609083308Z-278942"
+    },
+    {
+      "name": "cli::tests::legal_geometry::riggs::rule_learning::learned_rules_generalize_bindings_and_preserve_distinct_justifications",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 1.0572300009989704,
+      "peak_rss_bytes": 16273408,
+      "cgroup_peak_bytes": 12267520,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231633059948Z-279299"
+    },
+    {
+      "name": "cli::tests::legal_geometry::riggs::literal_reference_and_typed_counterfactuals_preserve_complete_provenance",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 0.40722601199740893,
+      "peak_rss_bytes": 16236544,
+      "cgroup_peak_bytes": 11010048,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231646754529Z-279506"
+    },
+    {
+      "name": "cli::tests::legal_geometry::riggs::conversation::external_answers_update_argument_versions_without_conflating_premises",
+      "stage": "test",
+      "exit_status": 0,
+      "elapsed_seconds": 0.4076118189987028,
+      "peak_rss_bytes": 15908864,
+      "cgroup_peak_bytes": 11268096,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261011T231650880374Z-280366"
+    }
+  ],
+  "limits": {
+    "total_memory_bytes": 1073741824,
+    "swap_bytes": 0,
+    "cargo_jobs": 1,
+    "harness_threads": 1,
+    "compile_timeout_seconds": 45,
+    "test_timeout_seconds": 15
+  },
+  "full_suite_executed": false
+}

@@ -1,0 +1,5 @@
+protocol	available_cases	nontrivial_profiles	classes	minimum_cardinality	inclusion_minimal_sets	cardinality_minimal_sets
+theory_events	5	5	9	4	1	1
+seeded_events	128	5	7	4	8	8
+theory_provenance	5	5	9	3	1	1
+seeded_provenance	1	1	9	1	1	1

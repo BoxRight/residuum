@@ -1,0 +1,147 @@
+model	goal	geometric_supports	status	branches	minimal_in_domain	missing	outside	detail
+general	E000	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E001	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E002	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E003	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E004	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E005	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E006	4	unsupported-unbound-parameter	0	0	4	0	rule `permissionAnnulsProhibition` has parameter `subject` not determined by the goal
+general	E007	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E008	1	unsupported-unbound-parameter	0	0	1	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E009	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E010	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E011	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E012	1	unsupported-unbound-parameter	0	0	1	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E013	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E014	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E015	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E016	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E017	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E018	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E019	6	unsupported-unbound-parameter	0	0	6	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E020	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+general	E021	4	unsupported-unbound-parameter	0	0	4	0	rule `obligationCreatesRelation` has parameter `id` not determined by the goal
+general	E022	2	unsupported-unbound-parameter	0	0	2	0	rule `rightEnforceability` has parameter `conduct` not determined by the goal
+general	E023	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E024	1	unsupported-unbound-parameter	0	0	1	0	rule `historicalTransferEffect` has parameter `act` not determined by the goal
+general	E025	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E026	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 6, rules_examined: 27, head_matches: 1, branches_generated: 4, rejected_not_forward_supported: 0 }
+general	E027	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+general	E028	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E029	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E030	1	unsupported-unbound-parameter	0	0	1	0	rule `capacityPower` has parameter `object` not determined by the goal
+general	E031	3	unsupported-unbound-parameter	0	0	3	0	rule `prohibitionCreatesAbstention` has parameter `id` not determined by the goal
+general	E032	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E033	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+general	E034	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+general	E035	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+general	E036	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+general	E037	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E038	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E039	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E040	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E041	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E042	1	unsupported-unbound-parameter	0	0	1	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E043	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E044	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E045	0	unsupported-unbound-parameter	0	0	0	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E046	1	unsupported-unbound-parameter	0	0	1	0	rule `transferTitle` has parameter `subject` not determined by the goal
+general	E047	0	outside-finite-source-domain	1	0	0	1	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E048	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E049	0	outside-finite-source-domain	1	0	0	1	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E050	0	outside-finite-source-domain	1	0	0	1	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E051	0	outside-finite-source-domain	1	0	0	1	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E052	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E053	3	unsupported-unbound-parameter	0	0	3	0	rule `violationLiability` has parameter `act` not determined by the goal
+general	E054	3	unsupported-unbound-parameter	0	0	3	0	rule `violationLiability` has parameter `act` not determined by the goal
+general	E055	5	unsupported-unbound-parameter	0	0	5	0	rule `violationLiability` has parameter `act` not determined by the goal
+general	E056	2	unsupported-unbound-parameter	0	0	2	0	rule `violationLiability` has parameter `act` not determined by the goal
+general	E057	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E058	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E059	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E060	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E061	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E062	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E063	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E064	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E065	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E066	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E067	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+general	E068	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 27, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+general	E069	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+general	E070	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+general	E071	5	unsupported-unbound-parameter	0	0	5	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+general	E072	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+patrimonial	E000	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E001	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E002	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E003	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E004	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E005	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E006	4	unsupported-unbound-parameter	0	0	4	0	rule `permissionAnnulsProhibition` has parameter `subject` not determined by the goal
+patrimonial	E007	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E008	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E009	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E010	2	unsupported-unbound-parameter	0	0	2	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E011	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E012	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E013	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E014	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E015	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E016	1	unsupported-unbound-parameter	0	0	1	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E017	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E018	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E019	6	unsupported-unbound-parameter	0	0	6	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E020	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationCompliance` has parameter `conduct` not determined by the goal
+patrimonial	E021	4	unsupported-unbound-parameter	0	0	4	0	rule `obligationCreatesRelation` has parameter `id` not determined by the goal
+patrimonial	E022	2	unsupported-unbound-parameter	0	0	2	0	rule `rightEnforceability` has parameter `conduct` not determined by the goal
+patrimonial	E023	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E024	1	unsupported-unbound-parameter	0	0	1	0	rule `historicalTransferEffect` has parameter `act` not determined by the goal
+patrimonial	E025	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E026	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 6, rules_examined: 28, head_matches: 1, branches_generated: 4, rejected_not_forward_supported: 0 }
+patrimonial	E027	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+patrimonial	E028	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E029	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 28, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+patrimonial	E030	1	unsupported-unbound-parameter	0	0	1	0	rule `capacityPower` has parameter `object` not determined by the goal
+patrimonial	E031	3	unsupported-unbound-parameter	0	0	3	0	rule `prohibitionCreatesAbstention` has parameter `id` not determined by the goal
+patrimonial	E032	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E033	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+patrimonial	E034	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+patrimonial	E035	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+patrimonial	E036	1	unsupported-unbound-parameter	0	0	1	0	rule `enactLaw` has parameter `act` not determined by the goal
+patrimonial	E037	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E038	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E039	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E040	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E041	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E042	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E043	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E044	2	unsupported-unbound-parameter	0	0	2	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E045	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E046	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E047	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E048	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E049	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E050	2	unsupported-unbound-parameter	0	0	2	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E051	1	unsupported-unbound-parameter	0	0	1	0	rule `complianceAsset` has parameter `act` not determined by the goal
+patrimonial	E052	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E053	3	unsupported-unbound-parameter	0	0	3	0	rule `violationLiability` has parameter `act` not determined by the goal
+patrimonial	E054	3	unsupported-unbound-parameter	0	0	3	0	rule `violationLiability` has parameter `act` not determined by the goal
+patrimonial	E055	5	unsupported-unbound-parameter	0	0	5	0	rule `violationLiability` has parameter `act` not determined by the goal
+patrimonial	E056	2	unsupported-unbound-parameter	0	0	2	0	rule `violationLiability` has parameter `act` not determined by the goal
+patrimonial	E057	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 28, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+patrimonial	E058	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 28, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+patrimonial	E059	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 28, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+patrimonial	E060	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E061	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E062	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E063	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E064	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E065	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E066	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E067	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 1, rules_examined: 0, head_matches: 0, branches_generated: 1, rejected_not_forward_supported: 0 }
+patrimonial	E068	1	equal-minimal-frontier	1	1	0	0	SearchMetrics { nodes: 3, rules_examined: 28, head_matches: 1, branches_generated: 2, rejected_not_forward_supported: 0 }
+patrimonial	E069	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+patrimonial	E070	3	unsupported-unbound-parameter	0	0	3	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+patrimonial	E071	5	unsupported-unbound-parameter	0	0	5	0	rule `obligationViolation` has parameter `conduct` not determined by the goal
+patrimonial	E072	2	unsupported-unbound-parameter	0	0	2	0	rule `obligationViolation` has parameter `conduct` not determined by the goal

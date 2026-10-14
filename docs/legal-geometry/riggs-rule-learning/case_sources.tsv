@@ -1,0 +1,8 @@
+# Provenance of experimental inputs, distinct from DerivationRecord.
+case	status	premise_basis	source	pinpoint
+historicalRiggs	historical_abstraction	Operative disposition and survival are delimited assumptions for the literal reference; death, intentional killing, causation and acquisition purpose are drawn from the reported facts	https://www.nycourts.gov/reporter/archives/riggs_palmer.htm	115 NY 508-509; scope declared in riggs_succession_reference.res
+noBeneficiaryKilling	counterfactual_stipulation	Keep the three literal conditions and explicitly deny the beneficiary's identified killing	stipulation:riggs/no-beneficiary-killing	one identified act in the finite dossier
+killingWithoutAcquisitionPurpose	counterfactual_stipulation	Keep the literal conditions and the beneficiary's causal killing; explicitly deny acquisition purpose for that act	stipulation:riggs/no-acquisition-purpose	one identified act; proposed for independent deliberation
+killingByThirdParty	counterfactual_stipulation	Keep the literal conditions; attribute the causal killing to another person and explicitly deny the beneficiary's identified killing	stipulation:riggs/third-party	actor identity is structurally distinct
+causalLinkUnestablished	incomplete_dossier_stipulation	Keep the literal conditions and killing evidence; supply no causal or purpose record	stipulation:riggs/unknown-link	missing evidence remains pending
+survivalUnestablished	incomplete_dossier_stipulation	Keep disposition and death plus killing evidence; supply no survival record	stipulation:riggs/unknown-survival	missing literal premise remains pending

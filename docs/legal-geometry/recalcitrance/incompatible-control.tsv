@@ -1,0 +1,2 @@
+positive_case	negative_case	compatible_functions	reason
+A	AP	0	A subset AP; monotone language cannot fit these stipulated valuations

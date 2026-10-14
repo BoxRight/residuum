@@ -1,0 +1,6 @@
+scenario	accepted_in_scope	before	after	full_replay_survivors	diagnosis	proposed_observation	source	available_functions_after
+strict_monotonicity	true	5	0	0	Some(MonotonicityIncompatible { positive: "strict_monotonicity", negative: "prior3" })	strict_monotonicity	stipulation:conversation/strict-monotonicity	
+same_snapshot	true	5	0	0	Some(OpposedValuations { positive: "seventh", negative: "same_snapshot" })	same_snapshot	stipulation:conversation/same-snapshot	
+catalog_gap	true	1	0	5	Some(CatalogIncomplete { full_replay_survivors: 5 })	catalog_gap	stipulation:conversation/catalog-gap	
+outside_features	false	11	11	not_evaluated	Some(FactsOutsideScope)	outside_features	stipulation:conversation/outside-features	H032,H033,H065,H066,H068,H070,H120,H121,H123,H126,H128
+outside_time	false	11	11	not_evaluated	Some(GoalOutsideScope)	outside_time	stipulation:conversation/outside-time	H032,H033,H065,H066,H068,H070,H120,H121,H123,H126,H128

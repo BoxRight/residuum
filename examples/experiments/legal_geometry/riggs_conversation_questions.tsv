@@ -1,0 +1,8 @@
+# Same juridical question for each existing dossier, under the declared commitments.
+case	question	legal_adequacy	valuation_origin
+historicalRiggs	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only
+noBeneficiaryKilling	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only
+killingWithoutAcquisitionPurpose	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only
+killingByThirdParty	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only
+causalLinkUnestablished	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only
+survivalUnestablished	Should the represented grounds support maintaining an objection to the literal testamentary attribution?	pending_external_deliberation	hypothetical_only

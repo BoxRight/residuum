@@ -1,0 +1,7 @@
+stage	case	input	norm	external_value	recalcitrance	before	after	hypothesis_partition_blocks	case_partition_blocks	source	rationale
+1	empty	empty	false	false	agreement	168	167	2	16	stipulation:recalcitrance-study/1	Negative agreement control; no evidence supplied
+2	rightAct	RA	true	true	agreement	167	83	3	13	stipulation:recalcitrance-study/2	Positive agreement control stipulated independently
+3	obligationAct	OA	true	false	overinclusion	83	31	5	11	stipulation:recalcitrance-study/3	Deliberate overinclusion probe; not a doctrinal claim
+4	actPermission	AP	false	true	underinclusion	31	14	9	10	stipulation:recalcitrance-study/4	Deliberate underinclusion probe; not a doctrinal claim
+5	actOnly	A	false	false	agreement	14	14	10	10	stipulation:recalcitrance-study/5	Act alone excluded by external assumption
+6	permissionOnly	P	false	false	agreement	14	11	15	9	stipulation:recalcitrance-study/6	Permission alone excluded by external assumption

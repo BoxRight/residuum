@@ -1,0 +1,24 @@
+id	event
+E000	~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, judicial, gDate) @ gTau
+E001	~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gOtherTau
+E002	Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau
+E003	~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau
+E004	Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau
+E005	Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau
+E023	extinguished(gNorm, constitutional, gLateDate) @ gTau
+E025	higherAuthority(constitutional, administrative) @ gTau
+E028	legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau
+E032	notEarlier(gLateDate, gEarlyDate) @ gTau
+E037	obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau
+E038	obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau
+E039	obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau
+E040	omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau
+E052	patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau
+E060	permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau
+E061	permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau
+E062	permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau
+E063	powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau
+E064	prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau
+E065	prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau
+E066	prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau
+E067	right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau

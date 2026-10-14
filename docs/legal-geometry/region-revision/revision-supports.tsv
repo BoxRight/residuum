@@ -1,0 +1,6 @@
+support	support_inclusion_minimal	cone	new_cone
+AP	true	16	4
+AM	true	16	4
+APM	false	8	2
+AD	true	16	4
+APD	false	8	2

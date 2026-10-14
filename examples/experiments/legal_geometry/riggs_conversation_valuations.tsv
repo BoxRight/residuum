@@ -1,0 +1,10 @@
+# Each first answer is a separate hypothetical branch, not a historical judgment.
+# Follow-ups are alternative continuations of the firstReject branch.
+valuation	case	answer	source	status	rationale
+firstSustain	killingWithoutAcquisitionPurpose	sustain	stipulation:riggs-conversation/first-sustain	hypothetical_external_assumption	Assume an interlocutor regards the represented causal benefit as sufficient to sustain the objection despite explicitly denied acquisition purpose
+firstReject	killingWithoutAcquisitionPurpose	reject	stipulation:riggs-conversation/first-reject	hypothetical_external_assumption	Assume an interlocutor does not regard the represented grounds as sufficient to sustain the objection in this counterfactual
+firstPending	killingWithoutAcquisitionPurpose	pending	stipulation:riggs-conversation/first-pending	hypothetical_external_assumption	Assume an interlocutor suspends judgment while questions of reasons or judicial authority remain open
+followSustain	historicalRiggs	sustain	stipulation:riggs-conversation/follow-sustain	hypothetical_external_assumption	Hypothetical response about the historical dossier after firstReject; not a replay of the majority judgment
+followReject	historicalRiggs	reject	stipulation:riggs-conversation/follow-reject	hypothetical_external_assumption	Alternative hypothetical response about the historical dossier after firstReject; not a decision attributed to Gray
+unknownSustain	causalLinkUnestablished	sustain	stipulation:riggs-conversation/unknown-sustain	hypothetical_external_assumption	Control response does not establish missing causal evidence
+unknownReject	causalLinkUnestablished	reject	stipulation:riggs-conversation/unknown-reject	hypothetical_external_assumption	Alternative control response does not establish missing causal evidence

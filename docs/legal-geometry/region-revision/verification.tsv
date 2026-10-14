@@ -1,0 +1,9 @@
+stage	name	exit	seconds	RSS_MiB	report
+compile	compile only	0	3.5275	363.14	20261010T064814092529Z-45555
+test	cli::tests::legal_geometry::region_revision::externally_labelled_compliance_revisions_enumerate_all_minimal_extensions	0	0.3470	15.57	20261010T064837829237Z-46187
+test	cli::tests::legal_geometry::region_revision::hypothetical_compliance_revisions_preserve_independent_closures_and_provenance	0	0.5111	15.57	20261010T064845233845Z-46241
+test	cli::tests::legal_geometry::region_revision::hypothetical_compliance_revisions_check_convex_geometry_and_counterexamples	0	0.3062	15.36	20261010T064845233845Z-46241
+test	cli::tests::legal_geometry::frontiers::minimal_frontiers_preserve_supports_witnesses_and_origins	0	1.5506	17.12	20261010T064845233845Z-46241
+compile	compile only	0	2.1992	344.05	20261010T065050081673Z-48305
+test	cli::tests::legal_geometry::region_revision::externally_labelled_compliance_revisions_enumerate_all_minimal_extensions	0	0.5489	15.57	20261010T065316592816Z-50654
+test	cli::tests::legal_geometry::anti_exchange_on_controlled_theory_states	0	1.1206	15.38	20261010T065316592816Z-50654

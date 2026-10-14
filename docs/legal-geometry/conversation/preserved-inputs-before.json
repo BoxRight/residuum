@@ -1,0 +1,13 @@
+{
+  "src/lib.rs": "ecf9fa611258154227025f65d7e4b44900f6dc35b4210bf6c095ff4a8e882855",
+  "src/residual.rs": "48fed8105de3581dd8de193368bbc6a128f88e26c3a21000c72eaa6536743ec8",
+  "src/residual/program.rs": "071d4dc48a0a5eea1fe7a50c67a9b567ee26b97c5e1453035165bec481123eed",
+  "src/residual/program/tests.rs": "8490ac05cdcd8475a4bccea9a16c55f27b71b30f80f284c958329baa7b375471",
+  "src/residual/active.rs": "02d77f11d5699d6e4c6cb7dfe30054ef577208329ed8f2cad224286a34d47a35",
+  "examples/legal/modules/legal_monotonic.res": "24655c98ede7b128b8cd82df3a4473c114428b987bb0fe6a6d370c2b37f5575e",
+  "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res": "639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc",
+  "/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res": "f7daf4d5eb937a7fde8534dba5618acc50d5aaa5b05ff86c9656892eb3a03fbf",
+  "examples/experiments/legal_geometry/recalcitrance_labels.tsv": "0afca0528c45b674c608fd554e74d85040338a4d4d9ca3fcb852c2fe089ba09c",
+  "docs/legal-geometry/recalcitrance/functions.tsv": "5fc0dd0a606829354056c454114963df7287bbbaf567f98aa5f390435b905435",
+  "src/bin/residuum/cli/legal_geometry_recalcitrance_tests.rs": "7fe266910f92ee47d21c0615ed8a69f0253edd46c43a371c7f8cf09f4d71bfe6"
+}

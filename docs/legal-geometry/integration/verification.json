@@ -1,0 +1,780 @@
+{
+  "schema": "legal-geometry-integration-1",
+  "base_refs": {
+    "HEAD": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "main": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "v1": "f6a83e33fa1edb606748a47394e2bde8b4ce635d",
+    "origin/main": "967c2ddaa91ac4e2c89dd02e8d7dcc416a48dc9d"
+  },
+  "test_count": 36,
+  "full_suite_run": false,
+  "reports": [
+    {
+      "report": "target/test-diagnostics/20261014T003324235942Z-881908/results.json",
+      "rows": [
+        {
+          "name": "compile only",
+          "stage": "compile",
+          "exit_status": 0,
+          "elapsed_seconds": 5.50535093700455,
+          "peak_rss_bytes": 546889728,
+          "cgroup_peak_bytes": 574554112,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021138002994121052,
+          "peak_rss_bytes": 16003072,
+          "cgroup_peak_bytes": 8945664,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list ignored tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.020887559003313072,
+          "peak_rss_bytes": 16068608,
+          "cgroup_peak_bytes": 8687616,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::active::tests::activation_guards_are_certified_without_changing_horn_queries",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.020948265999322757,
+          "peak_rss_bytes": 16297984,
+          "cgroup_peak_bytes": 8912896,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::active::tests::active_results_distinguish_pending_unit_absence_and_errors",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.04128270399814937,
+          "peak_rss_bytes": 16289792,
+          "cgroup_peak_bytes": 9240576,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::active::tests::imported_chained_programs_retain_actual_producers_and_proofs",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02094405899697449,
+          "peak_rss_bytes": 15855616,
+          "cgroup_peak_bytes": 9740288,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::program::tests::no_explanation_is_distinct_from_ground_unit_rule",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021141841003554873,
+          "peak_rss_bytes": 16293888,
+          "cgroup_peak_bytes": 8957952,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::program::tests::finite_forward_oracle_checks_sufficiency_and_search_coverage",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.04145139500906225,
+          "peak_rss_bytes": 16109568,
+          "cgroup_peak_bytes": 8937472,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::program::tests::forward_certificate_preserves_runtime_identities_that_share_parameter_names",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02113186300266534,
+          "peak_rss_bytes": 16044032,
+          "cgroup_peak_bytes": 9216000,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::program::tests::explicit_search_budgets_fail_without_truncated_results",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021035095996921882,
+          "peak_rss_bytes": 16101376,
+          "cgroup_peak_bytes": 9469952,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "residual::program::tests::curried_and_horn_program_queries_agree",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.020861476004938595,
+          "peak_rss_bytes": 15986688,
+          "cgroup_peak_bytes": 9474048,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    },
+    {
+      "report": "target/test-diagnostics/20261014T003601652199Z-884120/results.json",
+      "rows": [
+        {
+          "name": "compile only",
+          "stage": "compile",
+          "exit_status": 0,
+          "elapsed_seconds": 2.6943236509978306,
+          "peak_rss_bytes": 421822464,
+          "cgroup_peak_bytes": 518582272,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02082731999689713,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 8945664,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list ignored tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02079736399173271,
+          "peak_rss_bytes": 16183296,
+          "cgroup_peak_bytes": 8519680,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::run_observes_the_legal_case_without_invoking_queries",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.20414137899933849,
+          "peak_rss_bytes": 16179200,
+          "cgroup_peak_bytes": 10248192,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::query_reports_residual_requirements_and_the_four_counterexample",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02101015100197401,
+          "peak_rss_bytes": 16310272,
+          "cgroup_peak_bytes": 9211904,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::explain_preserves_all_justifications_seeds_units_and_missing_goals",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.2243658380029956,
+          "peak_rss_bytes": 16183296,
+          "cgroup_peak_bytes": 11100160,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::modular_sale_matches_inline_derivations_times_substitutions_and_provenance",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.3058796959958272,
+          "peak_rss_bytes": 16089088,
+          "cgroup_peak_bytes": 10993664,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::imported_verb_program_and_beta_reduction_keep_their_bound_targets",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.6929020590032451,
+          "peak_rss_bytes": 16166912,
+          "cgroup_peak_bytes": 12374016,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::imported_experiments_are_local_and_diamond_imports_are_unique",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021114809991559014,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 9498624,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::module_resolution_rejects_bad_paths_cycles_and_duplicate_names",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02105366600153502,
+          "peak_rss_bytes": 16236544,
+          "cgroup_peak_bytes": 9207808,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::module_elaboration_rejects_unknown_symbols_and_consumer_scope_leaks",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021456354996189475,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 9207808,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::modules::module_graph_keeps_the_existing_source_budget",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02134949099854566,
+          "peak_rss_bytes": 16293888,
+          "cgroup_peak_bytes": 10256384,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::effects::effect_modes_are_normal_record_fields_and_coexist_idempotently",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02085395400354173,
+          "peak_rss_bytes": 16183296,
+          "cgroup_peak_bytes": 9465856,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::effects::legal_effects_derive_then_execute_without_creating_historical_evidence",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.22468360300990753,
+          "peak_rss_bytes": 16113664,
+          "cgroup_peak_bytes": 11157504,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::program_defaults::program_defaults_preserve_four_sale_cases_and_complete_provenance",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.6107882999931462,
+          "peak_rss_bytes": 16113664,
+          "cgroup_peak_bytes": 12824576,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::program_defaults::importing_program_defaults_is_passive_and_explain_identifies_whole_selected_unit",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.5302113740035566,
+          "peak_rss_bytes": 16183296,
+          "cgroup_peak_bytes": 12042240,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::program_defaults::selecting_one_program_keeps_satisfiable_members_of_the_other_inactive",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.20379854600469116,
+          "peak_rss_bytes": 15982592,
+          "cgroup_peak_bytes": 11591680,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::programs::program_beta_preserves_local_binders_times_and_nested_records",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02133145999687258,
+          "peak_rss_bytes": 16285696,
+          "cgroup_peak_bytes": 9211904,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::programs::associated_program_members_activate_together_only_for_positive_known_instances",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.04140251599892508,
+          "peak_rss_bytes": 15888384,
+          "cgroup_peak_bytes": 9715712,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::programs::imported_program_associations_preserve_definition_scope_and_member_origins",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021077145007438958,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 9572352,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::temporal_beta::temporal_constants_substitute_in_arguments_indices_and_transitions",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.020827942003961653,
+          "peak_rss_bytes": 16310272,
+          "cgroup_peak_bytes": 9220096,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::extraction::complete_monotonic_extraction_preserves_all_sixteen_closures_and_provenance",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.4279177160060499,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 11333632,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::residual_activation::active_query_api_certifies_composed_programs_and_chained_activations",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.04137215900118463,
+          "peak_rss_bytes": 16166912,
+          "cgroup_peak_bytes": 9990144,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::residual_activation::active_query_result_contract_preserves_unit_pending_absence_and_mixed_branches",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.04129852500045672,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 9461760,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::correspondence_and_typed_inventory",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 1.2415113739989465,
+          "peak_rss_bytes": 15925248,
+          "cgroup_peak_bytes": 11563008,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::riggs::literal_reference_and_typed_counterfactuals_preserve_complete_provenance",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.4276248529931763,
+          "peak_rss_bytes": 16113664,
+          "cgroup_peak_bytes": 11546624,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::typed_explanations::concrete_dossiers_use_complete_unchanged_reference_closures_and_provenance",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.2454805659945123,
+          "peak_rss_bytes": 16257024,
+          "cgroup_peak_bytes": 10579968,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::complete_role_shared_slice_has_structural_certificates",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 5.3705087959970115,
+          "peak_rss_bytes": 16171008,
+          "cgroup_peak_bytes": 23142400,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::structural_examples_distinguish_profile_checks_from_elaboration",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 2.4211050940066343,
+          "peak_rss_bytes": 16314368,
+          "cgroup_peak_bytes": 11722752,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::active_frontiers::active_residual_matches_exhaustive_legal_frontiers_and_activation_requirements",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.48954748100368306,
+          "peak_rss_bytes": 16125952,
+          "cgroup_peak_bytes": 11558912,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::active_frontiers::active_residual_classifies_real_ontology_coverage_without_existential_expansion",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 0.38698153899167664,
+          "peak_rss_bytes": 16105472,
+          "cgroup_peak_bytes": 11132928,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    },
+    {
+      "report": "target/test-diagnostics/20261014T004040465188Z-887883/results.json",
+      "rows": [
+        {
+          "name": "cargo fmt",
+          "stage": "format",
+          "exit_status": 0,
+          "elapsed_seconds": 0.5715016210015165,
+          "peak_rss_bytes": 60231680,
+          "cgroup_peak_bytes": 34017280,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "memory_max_bytes": 1073741824,
+    "memory_swap_max_bytes": 0,
+    "cargo_jobs": 1,
+    "harness_threads": 1
+  },
+  "copies": [
+    {
+      "file": "examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+      "sha256": "639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc",
+      "vendor_bytes_identical": true
+    },
+    {
+      "file": "examples/experiments/legal_geometry/ontology_reference/legal_patrimonial.res",
+      "sha256": "f7daf4d5eb937a7fde8534dba5618acc50d5aaa5b05ff86c9656892eb3a03fbf",
+      "vendor_bytes_identical": true
+    }
+  ],
+  "source_changes": "four experimental import paths; two harness reference paths; analysis source paths; no legal rule/body edits",
+  "tag_v1_modified": false,
+  "protected_core_and_reference_files_unchanged": true
+}

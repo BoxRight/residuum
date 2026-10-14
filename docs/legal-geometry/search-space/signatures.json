@@ -1,0 +1,1110 @@
+{
+  "schema": "legal-relational-search-contract-data-1",
+  "branch": "experiment-legal-order-geometry",
+  "signatures": [
+    {
+      "verb": "give",
+      "category": "Effect",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 2,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 3,
+          "name": "recipient",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"give\", kind: Effect, args: [Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"recipient\", ty: Entity(\"Person\") }], effect: Some(StateTransform { transition: StateTransitionType { input: Unresolved, output: Unresolved }, operations: [RemoveFromSet { target: FieldAccess { base: Var(\"subject\"), path: [\"patrimony\", \"assets\"] }, value: Var(\"object\") }, AddToSet { target: FieldAccess { base: Var(\"recipient\"), path: [\"patrimony\", \"assets\"] }, value: Var(\"object\") }] }), program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "do",
+      "category": "Effect",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 2,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 3,
+          "name": "indirectObject",
+          "type": {
+            "kind": "Optional",
+            "element": {
+              "kind": "Entity",
+              "name": "Thing"
+            }
+          }
+        },
+        {
+          "position": 4,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"do\", kind: Effect, args: [Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"indirectObject\", ty: Optional(Entity(\"Thing\")) }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }], effect: Some(StateTransform { transition: StateTransitionType { input: Unresolved, output: Unresolved }, operations: [AddToSet { target: FieldAccess { base: Var(\"subject\"), path: [\"patrimony\", \"obligations\"] }, value: RecordLiteral { entity: \"Relation\", fields: [RecordFieldValue { field: \"debtor\", value: Var(\"subject\") }, RecordFieldValue { field: \"thing\", value: Var(\"indirectObject\") }, RecordFieldValue { field: \"conduct\", value: Var(\"conduct\") }, RecordFieldValue { field: \"creditor\", value: Var(\"beneficiary\") }, RecordFieldValue { field: \"mode\", value: Const(\"Doing\") }] } }, AddToSet { target: FieldAccess { base: Var(\"beneficiary\"), path: [\"patrimony\", \"rights\"] }, value: RecordLiteral { entity: \"Relation\", fields: [RecordFieldValue { field: \"debtor\", value: Var(\"subject\") }, RecordFieldValue { field: \"thing\", value: Var(\"indirectObject\") }, RecordFieldValue { field: \"conduct\", value: Var(\"conduct\") }, RecordFieldValue { field: \"creditor\", value: Var(\"beneficiary\") }, RecordFieldValue { field: \"mode\", value: Const(\"Doing\") }] } }] }), program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "notDo",
+      "category": "Effect",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 2,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 3,
+          "name": "indirectObject",
+          "type": {
+            "kind": "Optional",
+            "element": {
+              "kind": "Entity",
+              "name": "Thing"
+            }
+          }
+        },
+        {
+          "position": 4,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"notDo\", kind: Effect, args: [Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"indirectObject\", ty: Optional(Entity(\"Thing\")) }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }], effect: Some(StateTransform { transition: StateTransitionType { input: Unresolved, output: Unresolved }, operations: [AddToSet { target: FieldAccess { base: Var(\"subject\"), path: [\"patrimony\", \"obligations\"] }, value: RecordLiteral { entity: \"Relation\", fields: [RecordFieldValue { field: \"debtor\", value: Var(\"subject\") }, RecordFieldValue { field: \"thing\", value: Var(\"indirectObject\") }, RecordFieldValue { field: \"conduct\", value: Var(\"conduct\") }, RecordFieldValue { field: \"creditor\", value: Var(\"beneficiary\") }, RecordFieldValue { field: \"mode\", value: Const(\"Abstaining\") }] } }, AddToSet { target: FieldAccess { base: Var(\"beneficiary\"), path: [\"patrimony\", \"rights\"] }, value: RecordLiteral { entity: \"Relation\", fields: [RecordFieldValue { field: \"debtor\", value: Var(\"subject\") }, RecordFieldValue { field: \"thing\", value: Var(\"indirectObject\") }, RecordFieldValue { field: \"conduct\", value: Var(\"conduct\") }, RecordFieldValue { field: \"creditor\", value: Var(\"beneficiary\") }, RecordFieldValue { field: \"mode\", value: Const(\"Abstaining\") }] } }] }), program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "Act",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive",
+        "EvidentialNot"
+      ],
+      "typed_ast": "Verb(Verb { name: \"Act\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "obligationFiled",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"obligationFiled\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "obligation",
+      "category": "Derived",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"obligation\", kind: Derived, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "right",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"right\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "permissionFiled",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"permissionFiled\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "permission",
+      "category": "Derived",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"permission\", kind: Derived, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "prohibition",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"prohibition\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    },
+    {
+      "verb": "omissionProhibition",
+      "category": "Seeded",
+      "arguments": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": {
+            "kind": "Entity",
+            "name": "Fact"
+          }
+        },
+        {
+          "position": 2,
+          "name": "subject",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 3,
+          "name": "conduct",
+          "type": {
+            "kind": "Entity",
+            "name": "Conduct"
+          }
+        },
+        {
+          "position": 4,
+          "name": "object",
+          "type": {
+            "kind": "Entity",
+            "name": "Thing"
+          }
+        },
+        {
+          "position": 5,
+          "name": "beneficiary",
+          "type": {
+            "kind": "Entity",
+            "name": "Person"
+          }
+        },
+        {
+          "position": 6,
+          "name": "authority",
+          "type": {
+            "kind": "Entity",
+            "name": "Authority"
+          }
+        },
+        {
+          "position": 7,
+          "name": "effective",
+          "type": {
+            "kind": "PropositionTime"
+          }
+        }
+      ],
+      "index_type": "PropositionTime",
+      "profile_polarities": [
+        "Positive"
+      ],
+      "typed_ast": "Verb(Verb { name: \"omissionProhibition\", kind: Seeded, args: [Arg { name: \"id\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"conduct\", ty: Entity(\"Conduct\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }], effect: None, program: None })",
+      "origin": {
+        "module": "LegalGeneral",
+        "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res"
+      }
+    }
+  ],
+  "types": [
+    {
+      "kind": "entity",
+      "name": "Person",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Person\", supertypes: [], fields: [Field { name: \"patrimony\", ty: Entity(\"Patrimony\") }] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Thing",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Thing\", supertypes: [], fields: [] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Conduct",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Conduct\", supertypes: [], fields: [] })"
+    },
+    {
+      "kind": "entity",
+      "name": "PerformanceMode",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"PerformanceMode\", supertypes: [], fields: [] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Relation",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Relation\", supertypes: [], fields: [Field { name: \"debtor\", ty: Entity(\"Person\") }, Field { name: \"thing\", ty: Optional(Entity(\"Thing\")) }, Field { name: \"conduct\", ty: Optional(Entity(\"Conduct\")) }, Field { name: \"creditor\", ty: Entity(\"Person\") }, Field { name: \"mode\", ty: Entity(\"PerformanceMode\") }] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Patrimony",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Patrimony\", supertypes: [], fields: [Field { name: \"assets\", ty: Set(Entity(\"Thing\")) }, Field { name: \"rights\", ty: Set(Entity(\"Relation\")) }, Field { name: \"obligations\", ty: Set(Entity(\"Relation\")) }] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Authority",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Authority\", supertypes: [], fields: [] })"
+    },
+    {
+      "kind": "entity",
+      "name": "Fact",
+      "origin_module": "LegalGeneral",
+      "origin_file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "typed_ast": "Entity(Entity { name: \"Fact\", supertypes: [], fields: [] })"
+    }
+  ],
+  "constants": [
+    {
+      "name": "Doing",
+      "type": {
+        "kind": "Entity",
+        "name": "PerformanceMode"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"Doing\", ty: Entity(\"PerformanceMode\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "Abstaining",
+      "type": {
+        "kind": "Entity",
+        "name": "PerformanceMode"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"Abstaining\", ty: Entity(\"PerformanceMode\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "transfer",
+      "type": {
+        "kind": "Entity",
+        "name": "Conduct"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"transfer\", ty: Entity(\"Conduct\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "enact",
+      "type": {
+        "kind": "Entity",
+        "name": "Conduct"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"enact\", ty: Entity(\"Conduct\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "use",
+      "type": {
+        "kind": "Entity",
+        "name": "Conduct"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"use\", ty: Entity(\"Conduct\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "private",
+      "type": {
+        "kind": "Entity",
+        "name": "Authority"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"private\", ty: Entity(\"Authority\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "legislative",
+      "type": {
+        "kind": "Entity",
+        "name": "Authority"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"legislative\", ty: Entity(\"Authority\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "judicial",
+      "type": {
+        "kind": "Entity",
+        "name": "Authority"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"judicial\", ty: Entity(\"Authority\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "administrative",
+      "type": {
+        "kind": "Entity",
+        "name": "Authority"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"administrative\", ty: Entity(\"Authority\") })",
+      "origin_module": "LegalGeneral"
+    },
+    {
+      "name": "constitutional",
+      "type": {
+        "kind": "Entity",
+        "name": "Authority"
+      },
+      "extraction": "elaborated_inventory",
+      "typed_ast": "Const(Constant { name: \"constitutional\", ty: Entity(\"Authority\") })",
+      "origin_module": "LegalGeneral"
+    }
+  ],
+  "synthetic_constants": [
+    {
+      "name": "gSubject",
+      "type": {
+        "kind": "Entity",
+        "name": "Person"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gBeneficiary",
+      "type": {
+        "kind": "Entity",
+        "name": "Person"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gLegislator",
+      "type": {
+        "kind": "Entity",
+        "name": "Person"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gObject",
+      "type": {
+        "kind": "Entity",
+        "name": "Thing"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gConduct",
+      "type": {
+        "kind": "Entity",
+        "name": "Conduct"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gNorm",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gAct",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gHigh",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gLow",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gGrant",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gEnact",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gStatute",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gTransfer",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gHolding",
+      "type": {
+        "kind": "Entity",
+        "name": "Fact"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gTau",
+      "type": {
+        "kind": "PropositionTime"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gOtherTau",
+      "type": {
+        "kind": "PropositionTime"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gDate",
+      "type": {
+        "kind": "PropositionTime"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gEarlyDate",
+      "type": {
+        "kind": "PropositionTime"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    },
+    {
+      "name": "gLateDate",
+      "type": {
+        "kind": "PropositionTime"
+      },
+      "extraction": "source_declaration_in_fixture_loaded_by_existing_test",
+      "origin_module": "GeometryGeneral"
+    }
+  ],
+  "initial_domain": {
+    "kind": "powerset_of_ground_seed_events",
+    "fixture": "/home/maitreya/residuum/examples/experiments/legal_geometry/general.res",
+    "experiment": "performance",
+    "seed_count": 7,
+    "state_count": 128,
+    "extraction": "source_transcription; loaded and elaborated by existing inventory test; experiments not emitted by its exporter",
+    "seed_events_source": [
+      "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+      "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+      "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+      "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+      "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+      "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+      "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+    ]
+  },
+  "initial_profile": {
+    "new_clauses": 1,
+    "body_atoms": 4,
+    "rule_uses_later": 4,
+    "binders_total": 16,
+    "after_depth": 2,
+    "record_depth": 0,
+    "installation": "ordinary_clause_addition",
+    "heads": [
+      "compliance"
+    ],
+    "decision": "No effective normative D supplied; initial observer is explicit positive compliance support only",
+    "theory": "LegalGeneral",
+    "head_polarity": "Positive",
+    "observable_signature": {
+      "verb": "compliance",
+      "category": "Derived",
+      "arguments_typed_ast": "[Arg { name: \"norm\", ty: Entity(\"Fact\") }, Arg { name: \"act\", ty: Entity(\"Fact\") }, Arg { name: \"subject\", ty: Entity(\"Person\") }, Arg { name: \"object\", ty: Entity(\"Thing\") }, Arg { name: \"beneficiary\", ty: Entity(\"Person\") }, Arg { name: \"authority\", ty: Entity(\"Authority\") }, Arg { name: \"effective\", ty: PropositionTime }]",
+      "index_type": "PropositionTime"
+    },
+    "overinclusion_limit": "Adding positive compliance producers cannot remove compliance already derived by the reference theory"
+  },
+  "sources": [
+    {
+      "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "sha256": "639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc"
+    },
+    {
+      "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res",
+      "sha256": "f7daf4d5eb937a7fde8534dba5618acc50d5aaa5b05ff86c9656892eb3a03fbf"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/legal_monotonic.res",
+      "sha256": "24655c98ede7b128b8cd82df3a4473c114428b987bb0fe6a6d370c2b37f5575e"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/experiments/legal_geometry/general.res",
+      "sha256": "34e798fb540c73c1377320f512deb80931905bcba1071c7e79434db192b099cd"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/sales.res",
+      "sha256": "e95260e194553095db6063a5c5d5ddb107c4182104eeb6e22db6156da5f413dd"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/associated_program.res",
+      "sha256": "3b85a3a184ddf3c072e849e24c6575fdc8c7b649562cb2a6f4d1e3b053a4e547"
+    }
+  ],
+  "ast_exports": [
+    {
+      "file": "target/legal-geometry/general-inventory.tsv",
+      "sha256": "197f0c7cd26bf9fc8290c8eec849a324c4303e1dfda709ded32b49947a757dba"
+    },
+    {
+      "file": "target/legal-geometry/general-verbs.tsv",
+      "sha256": "7e0647bb9cfacc919ba94927a352bee6c43ce73a2a570edd365f427f768367e6"
+    }
+  ],
+  "scope": "data and proposed contract; no candidate generator or subsumption implementation"
+}

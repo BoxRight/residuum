@@ -1,0 +1,17 @@
+left	right	experiment	events	verdict
+AM+AD	AM+APD	performance	17	equal_all_events
+AM+AD	AM+APD	authority	38	equal_all_events
+AM+AD	AM+APD	legislation	28	equal_all_events
+AM+AD	AM+APD	transferCase	22	equal_all_events
+AM+AD	AM+APD	otherTime	18	equal_all_events
+AM+AD	AM+APD	otherAuthority	18	equal_all_events
+AM+AD	AM+APD	holding	21	equal_all_events
+AM+AD	AM+APD	extinction	18	equal_all_events
+APM+AD	APM+APD	performance	17	equal_all_events
+APM+AD	APM+APD	authority	38	equal_all_events
+APM+AD	APM+APD	legislation	28	equal_all_events
+APM+AD	APM+APD	transferCase	22	equal_all_events
+APM+AD	APM+APD	otherTime	18	equal_all_events
+APM+AD	APM+APD	otherAuthority	18	equal_all_events
+APM+AD	APM+APD	holding	21	equal_all_events
+APM+AD	APM+APD	extinction	18	equal_all_events

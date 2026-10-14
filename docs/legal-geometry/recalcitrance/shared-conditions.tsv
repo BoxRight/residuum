@@ -1,0 +1,8 @@
+stage	shared_minimal_supports	unanimous_positive	unanimous_negative
+0			
+1			empty
+2		RA,ORA,RAP,ORAP	empty
+3		RA,ORA,RAP,ORAP	empty,O,A,OA
+4		RA,ORA,AP,OAP,RAP,ORAP	empty,O,A,OA
+5		RA,ORA,AP,OAP,RAP,ORAP	empty,O,A,OA
+6	AP	RA,ORA,AP,OAP,RAP,ORAP	empty,O,A,OA,P

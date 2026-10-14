@@ -1,0 +1,3 @@
+importer	imported	importer_file	imported_file
+GeometryPatrimonial	LegalPatrimonial	/home/maitreya/residuum/examples/experiments/legal_geometry/patrimonial.res	/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res
+LegalPatrimonial	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res

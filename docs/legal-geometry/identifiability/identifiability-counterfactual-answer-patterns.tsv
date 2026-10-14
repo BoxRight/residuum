@@ -1,0 +1,33 @@
+answer_pattern	compatible_candidates	status
+[false, false, false, false, false]	APM+APD	counterfactual_candidate_remains
+[true, false, false, false, false]	APM+AD	counterfactual_candidate_remains
+[false, true, false, false, false]	AM+APD	counterfactual_candidate_remains
+[true, true, false, false, false]	AM+AD	counterfactual_candidate_remains
+[false, false, true, false, false]		counterfactual_version_space_empty
+[true, false, true, false, false]		counterfactual_version_space_empty
+[false, true, true, false, false]		counterfactual_version_space_empty
+[true, true, true, false, false]		counterfactual_version_space_empty
+[false, false, false, true, false]		counterfactual_version_space_empty
+[true, false, false, true, false]		counterfactual_version_space_empty
+[false, true, false, true, false]		counterfactual_version_space_empty
+[true, true, false, true, false]		counterfactual_version_space_empty
+[false, false, true, true, false]		counterfactual_version_space_empty
+[true, false, true, true, false]		counterfactual_version_space_empty
+[false, true, true, true, false]		counterfactual_version_space_empty
+[true, true, true, true, false]		counterfactual_version_space_empty
+[false, false, false, false, true]	APM+APD+APV	counterfactual_candidate_remains
+[true, false, false, false, true]		counterfactual_version_space_empty
+[false, true, false, false, true]	AM+APD+APV	counterfactual_candidate_remains
+[true, true, false, false, true]		counterfactual_version_space_empty
+[false, false, true, false, true]	AP	counterfactual_candidate_remains
+[true, false, true, false, true]		counterfactual_version_space_empty
+[false, true, true, false, true]		counterfactual_version_space_empty
+[true, true, true, false, true]		counterfactual_version_space_empty
+[false, false, false, true, true]		counterfactual_version_space_empty
+[true, false, false, true, true]	APM+AD+AV	counterfactual_candidate_remains
+[false, true, false, true, true]		counterfactual_version_space_empty
+[true, true, false, true, true]	AM+AD+AV	counterfactual_candidate_remains
+[false, false, true, true, true]		counterfactual_version_space_empty
+[true, false, true, true, true]		counterfactual_version_space_empty
+[false, true, true, true, true]		counterfactual_version_space_empty
+[true, true, true, true, true]		counterfactual_version_space_empty

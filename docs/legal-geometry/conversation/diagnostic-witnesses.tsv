@@ -1,0 +1,3 @@
+scenario	positive_observation	negative_observation	positive_input	negative_input	strict_subset	same_snapshot	positive_source	negative_source
+strict_monotonicity	strict_monotonicity	prior3	O	OA	true	false	stipulation:conversation/strict-monotonicity	stipulation:recalcitrance-study/3
+same_snapshot	seventh	same_snapshot	OP	OP	false	true	stipulation:conversation/seventh	stipulation:conversation/same-snapshot

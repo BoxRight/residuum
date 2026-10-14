@@ -1,0 +1,21 @@
+digraph G {
+rankdir=LR;
+node [fontname="sans-serif", fontsize=10];
+"Authority" [shape=ellipse, label="Authority"];
+"Conduct" [shape=ellipse, label="Conduct"];
+"Fact" [shape=ellipse, label="Fact"];
+"Patrimony" [shape=ellipse, label="Patrimony"];
+"PerformanceMode" [shape=ellipse, label="PerformanceMode"];
+"Person" [shape=ellipse, label="Person"];
+"Relation" [shape=ellipse, label="Relation"];
+"Thing" [shape=ellipse, label="Thing"];
+"Patrimony" -> "Relation" [label="obligations:Set(Entity(\"Relation\"))", fontsize=8];
+"Patrimony" -> "Relation" [label="rights:Set(Entity(\"Relation\"))", fontsize=8];
+"Patrimony" -> "Thing" [label="assets:Set(Entity(\"Thing\"))", fontsize=8];
+"Person" -> "Patrimony" [label="patrimony:Entity(\"Patrimony\")", fontsize=8];
+"Relation" -> "Conduct" [label="conduct:Optional(Entity(\"Conduct\"))", fontsize=8];
+"Relation" -> "PerformanceMode" [label="mode:Entity(\"PerformanceMode\")", fontsize=8];
+"Relation" -> "Person" [label="creditor:Entity(\"Person\")", fontsize=8];
+"Relation" -> "Person" [label="debtor:Entity(\"Person\")", fontsize=8];
+"Relation" -> "Thing" [label="thing:Optional(Entity(\"Thing\"))", fontsize=8];
+}

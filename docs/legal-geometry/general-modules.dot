@@ -1,0 +1,7 @@
+digraph G {
+rankdir=LR;
+node [fontname="sans-serif", fontsize=10];
+"GeometryGeneral" [shape=ellipse, label="GeometryGeneral"];
+"LegalGeneral" [shape=ellipse, label="LegalGeneral"];
+"GeometryGeneral" -> "LegalGeneral" [label="import", fontsize=8];
+}

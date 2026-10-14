@@ -1,0 +1,16 @@
+stage	case	input	positive	negative	worst	informative	already_answered	minimax	representable_seeded	legal_adequacy	independent_valuation	description
+six	candidateR	R	2	9	9	true	false	false	true	pending_external_deliberation	simulated_only	Derecho sin evidencia Act aportada
+six	candidateOR	OR	6	5	6	true	false	true	true	pending_external_deliberation	simulated_only	Obligación presentada y derecho, sin evidencia Act aportada
+six	candidateOP	OP	5	6	6	true	false	true	true	pending_external_deliberation	simulated_only	Obligación y permiso presentados, sin evidencia Act aportada
+six	candidateRP	RP	6	5	6	true	false	true	true	pending_external_deliberation	simulated_only	Derecho y permiso presentado, sin evidencia Act aportada
+six	candidateORP	ORP	10	1	10	true	false	false	true	pending_external_deliberation	simulated_only	Obligación, derecho y permiso presentado, sin evidencia Act aportada
+seven	candidateR	R	1	4	4	true	false	false	true	pending_external_deliberation	simulated_only	Derecho sin evidencia Act aportada
+seven	candidateOR	OR	3	2	3	true	false	true	true	pending_external_deliberation	simulated_only	Obligación presentada y derecho, sin evidencia Act aportada
+seven	candidateOP	OP	5	0	5	false	true	false	true	pending_external_deliberation	simulated_only	Obligación y permiso presentados, sin evidencia Act aportada
+seven	candidateRP	RP	3	2	3	true	false	true	true	pending_external_deliberation	simulated_only	Derecho y permiso presentado, sin evidencia Act aportada
+seven	candidateORP	ORP	5	0	5	false	false	false	true	pending_external_deliberation	simulated_only	Obligación, derecho y permiso presentado, sin evidencia Act aportada
+counterfactual_negative	candidateR	R	1	5	5	true	false	false	true	pending_external_deliberation	simulated_only	Derecho sin evidencia Act aportada
+counterfactual_negative	candidateOR	OR	3	3	3	true	false	true	true	pending_external_deliberation	simulated_only	Obligación presentada y derecho, sin evidencia Act aportada
+counterfactual_negative	candidateOP	OP	0	6	6	false	true	false	true	pending_external_deliberation	simulated_only	Obligación y permiso presentados, sin evidencia Act aportada
+counterfactual_negative	candidateRP	RP	3	3	3	true	false	true	true	pending_external_deliberation	simulated_only	Derecho y permiso presentado, sin evidencia Act aportada
+counterfactual_negative	candidateORP	ORP	5	1	5	true	false	false	true	pending_external_deliberation	simulated_only	Obligación, derecho y permiso presentado, sin evidencia Act aportada

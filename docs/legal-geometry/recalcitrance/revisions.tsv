@@ -1,0 +1,169 @@
+hypothesis	antichain	added_cases	removed_cases	compatible_final	new_producers	removed_producers
+H000	false		OA,RA,ORA,OAP,RAP,ORAP	false		obligationCompliance,rightCompliance
+H001	empty	empty,O,R,OR,A,P,OP,RP,ORP,AP		false	justificatorySupport0	obligationCompliance,rightCompliance
+H002	O	O,OR,OP,ORP	RA,RAP	false	justificatorySupport1	obligationCompliance,rightCompliance
+H003	O|R	O,R,OR,OP,RP,ORP		false	justificatorySupport1,justificatorySupport2	obligationCompliance,rightCompliance
+H004	O|R|A	O,R,OR,A,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport2,justificatorySupport4	obligationCompliance,rightCompliance
+H005	O|R|A|P	O,R,OR,A,P,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport2,justificatorySupport4,justificatorySupport8	obligationCompliance,rightCompliance
+H006	O|R|P	O,R,OR,P,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport2,justificatorySupport8	obligationCompliance,rightCompliance
+H007	O|R|AP	O,R,OR,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport2,justificatorySupport12	obligationCompliance,rightCompliance
+H008	O|A	O,OR,A,OP,ORP,AP		false	justificatorySupport1,justificatorySupport4	obligationCompliance,rightCompliance
+H009	O|A|P	O,OR,A,P,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport4,justificatorySupport8	obligationCompliance,rightCompliance
+H010	O|A|RP	O,OR,A,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport4,justificatorySupport10	obligationCompliance,rightCompliance
+H011	O|RA	O,OR,OP,ORP		false	justificatorySupport1,justificatorySupport6	obligationCompliance,rightCompliance
+H012	O|RA|P	O,OR,P,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport6,justificatorySupport8	obligationCompliance,rightCompliance
+H013	O|RA|RP	O,OR,OP,RP,ORP		false	justificatorySupport1,justificatorySupport6,justificatorySupport10	obligationCompliance,rightCompliance
+H014	O|RA|RP|AP	O,OR,OP,RP,ORP,AP		false	justificatorySupport1,justificatorySupport6,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H015	O|RA|AP	O,OR,OP,ORP,AP		false	justificatorySupport1,justificatorySupport6,justificatorySupport12	obligationCompliance,rightCompliance
+H016	O|P	O,OR,P,OP,RP,ORP,AP	RA	false	justificatorySupport1,justificatorySupport8	obligationCompliance,rightCompliance
+H017	O|RP	O,OR,OP,RP,ORP	RA	false	justificatorySupport1,justificatorySupport10	obligationCompliance,rightCompliance
+H018	O|RP|AP	O,OR,OP,RP,ORP,AP	RA	false	justificatorySupport1,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H019	O|AP	O,OR,OP,ORP,AP	RA	false	justificatorySupport1,justificatorySupport12	obligationCompliance,rightCompliance
+H020	O|RAP	O,OR,OP,ORP	RA	false	justificatorySupport1,justificatorySupport14	obligationCompliance,rightCompliance
+H021	R	R,OR,RP,ORP	OA,OAP	false	justificatorySupport2	obligationCompliance,rightCompliance
+H022	R|A	R,OR,A,RP,ORP,AP		false	justificatorySupport2,justificatorySupport4	obligationCompliance,rightCompliance
+H023	R|A|P	R,OR,A,P,OP,RP,ORP,AP		false	justificatorySupport2,justificatorySupport4,justificatorySupport8	obligationCompliance,rightCompliance
+H024	R|A|OP	R,OR,A,OP,RP,ORP,AP		false	justificatorySupport2,justificatorySupport4,justificatorySupport9	obligationCompliance,rightCompliance
+H025	R|OA	R,OR,RP,ORP		false	justificatorySupport2,justificatorySupport5	obligationCompliance,rightCompliance
+H026	R|OA|P	R,OR,P,OP,RP,ORP,AP		false	justificatorySupport2,justificatorySupport5,justificatorySupport8	obligationCompliance,rightCompliance
+H027	R|OA|OP	R,OR,OP,RP,ORP		false	justificatorySupport2,justificatorySupport5,justificatorySupport9	obligationCompliance,rightCompliance
+H028	R|OA|OP|AP	R,OR,OP,RP,ORP,AP		false	justificatorySupport2,justificatorySupport5,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H029	R|OA|AP	R,OR,RP,ORP,AP		false	justificatorySupport2,justificatorySupport5,justificatorySupport12	obligationCompliance,rightCompliance
+H030	R|P	R,OR,P,OP,RP,ORP,AP	OA	false	justificatorySupport2,justificatorySupport8	obligationCompliance,rightCompliance
+H031	R|OP	R,OR,OP,RP,ORP	OA	false	justificatorySupport2,justificatorySupport9	obligationCompliance,rightCompliance
+H032	R|OP|AP	R,OR,OP,RP,ORP,AP	OA	true	justificatorySupport2,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H033	R|AP	R,OR,RP,ORP,AP	OA	true	justificatorySupport2,justificatorySupport12	obligationCompliance,rightCompliance
+H034	R|OAP	R,OR,RP,ORP	OA	false	justificatorySupport2,justificatorySupport13	obligationCompliance,rightCompliance
+H035	OR	OR,ORP	OA,RA,OAP,RAP	false	justificatorySupport3	obligationCompliance,rightCompliance
+H036	OR|A	OR,A,ORP,AP		false	justificatorySupport3,justificatorySupport4	obligationCompliance,rightCompliance
+H037	OR|A|P	OR,A,P,OP,RP,ORP,AP		false	justificatorySupport3,justificatorySupport4,justificatorySupport8	obligationCompliance,rightCompliance
+H038	OR|A|OP	OR,A,OP,ORP,AP		false	justificatorySupport3,justificatorySupport4,justificatorySupport9	obligationCompliance,rightCompliance
+H039	OR|A|OP|RP	OR,A,OP,RP,ORP,AP		false	justificatorySupport3,justificatorySupport4,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H040	OR|A|RP	OR,A,RP,ORP,AP		false	justificatorySupport3,justificatorySupport4,justificatorySupport10	obligationCompliance,rightCompliance
+H041	OR|OA	OR,ORP	RA,RAP	false	justificatorySupport3,justificatorySupport5	obligationCompliance,rightCompliance
+H042	OR|OA|RA	OR,ORP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6	obligationCompliance,rightCompliance
+H043	OR|OA|RA|P	OR,P,OP,RP,ORP,AP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport8	obligationCompliance,rightCompliance
+H044	OR|OA|RA|OP	OR,OP,ORP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport9	obligationCompliance,rightCompliance
+H045	OR|OA|RA|OP|RP	OR,OP,RP,ORP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H046	OR|OA|RA|OP|RP|AP	OR,OP,RP,ORP,AP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H047	OR|OA|RA|OP|AP	OR,OP,ORP,AP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H048	OR|OA|RA|RP	OR,RP,ORP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport10	obligationCompliance,rightCompliance
+H049	OR|OA|RA|RP|AP	OR,RP,ORP,AP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H050	OR|OA|RA|AP	OR,ORP,AP		false	justificatorySupport3,justificatorySupport5,justificatorySupport6,justificatorySupport12	obligationCompliance,rightCompliance
+H051	OR|OA|P	OR,P,OP,RP,ORP,AP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport8	obligationCompliance,rightCompliance
+H052	OR|OA|OP	OR,OP,ORP	RA,RAP	false	justificatorySupport3,justificatorySupport5,justificatorySupport9	obligationCompliance,rightCompliance
+H053	OR|OA|OP|RP	OR,OP,RP,ORP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H054	OR|OA|OP|RP|AP	OR,OP,RP,ORP,AP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H055	OR|OA|OP|AP	OR,OP,ORP,AP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H056	OR|OA|OP|RAP	OR,OP,ORP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport9,justificatorySupport14	obligationCompliance,rightCompliance
+H057	OR|OA|RP	OR,RP,ORP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport10	obligationCompliance,rightCompliance
+H058	OR|OA|RP|AP	OR,RP,ORP,AP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H059	OR|OA|AP	OR,ORP,AP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport12	obligationCompliance,rightCompliance
+H060	OR|OA|RAP	OR,ORP	RA	false	justificatorySupport3,justificatorySupport5,justificatorySupport14	obligationCompliance,rightCompliance
+H061	OR|RA	OR,ORP	OA,OAP	false	justificatorySupport3,justificatorySupport6	obligationCompliance,rightCompliance
+H062	OR|RA|P	OR,P,OP,RP,ORP,AP	OA	false	justificatorySupport3,justificatorySupport6,justificatorySupport8	obligationCompliance,rightCompliance
+H063	OR|RA|OP	OR,OP,ORP	OA	false	justificatorySupport3,justificatorySupport6,justificatorySupport9	obligationCompliance,rightCompliance
+H064	OR|RA|OP|RP	OR,OP,RP,ORP	OA	false	justificatorySupport3,justificatorySupport6,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H065	OR|RA|OP|RP|AP	OR,OP,RP,ORP,AP	OA	true	justificatorySupport3,justificatorySupport6,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H066	OR|RA|OP|AP	OR,OP,ORP,AP	OA	true	justificatorySupport3,justificatorySupport6,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H067	OR|RA|RP	OR,RP,ORP	OA,OAP	false	justificatorySupport3,justificatorySupport6,justificatorySupport10	obligationCompliance,rightCompliance
+H068	OR|RA|RP|AP	OR,RP,ORP,AP	OA	true	justificatorySupport3,justificatorySupport6,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H069	OR|RA|RP|OAP	OR,RP,ORP	OA	false	justificatorySupport3,justificatorySupport6,justificatorySupport10,justificatorySupport13	obligationCompliance,rightCompliance
+H070	OR|RA|AP	OR,ORP,AP	OA	true	justificatorySupport3,justificatorySupport6,justificatorySupport12	obligationCompliance,rightCompliance
+H071	OR|RA|OAP	OR,ORP	OA	false	justificatorySupport3,justificatorySupport6,justificatorySupport13	obligationCompliance,rightCompliance
+H072	OR|P	OR,P,OP,RP,ORP,AP	OA,RA	false	justificatorySupport3,justificatorySupport8	obligationCompliance,rightCompliance
+H073	OR|OP	OR,OP,ORP	OA,RA,RAP	false	justificatorySupport3,justificatorySupport9	obligationCompliance,rightCompliance
+H074	OR|OP|RP	OR,OP,RP,ORP	OA,RA	false	justificatorySupport3,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H075	OR|OP|RP|AP	OR,OP,RP,ORP,AP	OA,RA	false	justificatorySupport3,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H076	OR|OP|AP	OR,OP,ORP,AP	OA,RA	false	justificatorySupport3,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H077	OR|OP|RAP	OR,OP,ORP	OA,RA	false	justificatorySupport3,justificatorySupport9,justificatorySupport14	obligationCompliance,rightCompliance
+H078	OR|RP	OR,RP,ORP	OA,RA,OAP	false	justificatorySupport3,justificatorySupport10	obligationCompliance,rightCompliance
+H079	OR|RP|AP	OR,RP,ORP,AP	OA,RA	false	justificatorySupport3,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H080	OR|RP|OAP	OR,RP,ORP	OA,RA	false	justificatorySupport3,justificatorySupport10,justificatorySupport13	obligationCompliance,rightCompliance
+H081	OR|AP	OR,ORP,AP	OA,RA	false	justificatorySupport3,justificatorySupport12	obligationCompliance,rightCompliance
+H082	OR|OAP	OR,ORP	OA,RA,RAP	false	justificatorySupport3,justificatorySupport13	obligationCompliance,rightCompliance
+H083	OR|OAP|RAP	OR,ORP	OA,RA	false	justificatorySupport3,justificatorySupport13,justificatorySupport14	obligationCompliance,rightCompliance
+H084	OR|RAP	OR,ORP	OA,RA,OAP	false	justificatorySupport3,justificatorySupport14	obligationCompliance,rightCompliance
+H085	A	A,AP		false	justificatorySupport4	obligationCompliance,rightCompliance
+H086	A|P	A,P,OP,RP,ORP,AP		false	justificatorySupport4,justificatorySupport8	obligationCompliance,rightCompliance
+H087	A|OP	A,OP,ORP,AP		false	justificatorySupport4,justificatorySupport9	obligationCompliance,rightCompliance
+H088	A|OP|RP	A,OP,RP,ORP,AP		false	justificatorySupport4,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H089	A|RP	A,RP,ORP,AP		false	justificatorySupport4,justificatorySupport10	obligationCompliance,rightCompliance
+H090	A|ORP	A,ORP,AP		false	justificatorySupport4,justificatorySupport11	obligationCompliance,rightCompliance
+H091	OA		RA,RAP	false	justificatorySupport5	obligationCompliance,rightCompliance
+H092	OA|RA			false	justificatorySupport5,justificatorySupport6	obligationCompliance,rightCompliance
+H093	OA|RA|P	P,OP,RP,ORP,AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport8	obligationCompliance,rightCompliance
+H094	OA|RA|OP	OP,ORP		false	justificatorySupport5,justificatorySupport6,justificatorySupport9	obligationCompliance,rightCompliance
+H095	OA|RA|OP|RP	OP,RP,ORP		false	justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H096	OA|RA|OP|RP|AP	OP,RP,ORP,AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H097	OA|RA|OP|AP	OP,ORP,AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H098	OA|RA|RP	RP,ORP		false	justificatorySupport5,justificatorySupport6,justificatorySupport10	obligationCompliance,rightCompliance
+H099	OA|RA|RP|AP	RP,ORP,AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H100	OA|RA|ORP	ORP		false	justificatorySupport5,justificatorySupport6,justificatorySupport11	obligationCompliance,rightCompliance
+H101	OA|RA|ORP|AP	ORP,AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport11,justificatorySupport12	obligationCompliance,rightCompliance
+H102	OA|RA|AP	AP		false	justificatorySupport5,justificatorySupport6,justificatorySupport12	obligationCompliance,rightCompliance
+H103	OA|P	P,OP,RP,ORP,AP	RA	false	justificatorySupport5,justificatorySupport8	obligationCompliance,rightCompliance
+H104	OA|OP	OP,ORP	RA,RAP	false	justificatorySupport5,justificatorySupport9	obligationCompliance,rightCompliance
+H105	OA|OP|RP	OP,RP,ORP	RA	false	justificatorySupport5,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H106	OA|OP|RP|AP	OP,RP,ORP,AP	RA	false	justificatorySupport5,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H107	OA|OP|AP	OP,ORP,AP	RA	false	justificatorySupport5,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H108	OA|OP|RAP	OP,ORP	RA	false	justificatorySupport5,justificatorySupport9,justificatorySupport14	obligationCompliance,rightCompliance
+H109	OA|RP	RP,ORP	RA	false	justificatorySupport5,justificatorySupport10	obligationCompliance,rightCompliance
+H110	OA|RP|AP	RP,ORP,AP	RA	false	justificatorySupport5,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H111	OA|ORP	ORP	RA,RAP	false	justificatorySupport5,justificatorySupport11	obligationCompliance,rightCompliance
+H112	OA|ORP|AP	ORP,AP	RA	false	justificatorySupport5,justificatorySupport11,justificatorySupport12	obligationCompliance,rightCompliance
+H113	OA|ORP|RAP	ORP	RA	false	justificatorySupport5,justificatorySupport11,justificatorySupport14	obligationCompliance,rightCompliance
+H114	OA|AP	AP	RA	false	justificatorySupport5,justificatorySupport12	obligationCompliance,rightCompliance
+H115	OA|RAP		RA	false	justificatorySupport5,justificatorySupport14	obligationCompliance,rightCompliance
+H116	RA		OA,OAP	false	justificatorySupport6	obligationCompliance,rightCompliance
+H117	RA|P	P,OP,RP,ORP,AP	OA	false	justificatorySupport6,justificatorySupport8	obligationCompliance,rightCompliance
+H118	RA|OP	OP,ORP	OA	false	justificatorySupport6,justificatorySupport9	obligationCompliance,rightCompliance
+H119	RA|OP|RP	OP,RP,ORP	OA	false	justificatorySupport6,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H120	RA|OP|RP|AP	OP,RP,ORP,AP	OA	true	justificatorySupport6,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H121	RA|OP|AP	OP,ORP,AP	OA	true	justificatorySupport6,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H122	RA|RP	RP,ORP	OA,OAP	false	justificatorySupport6,justificatorySupport10	obligationCompliance,rightCompliance
+H123	RA|RP|AP	RP,ORP,AP	OA	true	justificatorySupport6,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H124	RA|RP|OAP	RP,ORP	OA	false	justificatorySupport6,justificatorySupport10,justificatorySupport13	obligationCompliance,rightCompliance
+H125	RA|ORP	ORP	OA,OAP	false	justificatorySupport6,justificatorySupport11	obligationCompliance,rightCompliance
+H126	RA|ORP|AP	ORP,AP	OA	true	justificatorySupport6,justificatorySupport11,justificatorySupport12	obligationCompliance,rightCompliance
+H127	RA|ORP|OAP	ORP	OA	false	justificatorySupport6,justificatorySupport11,justificatorySupport13	obligationCompliance,rightCompliance
+H128	RA|AP	AP	OA	true	justificatorySupport6,justificatorySupport12	obligationCompliance,rightCompliance
+H129	RA|OAP		OA	false	justificatorySupport6,justificatorySupport13	obligationCompliance,rightCompliance
+H130	ORA		OA,RA,OAP,RAP	false	justificatorySupport7	obligationCompliance,rightCompliance
+H131	ORA|P	P,OP,RP,ORP,AP	OA,RA	false	justificatorySupport7,justificatorySupport8	obligationCompliance,rightCompliance
+H132	ORA|OP	OP,ORP	OA,RA,RAP	false	justificatorySupport7,justificatorySupport9	obligationCompliance,rightCompliance
+H133	ORA|OP|RP	OP,RP,ORP	OA,RA	false	justificatorySupport7,justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H134	ORA|OP|RP|AP	OP,RP,ORP,AP	OA,RA	false	justificatorySupport7,justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H135	ORA|OP|AP	OP,ORP,AP	OA,RA	false	justificatorySupport7,justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H136	ORA|OP|RAP	OP,ORP	OA,RA	false	justificatorySupport7,justificatorySupport9,justificatorySupport14	obligationCompliance,rightCompliance
+H137	ORA|RP	RP,ORP	OA,RA,OAP	false	justificatorySupport7,justificatorySupport10	obligationCompliance,rightCompliance
+H138	ORA|RP|AP	RP,ORP,AP	OA,RA	false	justificatorySupport7,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H139	ORA|RP|OAP	RP,ORP	OA,RA	false	justificatorySupport7,justificatorySupport10,justificatorySupport13	obligationCompliance,rightCompliance
+H140	ORA|ORP	ORP	OA,RA,OAP,RAP	false	justificatorySupport7,justificatorySupport11	obligationCompliance,rightCompliance
+H141	ORA|ORP|AP	ORP,AP	OA,RA	false	justificatorySupport7,justificatorySupport11,justificatorySupport12	obligationCompliance,rightCompliance
+H142	ORA|ORP|OAP	ORP	OA,RA,RAP	false	justificatorySupport7,justificatorySupport11,justificatorySupport13	obligationCompliance,rightCompliance
+H143	ORA|ORP|OAP|RAP	ORP	OA,RA	false	justificatorySupport7,justificatorySupport11,justificatorySupport13,justificatorySupport14	obligationCompliance,rightCompliance
+H144	ORA|ORP|RAP	ORP	OA,RA,OAP	false	justificatorySupport7,justificatorySupport11,justificatorySupport14	obligationCompliance,rightCompliance
+H145	ORA|AP	AP	OA,RA	false	justificatorySupport7,justificatorySupport12	obligationCompliance,rightCompliance
+H146	ORA|OAP		OA,RA,RAP	false	justificatorySupport7,justificatorySupport13	obligationCompliance,rightCompliance
+H147	ORA|OAP|RAP		OA,RA	false	justificatorySupport7,justificatorySupport13,justificatorySupport14	obligationCompliance,rightCompliance
+H148	ORA|RAP		OA,RA,OAP	false	justificatorySupport7,justificatorySupport14	obligationCompliance,rightCompliance
+H149	P	P,OP,RP,ORP,AP	OA,RA,ORA	false	justificatorySupport8	obligationCompliance,rightCompliance
+H150	OP	OP,ORP	OA,RA,ORA,RAP	false	justificatorySupport9	obligationCompliance,rightCompliance
+H151	OP|RP	OP,RP,ORP	OA,RA,ORA	false	justificatorySupport9,justificatorySupport10	obligationCompliance,rightCompliance
+H152	OP|RP|AP	OP,RP,ORP,AP	OA,RA,ORA	false	justificatorySupport9,justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H153	OP|AP	OP,ORP,AP	OA,RA,ORA	false	justificatorySupport9,justificatorySupport12	obligationCompliance,rightCompliance
+H154	OP|RAP	OP,ORP	OA,RA,ORA	false	justificatorySupport9,justificatorySupport14	obligationCompliance,rightCompliance
+H155	RP	RP,ORP	OA,RA,ORA,OAP	false	justificatorySupport10	obligationCompliance,rightCompliance
+H156	RP|AP	RP,ORP,AP	OA,RA,ORA	false	justificatorySupport10,justificatorySupport12	obligationCompliance,rightCompliance
+H157	RP|OAP	RP,ORP	OA,RA,ORA	false	justificatorySupport10,justificatorySupport13	obligationCompliance,rightCompliance
+H158	ORP	ORP	OA,RA,ORA,OAP,RAP	false	justificatorySupport11	obligationCompliance,rightCompliance
+H159	ORP|AP	ORP,AP	OA,RA,ORA	false	justificatorySupport11,justificatorySupport12	obligationCompliance,rightCompliance
+H160	ORP|OAP	ORP	OA,RA,ORA,RAP	false	justificatorySupport11,justificatorySupport13	obligationCompliance,rightCompliance
+H161	ORP|OAP|RAP	ORP	OA,RA,ORA	false	justificatorySupport11,justificatorySupport13,justificatorySupport14	obligationCompliance,rightCompliance
+H162	ORP|RAP	ORP	OA,RA,ORA,OAP	false	justificatorySupport11,justificatorySupport14	obligationCompliance,rightCompliance
+H163	AP	AP	OA,RA,ORA	false	justificatorySupport12	obligationCompliance,rightCompliance
+H164	OAP		OA,RA,ORA,RAP	false	justificatorySupport13	obligationCompliance,rightCompliance
+H165	OAP|RAP		OA,RA,ORA	false	justificatorySupport13,justificatorySupport14	obligationCompliance,rightCompliance
+H166	RAP		OA,RA,ORA,OAP	false	justificatorySupport14	obligationCompliance,rightCompliance
+H167	ORAP		OA,RA,ORA,OAP,RAP	false	justificatorySupport15	obligationCompliance,rightCompliance

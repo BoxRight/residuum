@@ -1,0 +1,5 @@
+model	mask	input	closure	proofs
+general	0	[]	{}	0
+patrimonial	0	[]	{}	0
+general	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]	{"Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau", "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau", "give(gSubject, gObject, gBeneficiary) @ after(gTau)", "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau", "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau"}	4
+patrimonial	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]	{"Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau", "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau", "give(gSubject, gObject, gBeneficiary) @ after(gTau)", "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau", "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau"}	4

@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "legal_geometry_tests.rs"]
+mod legal_geometry;
+
 #[path = "effect_tests.rs"]
 mod effects;
 

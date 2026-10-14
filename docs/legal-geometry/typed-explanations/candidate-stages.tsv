@@ -1,0 +1,4 @@
+stage	candidates
+initial	HRelational,HFiledDuty,HActSuffices,HRecipientPurpose
+after_pair	HRelational,HFiledDuty,HRecipientPurpose
+after_proposed_discriminant	HRelational,HRecipientPurpose

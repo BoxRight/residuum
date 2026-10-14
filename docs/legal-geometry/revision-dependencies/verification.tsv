@@ -1,0 +1,4 @@
+stage	name	exit	seconds	RSS_MiB	report
+compile	compile only	0	2.9598	360.84	20261010T071901146274Z-75452
+test	cli::tests::legal_geometry::region_revision::dependencies::minimal_revision_feedback_is_conditional_and_invariant_under_equal_closures	0	0.2450	15.37	20261010T071931518493Z-76836
+test	cli::tests::legal_geometry::region_revision::dependencies::hypothetical_guard_completion_preserves_observations_but_changes_global_geometry	0	0.7120	15.42	20261010T071931518493Z-76836

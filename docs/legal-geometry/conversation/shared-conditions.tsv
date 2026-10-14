@@ -1,0 +1,4 @@
+stage	count	shared_minimal_supports	unanimous_positive	unanimous_negative
+six	11	AP	RA,ORA,AP,OAP,RAP,ORAP	empty,O,A,OA,P
+seven	5	OP,AP	RA,ORA,OP,ORP,AP,OAP,RAP,ORAP	empty,O,A,OA,P
+counterfactual_negative	6	AP	RA,ORA,AP,OAP,RAP,ORAP	empty,O,A,OA,P,OP

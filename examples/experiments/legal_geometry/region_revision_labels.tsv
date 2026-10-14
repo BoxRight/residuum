@@ -1,0 +1,15 @@
+# External experimental assumptions only; no doctrinal endorsement.
+case	positive
+baselineObligation	1
+baselineRight	1
+assumedPositiveDispute	1
+assumedPositiveOmission	1
+empty	0
+actOnly	0
+permissionOnly	0
+disputeOnly	0
+omissionOnly	0
+permissionDispute	0
+permissionOmission	0
+obligationOnly	0
+rightOnly	0

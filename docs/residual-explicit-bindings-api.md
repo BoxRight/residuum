@@ -1,9 +1,21 @@
 # Explicit residual query bindings
 
 This additive API starts from `9f78f88`. Existing query APIs retain their
-contracts, including the local API's empty result for a satisfied rule. The new
-local API retains Unit explicitly, so it distinguishes success without pending
-requirements from a head that does not match.
+contracts, including the local API's empty result for a satisfied rule. An empty
+bindings list delegates to the corresponding legacy API, preserving its errors,
+validation order, results and complete provenance.
+
+## Local-query Unit contract
+
+With nonempty bindings, the local API retains each satisfied branch as an
+explicit `Unit`, including ordered evidence witnesses, canonical substitutions
+and unresolved typed parameters. This is a syntactic reduction of one Rule,
+not a forward-certified assertion. A head that does not match returns an empty
+vector. A supplied binding conflicting with a matching goal is an error; an
+independently specialized Rule whose head is incompatible returns no match.
+An empty bindings list retains the legacy local convention: fully satisfied
+branches are omitted. This distinction is intentional and is confined to local
+queries; Horn and active queries already represent successful Unit explanations.
 
 `QueryBinding` contains a `QueryParameterScope::Rule(RuleRef)` or
 `QueryParameterScope::Program(ProgramRef)`, a parameter name, a type and a

@@ -42,8 +42,9 @@ pub struct QueryWithBindings<T> {
     pub bindings: Vec<QueryBinding>,
 }
 
-/// Local reduction, including Unit branches. An empty vector means the head
-/// does not match; pending branches retain every unbound typed parameter.
+/// Empty bindings delegate to the legacy local contract. Nonempty bindings
+/// retain Unit branches and every unbound typed parameter; see the documented
+/// local-query Unit contract in docs/residual-explicit-bindings-api.md.
 pub fn query_residual_with_bindings(
     module: &Module,
     rule: &Rule,
@@ -51,6 +52,12 @@ pub fn query_residual_with_bindings(
     known: &[Event],
     bindings: &[QueryBinding],
 ) -> Result<QueryWithBindings<Vec<ResidualRequirement>>, Error> {
+    if bindings.is_empty() {
+        return Ok(QueryWithBindings {
+            query: super::query::query_residual(rule, goal, known)?,
+            bindings: Vec::new(),
+        });
+    }
     let rules = vec![rule.clone()];
     let (constraints, bindings) = resolve(module, &rules, &BTreeMap::new(), bindings)?;
     let empty = Bindings::new();
@@ -77,10 +84,11 @@ pub fn query_program_residual_with_bindings(
     limits: SearchLimits,
     allowed: Option<&[Abducible]>,
 ) -> Result<QueryWithBindings<ProgramResidualQuery>, Error> {
-    if module
-        .declarations
-        .iter()
-        .any(|d| matches!(d, Declaration::Default(_)))
+    if !bindings.is_empty()
+        && module
+            .declarations
+            .iter()
+            .any(|d| matches!(d, Declaration::Default(_)))
     {
         return Err(Error::new(
             "bound residual queries require a monotonic module without defaults",
@@ -102,13 +110,25 @@ pub fn query_program_residual_with_bindings(
             compile_program(find_program(module, &reference.name)?, module)?
         }
     };
-    let (constraints, bindings) = resolve(module, &rules, &BTreeMap::new(), bindings)?;
-    preflight(&rules, goal, &constraints)?;
     let mut view = module.clone();
     view.declarations
         .retain(|d| !matches!(d, Declaration::Rule(_)));
     view.declarations
-        .extend(rules.into_iter().map(Declaration::Rule));
+        .extend(rules.iter().cloned().map(Declaration::Rule));
+    if bindings.is_empty() {
+        let query = match allowed {
+            None => super::query_program_residual(&view, evidence, goal, limits),
+            Some(allowed) => super::query_program_residual_with_abducibles(
+                &view, evidence, goal, allowed, limits,
+            ),
+        }?;
+        return Ok(QueryWithBindings {
+            query,
+            bindings: Vec::new(),
+        });
+    }
+    let (constraints, bindings) = resolve(module, &rules, &BTreeMap::new(), bindings)?;
+    preflight(&rules, goal, &constraints)?;
     let defaults = default_abducibles(module);
     Ok(QueryWithBindings {
         query: super::program::query_with_constraints(
@@ -134,6 +154,18 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
     allowed: Option<&[Abducible]>,
     clock: &mut C,
 ) -> Result<QueryWithBindings<ActiveProgramResidualQuery>, Error> {
+    if bindings.is_empty() {
+        let query = match allowed {
+            None => super::query_active_program_residual(module, evidence, goal, limits, clock),
+            Some(allowed) => super::query_active_program_residual_with_abducibles(
+                module, evidence, goal, allowed, limits, clock,
+            ),
+        }?;
+        return Ok(QueryWithBindings {
+            query,
+            bindings: Vec::new(),
+        });
+    }
     let (view, templates) = guarded_view(module)?;
     let rules: Vec<_> = view
         .declarations
@@ -435,5 +467,7 @@ fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Re
     Ok(())
 }
 
+#[cfg(test)]
+mod compatibility_tests;
 #[cfg(test)]
 mod tests;

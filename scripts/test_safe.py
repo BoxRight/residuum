@@ -167,10 +167,16 @@ def main():
     parser.add_argument('--format', action='store_true')
     parser.add_argument('--fixture', type=Path, help='Run one source-defined Formal fixture with the bounded example runner')
     parser.add_argument('--cli', choices=('run', 'query', 'explain'), help='Run one CLI command on --fixture under the same limits')
+    parser.add_argument('--steps', type=int, help='Bounded stepwise CLI transitions (1..4096)')
+    parser.add_argument('--trace', action='store_true', help='Show every stepwise CLI transition')
     parser.add_argument('--incremental', action='store_true', help='Forward incremental comparison of base/delta seed blocks; requires --fixture')
     parser.add_argument('--forward', action='store_true', help='Module-aware forward closure with active verb programs; requires --fixture')
     parser.add_argument('--library', type=Path, help='Compose one shared declaration fixture; requires --fixture and --incremental')
     args = parser.parse_args()
+    if (args.steps is not None or args.trace) and not args.cli:
+        parser.error('--steps and --trace require --cli')
+    if args.steps is not None and not 1 <= args.steps <= 4096:
+        parser.error('--steps must be in 1..4096')
     if args.test_target != 'lib' and (args.fixture or args.fmt_check or args.format):
         parser.error('--test-target is only for test compilation/execution')
     if args.cli and (not args.fixture or args.forward or args.incremental or args.library):
@@ -221,7 +227,9 @@ def main():
                                  [str(binaries[0])] + ([args.cli] if args.cli else [])
                                  + (['--incremental'] if args.incremental else [])
                                  + (['--forward'] if args.forward else []) + [str(fixture)]
-                                 + (['--library', str(library)] if library else []), 15,
+                                 + (['--library', str(library)] if library else [])
+                                 + (['--steps', str(args.steps)] if args.steps is not None else [])
+                                 + (['--trace'] if args.trace else []), 15,
                                  diagnostics=diagnostics)
         except RuntimeError:
             # Expose semantic errors to CLI callers as well as keeping the report.

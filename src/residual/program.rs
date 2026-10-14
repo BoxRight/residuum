@@ -217,20 +217,33 @@ pub(super) fn query_with_constraints(
         constraints,
     };
     let candidates = search.event(goal, 0)?;
+    certify_candidates(
+        &search.rules,
+        evidence,
+        goal,
+        &search.abducibles,
+        search.metrics,
+        candidates,
+    )
+}
+
+pub(super) fn certify_candidates(
+    rules: &[&Rule],
+    evidence: &[Event],
+    goal: &Event,
+    allowed: &BTreeSet<Abducible>,
+    mut metrics: SearchMetrics,
+    candidates: Vec<ResidualExplanation>,
+) -> Result<ProgramResidualQuery, Error> {
     let mut explanations = Vec::new();
     let mut rejected = 0;
     for candidate in candidates {
         // The final boundary checks admissibility and replays the actual program
         // rules using forward semantics. No hypothetical facts enter Known.
-        if !admissible(&candidate.required, &search.abducibles) {
+        if !admissible(&candidate.required, allowed) {
             continue;
         }
-        if let Some(events) = replay_proof(
-            &candidate.proof,
-            &search.rules,
-            evidence,
-            &search.abducibles,
-        ) {
+        if let Some(events) = replay_proof(&candidate.proof, rules, evidence, allowed) {
             if events.as_slice() == std::slice::from_ref(goal) {
                 explanations.push(candidate);
                 continue;
@@ -238,7 +251,7 @@ pub(super) fn query_with_constraints(
         }
         rejected += 1;
     }
-    search.metrics.rejected_not_forward_supported = rejected;
+    metrics.rejected_not_forward_supported = rejected;
     let failure = explanations.is_empty().then_some(if rejected > 0 {
         AbductionFailure::NotForwardSupported
     } else {
@@ -260,7 +273,7 @@ pub(super) fn query_with_constraints(
         goal: goal.clone(),
         required,
         explanations,
-        metrics: search.metrics,
+        metrics,
         failure,
     })
 }
@@ -313,7 +326,7 @@ fn replay_proof(
     }
 }
 
-fn validate_event(event: &Event, verbs: &BTreeMap<&str, &Verb>) -> Result<(), Error> {
+pub(super) fn validate_event(event: &Event, verbs: &BTreeMap<&str, &Verb>) -> Result<(), Error> {
     let Some(verb) = verbs.get(event.verb.as_str()) else {
         return Err(Error::new(format!(
             "unknown query/evidence verb `{}`",

@@ -2,6 +2,8 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 
 mod incremental;
+mod steps;
+pub use steps::{DerivativeSession, DerivativeStep, ForwardSession, ForwardStep};
 mod known_index;
 mod program_incremental;
 use known_index::{KnownIndex, KnownView};

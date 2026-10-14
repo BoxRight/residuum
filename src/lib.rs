@@ -17,19 +17,22 @@ pub use defaults::{
     BlockingScope, DefaultBlock, DefaultExtension, evaluate_defaults, select_active_rules,
 };
 pub use derive::{
-    ClosureDelta, DerivationClock, IncrementalClosure, IncrementalProgramClosure, IncrementalStats,
-    ProgramActivation, ProgramClosureDelta, close, close_program, close_program_reference,
-    derive_once, instantiate, instantiate_from_known, stamp,
+    ClosureDelta, DerivationClock, DerivativeSession, DerivativeStep, ForwardSession, ForwardStep,
+    IncrementalClosure, IncrementalProgramClosure, IncrementalStats, ProgramActivation,
+    ProgramClosureDelta, close, close_program, close_program_reference, derive_once, instantiate,
+    instantiate_from_known, stamp,
 };
 pub use elab::{Error, elaborate_cnl, elaborate_formal};
 pub use formal::parse_formal;
 pub use modules::load_formal_module;
 pub use residual::{
-    Abducible, AbductionFailure, ActiveProgramResidualQuery, CertifiedActiveExplanation,
-    HornQueryScope, ProgramResidualQuery, QueryBinding, QueryParameterScope, QueryWithBindings,
-    RequirementFormula, ResidualActivation, ResidualExplanation, ResidualProof, SearchLimits,
-    SearchMetrics, query_active_program_residual,
-    query_active_program_residual_in_scope_with_bindings,
+    Abducible, AbductionFailure, ActiveProgramResidualQuery, ActiveResidualSession,
+    CertifiedActiveExplanation, HornQueryScope, ProgramResidualQuery, QueryBinding,
+    QueryParameterScope, QueryWithBindings, RequirementFormula, ResidualActivation,
+    ResidualExplanation, ResidualProof, ResidualSearchTree, ResidualSession, ResidualStep,
+    SearchLimits, SearchMetrics, begin_active_residual_query_in_scope_with_bindings,
+    begin_active_residual_query_with_bindings, begin_residual_query_with_bindings,
+    query_active_program_residual, query_active_program_residual_in_scope_with_bindings,
     query_active_program_residual_with_abducibles, query_active_program_residual_with_bindings,
     query_program_residual, query_program_residual_with_abducibles,
     query_program_residual_with_bindings, query_residual, query_residual_with_bindings, residuate,

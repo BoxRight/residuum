@@ -60,6 +60,12 @@ impl IncrementalClosure {
         &self.closure
     }
 
+    /// Expose Kleene approximations of the additive derivative from this
+    /// internally verified closed base, without mutating the base or calling update.
+    pub fn begin_stepwise_update(&self, additions: Vec<Event>) -> super::DerivativeSession {
+        super::steps::DerivativeSession::from_closed(&self.closure, &self.rules, additions)
+    }
+
     /// Caller supplies derivation time independently of rounds and PropTime.
     /// Empty/duplicate additions do no inference work and receive no stamps.
     /// Like close, this requires a terminating positive Horn instance.

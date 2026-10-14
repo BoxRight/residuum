@@ -8,12 +8,15 @@ mod bindings;
 mod query;
 pub use bindings::{
     HornQueryScope, QueryBinding, QueryParameterScope, QueryWithBindings,
-    query_active_program_residual_in_scope_with_bindings,
+    begin_active_residual_query_in_scope_with_bindings, begin_active_residual_query_with_bindings,
+    begin_residual_query_with_bindings, query_active_program_residual_in_scope_with_bindings,
     query_active_program_residual_with_bindings, query_program_residual_with_bindings,
     query_residual_with_bindings,
 };
 pub(crate) use bindings::{query_parameter_type, scoped_rules, validate_query_options};
+mod steps;
 pub use query::query_residual;
+pub use steps::{ActiveResidualSession, ResidualSearchTree, ResidualSession, ResidualStep};
 mod active;
 mod program;
 pub use active::{

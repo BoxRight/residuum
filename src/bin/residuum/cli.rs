@@ -13,11 +13,16 @@ use residuum::typed::{
 
 #[path = "cli/default_output.rs"]
 mod default_output;
+#[path = "cli/steps.rs"]
+mod steps;
+pub use steps::{StepOptions, execute_file_steps};
 
-pub const USAGE: &str = "Usage: residuum <run|query|explain> <case.res>\n\
+pub const USAGE: &str = "Usage: residuum <run|query|explain> <case.res> [--steps N] [--trace]\n\
     run      Forward closure and goals; no state execution\n\
     query    Declared residual, active residual or FOUR queries\n\
-    explain  Forward justifications and default selection\n";
+    explain  Forward justifications and default selection\n\
+    --steps N  At most N synchronous transitions (1..=4096)\n\
+    --trace    Show every transition; default budget 64\n";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Command {

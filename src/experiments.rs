@@ -14,7 +14,10 @@ use crate::typed::{
 use crate::{DerivationClock, close, query_program_residual};
 
 mod default_selection;
+mod default_steps;
+pub use default_steps::{DefaultPhase, DefaultSession, DefaultStep};
 mod four;
+pub use four::{FourSession, FourStep};
 mod incremental;
 
 pub use default_selection::{DefaultExperimentResult, run_default_experiments};
@@ -544,6 +547,8 @@ pub fn render_requirement(requirement: &RequirementFormula) -> String {
     }
 }
 
+#[cfg(test)]
+mod step_tests;
 #[cfg(test)]
 mod tests;
 

@@ -133,6 +133,103 @@ fn horn_view(module: &Module, rules: &[Rule]) -> Module {
     view
 }
 
+/// Begin layered search using the same scope selection and constraint resolver
+/// as the full binding interface; retain legacy validation for empty bindings.
+pub fn begin_residual_query_with_bindings(
+    module: &Module,
+    scope: &HornQueryScope,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+) -> Result<QueryWithBindings<super::ResidualSession>, Error> {
+    let rules = scoped_rules(module, scope)?;
+    let view = horn_view(module, &rules);
+    if bindings.is_empty() {
+        return Ok(QueryWithBindings {
+            query: super::ResidualSession::new(&view, evidence, goal, limits, allowed)?,
+            bindings: Vec::new(),
+        });
+    }
+    let (constraints, bindings) = resolve(module, &rules, &BTreeMap::new(), bindings)?;
+    preflight(&rules, goal, &constraints)?;
+    Ok(QueryWithBindings {
+        query: super::ResidualSession::new(&view, evidence, goal, limits, allowed)?
+            .constrained(constraints),
+        bindings,
+    })
+}
+
+pub fn begin_active_residual_query_with_bindings(
+    module: &Module,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+) -> Result<QueryWithBindings<super::ActiveResidualSession>, Error> {
+    begin_active_query(module, None, evidence, goal, bindings, limits, allowed)
+}
+
+pub fn begin_active_residual_query_in_scope_with_bindings(
+    module: &Module,
+    scope: &HornQueryScope,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+) -> Result<QueryWithBindings<super::ActiveResidualSession>, Error> {
+    begin_active_query(
+        module,
+        Some(scope),
+        evidence,
+        goal,
+        bindings,
+        limits,
+        allowed,
+    )
+}
+
+fn begin_active_query(
+    module: &Module,
+    scope: Option<&HornQueryScope>,
+    evidence: &[Event],
+    goal: &Event,
+    bindings: &[QueryBinding],
+    limits: SearchLimits,
+    allowed: Option<&[Abducible]>,
+) -> Result<QueryWithBindings<super::ActiveResidualSession>, Error> {
+    if scope.is_none() && bindings.is_empty() {
+        return Ok(QueryWithBindings {
+            query: super::ActiveResidualSession::new(module, evidence, goal, limits, allowed)?,
+            bindings: Vec::new(),
+        });
+    }
+    let (view, templates) = active_view(module, scope)?;
+    let rules = view
+        .declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Rule(r) => Some(r.clone()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let (constraints, normalized) = resolve(module, &rules, &templates, bindings)?;
+    preflight(&rules, goal, &constraints)?;
+    let mut query = super::ActiveResidualSession::from_view(
+        module, &view, templates, evidence, goal, limits, allowed,
+    )?;
+    if !bindings.is_empty() {
+        query = query.constrained(constraints);
+    }
+    Ok(QueryWithBindings {
+        query,
+        bindings: normalized,
+    })
+}
+
 /// Guarded search followed by hypothetical sufficiency against the unchanged
 /// original close_program. Supplied bindings never become activation evidence.
 pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
@@ -581,5 +678,7 @@ fn check_term(
 
 #[cfg(test)]
 mod compatibility_tests;
+#[cfg(test)]
+mod session_tests;
 #[cfg(test)]
 mod tests;

@@ -138,8 +138,8 @@ of claiming identical result representations.
 | `SubstitutionValue::Time` and temporal constructors | Necessary typed-value support. Existing canonical conversion and constructor signatures execute; no new time conversion algorithm. |
 | Structured value walk | Necessary new boundary validation; source `lower_term` consumes SurfaceTerms and performs lexical name resolution. Existing type predicates are called, but the walk is independently implemented. |
 | Record-field entity subtyping | Accidental divergence found and corrected. `check_term` now calls the same `elab::is_assignable` used by source record fields. Root named binding checks retain `rule_type_assignable`. The corrected regression first reproduced prior acceptance. |
-| Root subtyping versus positional Program application | Interface policy, **not forced by typed input**. Named bindings follow existing named RuleUse assignability, while `specialize_program` accepts constant strings with exact parameter types. Equivalence is verified for the experiment's exact types; broader subtype equivalence is not claimed. |
-| Record field ordering | Already-typed values retain supplied order; source `lower_term` emits declaration order. This preservation choice is not logically forced by typing. Existing typed matching remains positional. No permutation equivalence or automatic normalization is claimed or verified. |
+| Root subtyping versus positional Program application | Interface policy, **not forced by typed input**. Named bindings follow existing named RuleUse assignability, while `specialize_program` accepts constant strings with exact parameter types. The boundary regression verifies direct/transitive subtype acceptance, supplied-supertype compatibility, rejection of invalid narrowing/unrelated types, and stricter positional application. The paths intentionally differ; subtype equivalence is not claimed. |
+| Record field ordering | Already-typed values retain supplied order; source `lower_term` emits declaration order. This preservation choice is not logically forced by typing. The boundary regression verifies positional matching, preserved substitutions, explicit goal/RuleUse conflicts and absence of matches for permuted evidence. Permutations are different typed values; no automatic normalization is performed. |
 | Resolved temporal bindings only; depth limit 64; duplicate rejection | Explicit interface policies, not consequences of already-typed input. Omit a binding to retain a pending parameter. No existential enumeration. |
 | Nonempty preflight and validation/error ordering | Intentional explicit-constraint policy, including conflicts when Known already contains the goal. Empty bindings bypass it and preserve the exact old path. |
 
@@ -168,8 +168,9 @@ executes no new inference. No reuse claim is based merely on matching outputs.
   `371eee6`.
 * **Parallel machinery introduced:** typed input/scoping validation and the
   duplicated default-abducible enumeration described above. **No parallel
-  inference machinery.** Equivalence for noncanonical record field permutations
-  and positional-Program versus named-binding subtype policy remains unverified.
+  inference machinery.** The record-order and root-subtyping boundaries are now
+  covered by regressions. The interfaces intentionally differ as documented;
+  equivalence across those policy boundaries is not claimed.
 
 ## Verification and separately preserved stepwise work
 
@@ -200,3 +201,35 @@ worktree. A SHA-256 over those eleven audit files is identical before and after:
 No synchronous loop is required for explicit bindings. The separate stepwise
 driver's scheduling and provenance questions remain part of the paused
 stepwise review, not assumptions used by this implementation.
+
+## Boundary follow-up and integration readiness
+
+Only two regression functions and documentation were added in this follow-up;
+production matching, assignability and inference code is unchanged. The record
+fixture's first run failed because a zero-parameter Program definition omitted
+`()`; correcting that test fixture produced the passing result below.
+
+* Record order: `20261014T040921511039Z-1055328` — one test passed individually,
+  including explicit assertions of Horn and active Unit results.
+* Root subtyping: `20261014T040618694605Z-1053144` — one test passed individually.
+* Format check: `20261014T040937974778Z-1055802` — passed after formatting.
+
+Both ran through `python3 scripts/test_safe.py` with the same enforced 1 GiB,
+zero-swap, one-job, one-thread limits. They use the existing full-structure
+comparisons and independent specialization helpers; active comparison ignores
+only independently allocated derivedAt values. No other tests were run in this
+follow-up. Combined with the previous 35 passing selections, there are 37
+distinct selected tests verified, not a full-suite result.
+
+The [API document](residual-explicit-bindings-api.md#record-order-and-root-subtyping-boundaries)
+states the precise accepted values, errors and non-matches. No policy change is
+proposed for this integration. Normalizing typed record permutations or widening
+positional Program application would be a separate semantic change requiring a
+proposal before implementation.
+
+**The standalone bindings branch is ready for integration review under these
+documented contracts.** The two previously unverified boundaries no longer
+require a semantic decision for this change. CLI integration remains a proposal
+as requested; the implemented surface is the additive Rust API. No merge or push
+has occurred. The stepwise worktree remains separately paused, unchanged and
+unverified; its broad audit refactors are not prerequisites for this branch.

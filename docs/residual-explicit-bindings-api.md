@@ -59,6 +59,61 @@ does not reclassify it as a constant. Records and constructors are checked
 structurally. Temporal bindings must be resolved; omitting a binding retains the
 pending temporal parameter. Existing goal/evidence caller preconditions remain.
 
+## Record order and root subtyping boundaries
+
+Typed `Term::RecordLiteral` bindings must contain each declared field exactly
+once, with a compatible field value. Validation looks fields up by name, accepts
+any supplied field order and **does not reorder it**. Returned bindings,
+substitutions and instantiated requirements preserve that order. Existing typed
+equality and matching compare record fields positionally, including field names;
+two permutations of the same fields are different typed values. Source
+elaboration instead emits declaration order, including for named RuleUses.
+
+For `Pair { left : Thing right : Thing }`, a caller-supplied typed value with
+fields `[right = b, left = a]` behaves as follows:
+
+| Query boundary | Result |
+|---|---|
+| Same permuted value in a variable-headed Rule goal and binding | Accepted, with the supplied order preserved. |
+| Canonically ordered goal `[left = a, right = b]` and permuted explicit binding | `Err`: binding is inconsistent with the goal. |
+| Matching permuted goal, but only canonical source evidence in Known | Evidence does not match. Local reduction remains pending; Horn and active queries return no explanation when `allowed=Some(&[])`. |
+| Matching permuted goal and permuted evidence | Evidence matches; the tested local, Horn and active queries return Unit. |
+| Source-specialized RuleUse fixes the canonical record, but an explicit Rule binding supplies the permutation | `Err`: binding conflicts with the specialized RuleUse. |
+| Canonical specialized head versus permuted goal, with no explicit binding | No matching explanation. |
+
+These are existing representation/matching policies, not a claim that typed
+field permutations are interchangeable. Callers constructing records for use
+with source-elaborated goals or evidence should use declaration order.
+
+Root entity bindings use the existing named RuleUse policy:
+`elab::rule_type_assignable`. A constant's declared type must first be assignable
+to `QueryBinding.ty`; that supplied type must then be assignable to the queried
+parameter's declared type. Subtype ancestry is transitive. Values and supplied
+types are preserved, without coercing the constant or rewriting its identity.
+
+For `Special <: Thing`, `Deep <: Special`, `child : Special`, `deep : Deep` and
+`base : Thing`:
+
+| Binding or application | Result |
+|---|---|
+| Thing parameter; `ty=Special`, value `child` | Accepted. |
+| Thing parameter; `ty=Deep`, value `deep` | Accepted transitively. |
+| Thing parameter; `ty=Thing`, value `child` | Accepted; the constant is compatible with the supplied supertype. |
+| Thing parameter; `ty=Special`, value `base` | Rejected: the value is incompatible with the supplied type. |
+| Special parameter; `ty=Thing`, value `child` | Rejected: the supplied type is too broad, even though the constant itself is Special. Supplying `ty=Special` succeeds. |
+| Thing parameter; unrelated entity type/value | Rejected. |
+| Named source RuleUse binds `child` to a Thing parameter | Accepted by the same named-binding assignability policy. |
+| Positional `specialize_program(P, [child], constants)` or source `P(child)`, where P's first parameter is Thing | Rejected: positional application requires the constant's declared type to equal the parameter type. `P(base)` succeeds. |
+
+The named root policy applies to local Rule, scoped Horn Rule, shared Program
+and active query bindings. Record **fields** retain the source checker's stricter
+`elab::is_assignable` policy; root subtype acceptance does not widen that policy.
+Opaque runtime Vars continue to rely on the caller's supplied type.
+
+No policy change is included or required for these regressions. Permutation
+normalization or widening positional Program application would require a
+separate policy proposal and review before implementation.
+
 ## Minimal CLI integration proposal
 
 Keep the existing `query` command and Formal syntax. A future adapter can add
@@ -102,3 +157,11 @@ and a shared compiler RuleUse mapping. Final checks pass 35 selected tests
 individually. See [the reuse and compatibility review](residual-explicit-bindings-reuse-review.md)
 for call paths, reproduced failures, typed-validation policies, reports and the
 separately preserved stepwise audit status.
+
+The two boundary regressions subsequently passed individually, without changing
+production code or policy:
+
+* `record_order_boundary_preserves_typed_order_and_positional_matching`:
+  `target/test-diagnostics/20261014T040921511039Z-1055328`.
+* `root_subtyping_boundary_uses_named_assignability_and_exact_program_application`:
+  `target/test-diagnostics/20261014T040618694605Z-1053144`.

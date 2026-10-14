@@ -1192,3 +1192,355 @@ fn typed_record_field_validation_reuses_source_assignability_policy() {
     goal.args[0] = value;
     assert!(query_residual_with_bindings(&m, r, &goal, &[], &[binding]).is_err());
 }
+
+#[test]
+fn record_order_boundary_preserves_typed_order_and_positional_matching() {
+    let m = crate::parse_formal_to_typed(
+        "module RecordOrderBoundary\nentity Thing\nentity Pair { left : Thing right : Thing }\nconst a : Thing\nconst b : Thing\nconst tau : PropositionTime\nseeded verb source(pair : Pair) = program P\nderived verb target(pair : Pair)\nrule r(pair, t) = source(pair) @ t <= target(pair) @ after t\nprogram P(pair : Pair, t : PropositionTime) { use r { pair = pair, t = t } }\nprogram Fixed() { use r { pair = Pair { right = b, left = a } } }\nexperiment e { seeds { source(Pair { right = b, left = a }) @ tau } query residual target(Pair { right = b, left = a }) @ after tau }",
+    ).unwrap();
+    let original = m.clone();
+    let e = experiment(&m, "e");
+    let canonical = e.goal.args[0].clone();
+    let Term::RecordLiteral { fields, .. } = &canonical else {
+        panic!("record")
+    };
+    assert_eq!(
+        fields.iter().map(|f| f.field.as_str()).collect::<Vec<_>>(),
+        vec!["left", "right"]
+    );
+    // Source field permutations normalize once during elaboration, including RuleUses.
+    let fixed_program = find_program(&m, "Fixed").unwrap();
+    full_eq(&fixed_program.rule_uses[0].bindings[0].value, &canonical);
+    let mut permuted = canonical.clone();
+    let Term::RecordLiteral { fields, .. } = &mut permuted else {
+        unreachable!()
+    };
+    fields.reverse();
+    let mut goal = e.goal.clone();
+    goal.args[0] = permuted.clone();
+    let binding = QueryBinding {
+        scope: QueryParameterScope::Rule(RuleRef { name: "r".into() }),
+        parameter: "pair".into(),
+        ty: Type::Entity("Pair".into()),
+        value: SubstitutionValue::Term(permuted.clone()),
+    };
+    let r = find_rule(&m, "r").unwrap();
+    let conflict =
+        query_residual_with_bindings(&m, r, &e.goal, &[], &[binding.clone()]).unwrap_err();
+    assert!(conflict.to_string().contains("inconsistent with the goal"));
+    let accepted = query_residual_with_bindings(&m, r, &goal, &[], &[binding.clone()]).unwrap();
+    full_eq(&accepted.bindings, &vec![binding.clone()]);
+    let mut witness = e.input[0].clone();
+    witness.args[0] = permuted.clone();
+    full_eq(
+        &accepted.query[0].required,
+        &Antecedent::Event(witness.clone()),
+    );
+    assert!(
+        accepted.query[0]
+            .substitution
+            .bindings
+            .iter()
+            .any(|b| b.parameter == "pair" && b.value == binding.value)
+    );
+    // Canonically ordered Known is not evidence for the permuted typed record.
+    let pending = query_residual_with_bindings(&m, r, &goal, &e.input, &[binding.clone()]).unwrap();
+    full_eq(&pending, &accepted);
+    let unit =
+        query_residual_with_bindings(&m, r, &goal, &[witness.clone()], &[binding.clone()]).unwrap();
+    assert_eq!(unit.query[0].required, Antecedent::Unit);
+    full_eq(&unit.query[0].evidence, &vec![witness.clone()]);
+    // The legacy API on an independently specialized Rule has the same ordered value.
+    let fixed = BTreeMap::from([(
+        "r".into(),
+        BTreeMap::from([("pair".into(), binding.value.clone())]),
+    )]);
+    let oracle = specialize_rules(&view(&m, &["r"]), &fixed);
+    let mut expected =
+        query_program_residual(&oracle, &e.input, &goal, SearchLimits::default()).unwrap();
+    for branch in &mut expected.explanations {
+        restore_proof(&mut branch.proof, &fixed);
+    }
+    let scoped = query_program_residual_with_bindings(
+        &m,
+        &rules_scope(&oracle),
+        &e.input,
+        &goal,
+        &[binding.clone()],
+        SearchLimits::default(),
+        None,
+    )
+    .unwrap()
+    .query;
+    full_eq(&scoped, &expected);
+    for known in [&e.input[..], std::slice::from_ref(&witness)] {
+        let horn = query_program_residual_with_bindings(
+            &m,
+            &rules_scope(&oracle),
+            known,
+            &goal,
+            &[binding.clone()],
+            SearchLimits::default(),
+            Some(&[]),
+        )
+        .unwrap()
+        .query;
+        let active = query_active_program_residual_with_bindings(
+            &m,
+            known,
+            &goal,
+            &[binding.clone()],
+            SearchLimits::default(),
+            Some(&[]),
+            &mut Clock::default(),
+        )
+        .unwrap()
+        .query;
+        let matches = known[0].args[0] == permuted;
+        assert_eq!(horn.explanations.len(), usize::from(matches));
+        assert_eq!(active.explanations.len(), usize::from(matches));
+        if matches {
+            assert_eq!(horn.required, Some(super::super::RequirementFormula::Unit));
+            assert_eq!(
+                active.required,
+                Some(super::super::RequirementFormula::Unit)
+            );
+            full_eq(
+                &active.explanations[0].hypothetical.known,
+                &vec![witness.clone(), goal.clone()],
+            );
+        } else {
+            assert!(horn.required.is_none() && active.required.is_none());
+        }
+    }
+    // A fixed, source-normalized RuleUse rejects an explicit permuted constraint.
+    let error = query_program_residual_with_bindings(
+        &m,
+        &HornQueryScope::Program(ProgramRef {
+            name: "Fixed".into(),
+        }),
+        &[],
+        &goal,
+        &[binding],
+        SearchLimits::default(),
+        None,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("specialized RuleUse"));
+    // Without that explicit conflict, the incompatible specialized head is just absent.
+    assert!(
+        query_program_residual_with_bindings(
+            &m,
+            &HornQueryScope::Program(ProgramRef {
+                name: "Fixed".into()
+            }),
+            &[],
+            &goal,
+            &[],
+            SearchLimits::default(),
+            None
+        )
+        .unwrap()
+        .query
+        .required
+        .is_none()
+    );
+    full_eq(&m, &original);
+}
+
+#[test]
+fn root_subtyping_boundary_uses_named_assignability_and_exact_program_application() {
+    let source = "module RootSubtypeBoundary\nentity Thing\nentity Special <: Thing\nentity Deep <: Special\nentity Other\nconst base : Thing\nconst child : Special\nconst deep : Deep\nconst unrelated : Other\nconst tau : PropositionTime\nseeded verb source(object : Thing) = program P\nderived verb target(object : Thing)\nderived verb narrow(object : Special)\nrule r(object, t) = source(object) @ t <= target(object) @ after t\nrule n(object) = I <= narrow(object) @ tau\nprogram P(object : Thing, t : PropositionTime) { use r { object = object, t = t } }\nprogram Named() { use r { object = child } }\nexperiment e { seeds { source(child) @ tau } query residual target(child) @ after tau }";
+    let m = crate::parse_formal_to_typed(source).unwrap();
+    let original = m.clone();
+    let e = experiment(&m, "e");
+    let r = find_rule(&m, "r").unwrap();
+    let program = find_program(&m, "P").unwrap();
+    full_eq(
+        &find_program(&m, "Named").unwrap().rule_uses[0].bindings[0].value,
+        &Term::Const("child".into()),
+    );
+    let constants = m
+        .declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Const(c) => Some((c.name.clone(), c.ty.clone())),
+            _ => None,
+        })
+        .collect();
+    let mut compiled = view(&m, &[]);
+    compiled.declarations.extend(
+        compile_program(program, &m)
+            .unwrap()
+            .into_iter()
+            .map(Declaration::Rule),
+    );
+    for (name, supplied_type) in [
+        ("base", "Thing"),
+        ("child", "Special"),
+        ("child", "Thing"),
+        ("deep", "Deep"),
+    ] {
+        let mut goal = e.goal.clone();
+        goal.args[0] = Term::Const(name.into());
+        let binding = QueryBinding {
+            scope: QueryParameterScope::Rule(RuleRef { name: "r".into() }),
+            parameter: "object".into(),
+            ty: Type::Entity(supplied_type.into()),
+            value: SubstitutionValue::Term(Term::Const(name.into())),
+        };
+        let accepted = query_residual_with_bindings(&m, r, &goal, &[], &[binding.clone()]).unwrap();
+        full_eq(&accepted.bindings, &vec![binding.clone()]);
+        let fixed = BTreeMap::from([(
+            "r".into(),
+            BTreeMap::from([("object".into(), binding.value.clone())]),
+        )]);
+        let oracle = specialize_rules(&view(&m, &["r"]), &fixed);
+        let mut expected =
+            query_program_residual(&oracle, &[], &goal, SearchLimits::default()).unwrap();
+        for branch in &mut expected.explanations {
+            restore_proof(&mut branch.proof, &fixed);
+        }
+        let scoped = query_program_residual_with_bindings(
+            &m,
+            &rules_scope(&oracle),
+            &[],
+            &goal,
+            &[binding.clone()],
+            SearchLimits::default(),
+            None,
+        )
+        .unwrap()
+        .query;
+        full_eq(&scoped, &expected);
+        let shared = QueryBinding {
+            scope: QueryParameterScope::Program(ProgramRef { name: "P".into() }),
+            ..binding.clone()
+        };
+        let bound_program = query_program_residual_with_bindings(
+            &m,
+            &HornQueryScope::Program(ProgramRef { name: "P".into() }),
+            &[],
+            &goal,
+            &[shared.clone()],
+            SearchLimits::default(),
+            None,
+        )
+        .unwrap();
+        full_eq(&bound_program.bindings, &vec![shared.clone()]);
+        full_eq(
+            &bound_program.query,
+            &query_program_residual(&compiled, &[], &goal, SearchLimits::default()).unwrap(),
+        );
+        let active = query_active_program_residual_with_bindings(
+            &m,
+            &[],
+            &goal,
+            &[shared],
+            SearchLimits::default(),
+            None,
+            &mut Clock(0),
+        )
+        .unwrap()
+        .query;
+        let legacy =
+            query_active_program_residual(&m, &[], &goal, SearchLimits::default(), &mut Clock(100))
+                .unwrap();
+        full_eq(&without_derived_at(active), &without_derived_at(legacy));
+        // Positional constant application is stricter, including an upcast type
+        // annotation on a binding: it still inspects the constant's declared type.
+        let applied = crate::programs::specialize_program(program, &[name.into()], &constants);
+        if name == "base" {
+            assert!(applied.is_ok());
+        } else {
+            assert_eq!(
+                applied.unwrap_err().to_string(),
+                format!("constant `{name}` is not assignable to program parameter `object`")
+            );
+        }
+    }
+    for (name, supplied_type) in [
+        ("base", "Special"),
+        ("unrelated", "Other"),
+        ("unrelated", "Thing"),
+    ] {
+        let binding = QueryBinding {
+            scope: QueryParameterScope::Rule(RuleRef { name: "r".into() }),
+            parameter: "object".into(),
+            ty: Type::Entity(supplied_type.into()),
+            value: SubstitutionValue::Term(Term::Const(name.into())),
+        };
+        assert!(query_residual_with_bindings(&m, r, &e.goal, &[], &[binding.clone()]).is_err());
+        let shared = QueryBinding {
+            scope: QueryParameterScope::Program(ProgramRef { name: "P".into() }),
+            ..binding
+        };
+        assert!(
+            query_program_residual_with_bindings(
+                &m,
+                &HornQueryScope::Program(ProgramRef { name: "P".into() }),
+                &[],
+                &e.goal,
+                &[shared.clone()],
+                SearchLimits::default(),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            query_active_program_residual_with_bindings(
+                &m,
+                &[],
+                &e.goal,
+                &[shared],
+                SearchLimits::default(),
+                None,
+                &mut Clock::default()
+            )
+            .is_err()
+        );
+    }
+    let narrow = find_rule(&m, "n").unwrap();
+    let mut narrow_goal = match &narrow.body {
+        RuleBody::HornClause(c) => c.consequent.clone(),
+        _ => unreachable!(),
+    };
+    narrow_goal.args[0] = Term::Const("child".into());
+    let narrow_binding = QueryBinding {
+        scope: QueryParameterScope::Rule(RuleRef { name: "n".into() }),
+        parameter: "object".into(),
+        ty: Type::Entity("Thing".into()),
+        value: SubstitutionValue::Term(Term::Const("child".into())),
+    };
+    assert!(
+        query_residual_with_bindings(&m, narrow, &narrow_goal, &[], &[narrow_binding.clone()])
+            .unwrap_err()
+            .to_string()
+            .contains("expected Entity(\"Special\")")
+    );
+    assert_eq!(
+        query_residual_with_bindings(
+            &m,
+            narrow,
+            &narrow_goal,
+            &[],
+            &[QueryBinding {
+                ty: Type::Entity("Special".into()),
+                ..narrow_binding
+            }]
+        )
+        .unwrap()
+        .query[0]
+            .required,
+        Antecedent::Unit
+    );
+    // Source positional application shares specialize_program's exact-type policy.
+    assert!(crate::parse_formal_to_typed(&format!("{source}\nprogram Base = P(base)")).is_ok());
+    assert!(
+        crate::parse_formal_to_typed(&format!("{source}\nprogram Child = P(child)"))
+            .unwrap_err()
+            .to_string()
+            .contains("not assignable to program parameter `object`")
+    );
+    full_eq(&m, &original);
+}

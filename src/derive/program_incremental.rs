@@ -107,12 +107,6 @@ impl IncrementalProgramClosure {
         let timer = profile::start();
         for trigger in frontier {
             for (source_index, source) in self.programs.iter().enumerate() {
-                if trigger.verb != source.verb.name
-                    || trigger.polarity != Polarity::Positive
-                    || trigger.args.len() != source.verb.args.len()
-                {
-                    continue;
-                }
                 // A trigger is normally discovered once from DeltaEvents.
                 // Keep this check explicit for pending activation initialization.
                 if self
@@ -172,18 +166,11 @@ impl IncrementalProgramClosure {
         clock: &mut dyn DerivationClock,
     ) {
         for unstamped in candidates {
-            #[cfg(test)]
-            let duplicate = profile::contains(&self.seen, &unstamped);
-            #[cfg(not(test))]
-            let duplicate = self.seen.contains(&unstamped);
-            if duplicate {
+            let Some((derived, is_new)) =
+                retain_derivation(unstamped, &mut self.seen, &mut self.known_keys, clock)
+            else {
                 continue;
-            }
-            #[cfg(test)]
-            let timer = profile::start();
-            self.seen.push(unstamped.clone());
-            let is_new = self.known_keys.insert(unstamped.event.clone());
-            let derived = stamp(unstamped, clock.next_derivation_time());
+            };
             if is_new {
                 self.index.insert(self.closure.known.len(), &derived.event);
                 self.closure.known.push(derived.event.clone());
@@ -193,8 +180,6 @@ impl IncrementalProgramClosure {
             // A new proof for an old Event is recorded without scheduling it.
             self.closure.derivations.push(derived.clone());
             delta.derivations.push(derived);
-            #[cfg(test)]
-            profile::phase("retention", timer);
         }
     }
 

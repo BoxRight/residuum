@@ -74,20 +74,7 @@ pub fn query_active_program_residual<C: DerivationClock>(
     limits: SearchLimits,
     clock: &mut C,
 ) -> Result<ActiveProgramResidualQuery, Error> {
-    let allowed: Vec<_> = module
-        .declarations
-        .iter()
-        .filter_map(|d| match d {
-            Declaration::Verb(v) if v.is_abducible() => Some(v),
-            _ => None,
-        })
-        .flat_map(|v| {
-            [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                verb: v.name.clone(),
-                polarity,
-            })
-        })
-        .collect();
+    let allowed = super::engine::default_abducibles(module);
     query_active_program_residual_with_abducibles(module, evidence, goal, &allowed, limits, clock)
 }
 

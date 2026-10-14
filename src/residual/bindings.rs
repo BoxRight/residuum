@@ -5,9 +5,11 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::active::{certify, guarded_view};
 use super::query::{Bindings, constrained_goal, query_with_constraints, unify_term};
 use super::{Abducible, ActiveProgramResidualQuery, ProgramResidualQuery, SearchLimits};
-use crate::derive::{DerivationClock, substitute_term};
+use crate::derive::DerivationClock;
 use crate::elab::{Error, rule_type_assignable};
-use crate::programs::{compile_program, program_rule_origin, shared_parameter};
+use crate::programs::{
+    compile_program, program_rule_origin, rule_use_substitution, shared_parameter,
+};
 use crate::typed::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -60,7 +62,7 @@ pub fn query_residual_with_bindings(
             goal,
             known,
             constraints.get(&rule.name).unwrap_or(&empty),
-            true,
+            !bindings.is_empty(),
         )?,
         bindings,
     })
@@ -89,22 +91,13 @@ pub fn query_program_residual_with_bindings(
             goal,
             allowed.unwrap_or(&defaults),
             limits,
-            Some(&constraints),
+            (!bindings.is_empty()).then_some(&constraints),
         )?,
         bindings,
     })
 }
 
 fn scoped_rules(module: &Module, scope: &HornQueryScope) -> Result<Vec<Rule>, Error> {
-    if module
-        .declarations
-        .iter()
-        .any(|d| matches!(d, Declaration::Default(_)))
-    {
-        return Err(Error::new(
-            "bound residual queries require a monotonic module without defaults",
-        ));
-    }
     Ok(match scope {
         HornQueryScope::Rules(references) => {
             let mut selected = BTreeSet::new();
@@ -210,7 +203,7 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
         goal,
         allowed.unwrap_or(&defaults),
         limits,
-        Some(&constraints),
+        (!bindings.is_empty()).then_some(&constraints),
     )?;
     Ok(QueryWithBindings {
         query: certify(module, evidence, goal, search, &templates, clock)?,
@@ -219,20 +212,7 @@ pub fn query_active_program_residual_with_bindings<C: DerivationClock>(
 }
 
 pub(super) fn default_abducibles(module: &Module) -> Vec<Abducible> {
-    module
-        .declarations
-        .iter()
-        .filter_map(|d| match d {
-            Declaration::Verb(v) if v.is_abducible() => Some(v),
-            _ => None,
-        })
-        .flat_map(|v| {
-            [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                verb: v.name.clone(),
-                polarity,
-            })
-        })
-        .collect()
+    super::engine::default_abducibles(module)
 }
 
 fn find_rule<'a>(module: &'a Module, name: &str) -> Result<&'a Rule, Error> {
@@ -322,31 +302,9 @@ fn resolve(
                 if is_program && program.identity == *identity {
                     Some(Term::Var(shared_parameter(program, &binding.parameter)))
                 } else if !is_program && origin.rule == *identity {
-                    let member = &program.rule_uses[origin.rule_use];
-                    let raw = member
-                        .bindings
-                        .iter()
-                        .find(|b| b.parameter == binding.parameter)
-                        .map(|b| b.value.clone())
-                        .unwrap_or_else(|| {
-                            Term::Var(format!(
-                                "#{}:use{}:{}",
-                                program.identity, origin.rule_use, binding.parameter
-                            ))
-                        });
-                    let shared: BTreeMap<_, _> = program
-                        .parameters
-                        .iter()
-                        .map(|p| {
-                            (
-                                p.name.clone(),
-                                SubstitutionValue::Term(Term::Var(shared_parameter(
-                                    program, &p.name,
-                                ))),
-                            )
-                        })
-                        .collect();
-                    Some(substitute_term(&raw, &shared))
+                    let original = find_rule(module, &origin.rule)?;
+                    let (_, mapping) = rule_use_substitution(program, origin.rule_use, original)?;
+                    Some(mapping[&binding.parameter].as_term())
                 } else {
                     None
                 }

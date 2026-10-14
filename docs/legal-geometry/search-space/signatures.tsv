@@ -1,0 +1,68 @@
+verb	category	position	argument	typed_type	index_type	profile_polarities	origin_module	origin_file
+give	Effect	1	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+give	Effect	2	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+give	Effect	3	recipient	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+do	Effect	1	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+do	Effect	2	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+do	Effect	3	indirectObject	"{""element"": {""kind"": ""Entity"", ""name"": ""Thing""}, ""kind"": ""Optional""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+do	Effect	4	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+notDo	Effect	1	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+notDo	Effect	2	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+notDo	Effect	3	indirectObject	"{""element"": {""kind"": ""Entity"", ""name"": ""Thing""}, ""kind"": ""Optional""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+notDo	Effect	4	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+Act	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive,EvidentialNot	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligationFiled	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+obligation	Derived	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+right	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permissionFiled	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+permission	Derived	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+prohibition	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	1	id	"{""kind"": ""Entity"", ""name"": ""Fact""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	2	subject	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	3	conduct	"{""kind"": ""Entity"", ""name"": ""Conduct""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	4	object	"{""kind"": ""Entity"", ""name"": ""Thing""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	5	beneficiary	"{""kind"": ""Entity"", ""name"": ""Person""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	6	authority	"{""kind"": ""Entity"", ""name"": ""Authority""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res
+omissionProhibition	Seeded	7	effective	"{""kind"": ""PropositionTime""}"	PropositionTime	Positive	LegalGeneral	/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res

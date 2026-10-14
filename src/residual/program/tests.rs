@@ -1,6 +1,6 @@
 use super::*;
 use crate::typed::{
-    DerivationTime, PropositionType, StateTime, StateTransitionType, Term, TimeExpr,
+    DerivationTime, PropositionType, RuleBody, StateTime, StateTransitionType, Term, TimeExpr,
 };
 use crate::{DerivationClock, close, parse_formal_to_typed};
 
@@ -372,18 +372,25 @@ rule negative(t) = ~a() @ t <= goal() @ t",
 
 #[test]
 fn no_explanation_is_distinct_from_ground_unit_rule() {
-    let mut module = parse_formal_to_typed(
+    let module = parse_formal_to_typed(
         "module Empty
+const tau : PropositionTime
 derived verb goal()
 derived verb other()
 rule ground() = I <= goal() @ tau",
     )
     .unwrap();
-    // The surface elaborator infers tau as a lambda parameter. Supply the same
-    // genuinely ground typed axiom used by the existing Unit runtime test.
-    for declaration in &mut module.declarations {
+    // Groundness must come from elaboration, not from erasing binders afterward.
+    for declaration in &module.declarations {
         if let Declaration::Rule(rule) = declaration {
-            rule.parameters.clear();
+            assert!(rule.parameters.is_empty());
+            let RuleBody::HornClause(clause) = &rule.body else {
+                panic!("ground Horn clause expected");
+            };
+            assert_eq!(
+                clause.consequent.proposition.time,
+                TimeExpr::At("tau".into())
+            );
         }
     }
     let result = query(&module, &[], &derived("goal"), &[]);

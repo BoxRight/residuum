@@ -1,0 +1,7 @@
+# Preserve certificate bytes (including CRLF and meaningful empty TSV columns).
+docs/legal-geometry/**/*.tsv -text
+examples/experiments/legal_geometry/*.tsv -text
+docs/legal-geometry/**/*.gz -text
+
+# Literal ontology snapshots are checked by SHA-256.
+examples/experiments/legal_geometry/ontology_reference/*.res -text

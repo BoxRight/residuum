@@ -1,0 +1,5 @@
+case	known_equal	proof_multiset_equal	input_unchanged	original_theory_unchanged
+owedAndPerformed	true	true	true	true
+permittedAndPerformed	true	true	true	true
+claimedAndPerformed	true	true	true	true
+owedUnobserved	true	true	true	true

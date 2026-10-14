@@ -1,0 +1,10 @@
+hypothesis	AP	AM	AB	ABP	external_answer
+AP	true	false	false	true	pending
+AM+AD	false	true	false	false	pending
+AM+AD+AV	false	true	true	true	pending
+APM+AD	false	false	false	false	pending
+APM+AD+AV	false	false	true	true	pending
+AM+APD	false	true	false	false	pending
+AM+APD+APV	false	true	false	true	pending
+APM+APD	false	false	false	false	pending
+APM+APD+APV	false	false	false	true	pending

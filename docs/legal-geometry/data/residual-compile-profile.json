@@ -1,0 +1,387 @@
+{
+  "sampling_seconds": 0.05,
+  "observer_same_execution_namespace": true,
+  "profile_test_debug": 0,
+  "cargo_build_jobs": 1,
+  "runner_reports": [
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": -9,
+      "elapsed_seconds": 6.649672128027305,
+      "peak_rss_bytes": 25710592,
+      "cgroup_peak_bytes": 807501824,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": "near_memory_limit",
+      "report": "20261010T022916828718Z-730285",
+      "request": {
+        "stage": "compile",
+        "name": "compile only",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--no-run",
+          "--lib",
+          "--jobs",
+          "1",
+          "--message-format=json"
+        ],
+        "timeout": 45
+      }
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": -9,
+      "elapsed_seconds": 8.580302866001148,
+      "peak_rss_bytes": 563052544,
+      "cgroup_peak_bytes": 805449728,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": "near_memory_limit",
+      "report": "20261010T023522662354Z-738005",
+      "request": {
+        "stage": "compile",
+        "name": "compile only",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--no-run",
+          "--bin",
+          "residuum",
+          "--jobs",
+          "1",
+          "--message-format=json"
+        ],
+        "timeout": 45
+      }
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 15.836476147000212,
+      "peak_rss_bytes": 403345408,
+      "cgroup_peak_bytes": 768638976,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261010T025112078900Z-755087",
+      "request": {
+        "stage": "compile",
+        "name": "compile only",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--no-run",
+          "--bin",
+          "residuum",
+          "--jobs",
+          "1",
+          "--message-format=json"
+        ],
+        "timeout": 45
+      }
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 11.390691342996433,
+      "peak_rss_bytes": 552783872,
+      "cgroup_peak_bytes": 759140352,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261010T030646116097Z-769718",
+      "request": {
+        "stage": "compile",
+        "name": "compile only",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--no-run",
+          "--lib",
+          "--jobs",
+          "1",
+          "--message-format=json"
+        ],
+        "timeout": 45
+      }
+    },
+    {
+      "name": "compile only",
+      "stage": "compile",
+      "exit_status": 0,
+      "elapsed_seconds": 17.278689929982647,
+      "peak_rss_bytes": 413253632,
+      "cgroup_peak_bytes": 782082048,
+      "memory_events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0"
+      },
+      "stop_reason": null,
+      "report": "20261010T031139053082Z-775162",
+      "request": {
+        "stage": "compile",
+        "name": "compile only",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--no-run",
+          "--bin",
+          "residuum",
+          "--jobs",
+          "1",
+          "--message-format=json"
+        ],
+        "timeout": 45
+      }
+    }
+  ],
+  "processes": [
+    {
+      "pid": 775163,
+      "name": "python3",
+      "sampled_peak_rss": 16388096,
+      "sampled_high_water": 16388096
+    },
+    {
+      "pid": 775164,
+      "name": "cargo",
+      "sampled_peak_rss": 26714112,
+      "sampled_high_water": 26714112
+    },
+    {
+      "pid": 775166,
+      "name": "rustc",
+      "sampled_peak_rss": 13631488,
+      "sampled_high_water": 13631488,
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775179,
+      "name": "rustc",
+      "sampled_peak_rss": 139202560,
+      "sampled_high_water": 139202560,
+      "crate": "version_check",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775209,
+      "name": "rustc",
+      "sampled_peak_rss": 117760000,
+      "sampled_high_water": 135766016,
+      "crate": "build_script_build",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775223,
+      "name": "ld",
+      "sampled_peak_rss": 18477056,
+      "sampled_high_water": 19492864
+    },
+    {
+      "pid": 775221,
+      "name": "cc",
+      "sampled_peak_rss": 3170304,
+      "sampled_high_water": 3170304
+    },
+    {
+      "pid": 775222,
+      "name": "collect2",
+      "sampled_peak_rss": 2355200,
+      "sampled_high_water": 2355200
+    },
+    {
+      "pid": 775236,
+      "name": "cc",
+      "sampled_peak_rss": 3186688,
+      "sampled_high_water": 3186688
+    },
+    {
+      "pid": 775237,
+      "name": "collect2",
+      "sampled_peak_rss": 2297856,
+      "sampled_high_water": 2297856
+    },
+    {
+      "pid": 775238,
+      "name": "ld",
+      "sampled_peak_rss": 20127744,
+      "sampled_high_water": 21184512
+    },
+    {
+      "pid": 775229,
+      "name": "rustc",
+      "sampled_peak_rss": 77418496,
+      "sampled_high_water": 108548096,
+      "crate": "build_script_build",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775244,
+      "name": "rustc",
+      "sampled_peak_rss": 394043392,
+      "sampled_high_water": 413253632,
+      "crate": "zerocopy",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775404,
+      "name": "rustc",
+      "sampled_peak_rss": 95379456,
+      "sampled_high_water": 95379456,
+      "crate": "ahash",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775412,
+      "name": "rustc",
+      "sampled_peak_rss": 115789824,
+      "sampled_high_water": 115789824,
+      "crate": "allocator_api2",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775419,
+      "name": "rustc",
+      "sampled_peak_rss": 132952064,
+      "sampled_high_water": 153919488,
+      "crate": "hashbrown",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775427,
+      "name": "rustc",
+      "sampled_peak_rss": 189480960,
+      "sampled_high_water": 189480960,
+      "crate": "chumsky",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775514,
+      "name": "rustc",
+      "sampled_peak_rss": 378359808,
+      "sampled_high_water": 387801088,
+      "crate": "residuum",
+      "test": false,
+      "debug_options": []
+    },
+    {
+      "pid": 775825,
+      "name": "rustc",
+      "sampled_peak_rss": 393342976,
+      "sampled_high_water": 394457088,
+      "crate": "residuum",
+      "test": true,
+      "debug_options": []
+    },
+    {
+      "pid": 776167,
+      "name": "cc",
+      "sampled_peak_rss": 3186688,
+      "sampled_high_water": 3186688
+    },
+    {
+      "pid": 776168,
+      "name": "collect2",
+      "sampled_peak_rss": 2387968,
+      "sampled_high_water": 2387968
+    },
+    {
+      "pid": 776169,
+      "name": "ld",
+      "sampled_peak_rss": 125845504,
+      "sampled_high_water": 125845504
+    }
+  ],
+  "largest_observed_cgroup_sample": {
+    "seconds": 17.210559436993208,
+    "memory_current": 775528448,
+    "anon": 356769792,
+    "file": 408797184,
+    "kernel": 3809280,
+    "processes": [
+      {
+        "pid": 775825,
+        "name": "rustc",
+        "rss": 300212224
+      },
+      {
+        "pid": 775164,
+        "name": "cargo",
+        "rss": 25403392
+      },
+      {
+        "pid": 775163,
+        "name": "python3",
+        "rss": 16388096
+      },
+      {
+        "pid": 776167,
+        "name": "cc",
+        "rss": 3186688
+      },
+      {
+        "pid": 776168,
+        "name": "collect2",
+        "rss": 2387968
+      },
+      {
+        "pid": 776169,
+        "name": "ld",
+        "rss": 125845504
+      }
+    ]
+  },
+  "maximum_sampled_simultaneous_rustc": 1
+}

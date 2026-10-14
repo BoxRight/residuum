@@ -1,0 +1,7 @@
+# Explanation candidates, not legal rules, revisions or observations of normative truth.
+# Evaluations concern sampled reference derivations. No assessment enters Known.
+hypothesis	kind	rule_refs	claim	source
+HRelational	producer_family	obligationCompliance,rightCompliance	The observed compliance proof is supported by a recorded normative position and the matching historical Act	stipulation:typed-explanations/relational
+HFiledDuty	producer_family	obligationCompliance	The observed compliance proof uses the obligation branch; whether that documentary branch explains the contrast remains open	stipulation:typed-explanations/filed-duty
+HActSuffices	realization_sufficiency	-	In these dossiers, the matching positive Act suffices for the reference engine to derive compliance regardless of the normative entry	stipulation:typed-explanations/act-suffices
+HRecipientPurpose	unresolved_purpose	-	The reason for treating the dossiers differently is protection of the recipient's interest rather than the documentary category	stipulation:typed-explanations/recipient-purpose

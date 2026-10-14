@@ -1,0 +1,7 @@
+# Descriptions are translations of the typed Seeded snapshots, not approvals.
+case	description	legal_adequacy	independent_valuation
+candidateR	Derecho sin evidencia Act aportada	pending_external_deliberation	simulated_only
+candidateOR	Obligación presentada y derecho, sin evidencia Act aportada	pending_external_deliberation	simulated_only
+candidateOP	Obligación y permiso presentados, sin evidencia Act aportada	pending_external_deliberation	simulated_only
+candidateRP	Derecho y permiso presentado, sin evidencia Act aportada	pending_external_deliberation	simulated_only
+candidateORP	Obligación, derecho y permiso presentado, sin evidencia Act aportada	pending_external_deliberation	simulated_only

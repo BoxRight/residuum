@@ -1,0 +1,5 @@
+model	domain	conclusions_reachable	minimal_supports	deletions_checked
+general	all-events	73	284	601
+general	seeded	61	99	195
+patrimonial	all-events	73	332	703
+patrimonial	seeded	73	114	231

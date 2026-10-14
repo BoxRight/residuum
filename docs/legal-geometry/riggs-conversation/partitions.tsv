@@ -1,0 +1,9 @@
+stage	prediction_partition	feedback_partition	catalog_order
+initial	[0, 0, 0]	[0, 0, 0]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+firstSustain	[0, 1, 1]	[0, 1, 1]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+firstReject	[0, 1, 1]	[0, 1, 1]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+followSustain	[0, 1, 2]	[0, 1, 2]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+followReject	[0, 1, 2]	[0, 1, 2]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+firstPending	[0, 1, 1]	[0, 0, 0]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+unknownSustain	[0, 0, 1]	[0, 0, 1]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]
+unknownReject	[0, 0, 1]	[0, 0, 0]	["EarlCausalWrong", "EarlAcquisitionPurpose", "GrayStatutoryRoute"]

@@ -1,0 +1,17 @@
+case	norm	known_equal	proof_multiset_equal	derived_at_used
+empty	false	true	true	false
+O	false	true	true	false
+R	false	true	true	false
+OR	false	true	true	false
+A	false	true	true	false
+OA	true	true	true	false
+RA	true	true	true	false
+ORA	true	true	true	false
+P	false	true	true	false
+OP	false	true	true	false
+RP	false	true	true	false
+ORP	false	true	true	false
+AP	false	true	true	false
+OAP	true	true	true	false
+RAP	true	true	true	false
+ORAP	true	true	true	false

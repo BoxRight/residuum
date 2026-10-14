@@ -1,0 +1,17 @@
+protocol	profile	partition	aliases	new_pairs_after_all_other_profiles
+theory_events	0	001010000	AV	0
+theory_events	1	010101010	APV	2
+theory_events	2	011001100	AM	4
+theory_events	3	011110000	AD	2
+theory_events	4	011111111	AP	1
+seeded_events	0	001010000	seed_036:B+A;seed_100:B+A+N	1
+seeded_events	1	010101010	seed_052:B+P+A;seed_116:B+P+A+N	4
+seeded_events	2	011001100	seed_040:M+A	1
+seeded_events	3	011011100	seed_044:B+M+A;seed_104:M+A+N;seed_108:B+M+A+N	0
+seeded_events	4	011111111	seed_048:P+A;seed_112:P+A+N	1
+theory_provenance	0	001010000	AV	0
+theory_provenance	1	011001100	AM	4
+theory_provenance	2	011110000	AD	2
+theory_provenance	3	011111111	AP	0
+theory_provenance	4	012121313	APV	2
+seeded_provenance	0	012345678	seed_127:O+R+B+M+P+A+N	36

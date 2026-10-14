@@ -1,0 +1,385 @@
+candidate	support_schema	case	impediment_derived	literal_entitlement	reference_projection_equal	effective_decision
+candidateImpediment00	E	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment00	E	noBeneficiaryKilling	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment00	E	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment00	E	killingByThirdParty	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment00	E	causalLinkUnestablished	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment00	E	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	causalLinkUnestablished	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment01	E & K	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment02	E & L	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment03	E & K & L	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment04	E & F	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment05	E & K & F	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment06	E & L & F	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment07	E & K & L & F	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	noBeneficiaryKilling	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	killingByThirdParty	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	causalLinkUnestablished	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment08	E & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	causalLinkUnestablished	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment09	E & K & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment10	E & L & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment11	E & K & L & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment12	E & F & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment13	E & K & F & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment14	E & L & F & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	historicalRiggs	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment15	E & K & L & F & B	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	noBeneficiaryKilling	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	killingByThirdParty	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment16	E & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment17	E & K & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment18	E & L & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment19	E & K & L & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment20	E & F & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment21	E & K & F & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment22	E & L & F & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment23	E & K & L & F & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	noBeneficiaryKilling	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	killingByThirdParty	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment24	E & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment25	E & K & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment26	E & L & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment27	E & K & L & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment28	E & F & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment29	E & K & F & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment30	E & L & F & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment31	E & K & L & F & B & notK	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment32	E & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment33	E & K & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment34	E & L & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment35	E & K & L & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment36	E & F & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment37	E & K & F & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment38	E & L & F & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment39	E & K & L & F & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment40	E & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment41	E & K & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment42	E & L & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	killingWithoutAcquisitionPurpose	true	true	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment43	E & K & L & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment44	E & F & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment45	E & K & F & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment46	E & L & F & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment47	E & K & L & F & B & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment48	E & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment49	E & K & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment50	E & L & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment51	E & K & L & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment52	E & F & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment53	E & K & F & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment54	E & L & F & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment55	E & K & L & F & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment56	E & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment57	E & K & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment58	E & L & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment59	E & K & L & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment60	E & F & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment61	E & K & F & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment62	E & L & F & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	historicalRiggs	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	noBeneficiaryKilling	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	killingWithoutAcquisitionPurpose	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	killingByThirdParty	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	causalLinkUnestablished	false	true	true	not_resolved_by_additive_Horn
+candidateImpediment63	E & K & L & F & B & notK & notF	survivalUnestablished	false	false	true	not_resolved_by_additive_Horn

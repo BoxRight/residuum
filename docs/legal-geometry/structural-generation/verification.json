@@ -1,0 +1,409 @@
+{
+  "schema": "legal-structural-generation-certificate-1",
+  "scope": "exhaustive role-shared normalized body slice; not exhaustive parent grammar; not normative learning",
+  "branch": "experiment-legal-order-geometry",
+  "refs": {
+    "HEAD": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "main": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "v1": "f6a83e33fa1edb606748a47394e2bde8b4ce635d"
+  },
+  "enumerated": 22621,
+  "admitted": 10850,
+  "rejected": 11771,
+  "control_examples": 16,
+  "ground_bank_literal_count": 12,
+  "ground_bank_is_seeded_case": false,
+  "full_case_domain_closures_per_candidate_checked": false,
+  "original_closure_and_proof_retention_case": "ordinary_obligation_act",
+  "parent_grammar_unit_insertion_issue": {
+    "unbounded_AST_family": true,
+    "verified_finite_prefix": 32,
+    "reference_contract_edited": false
+  },
+  "normalized_ground_parent_lower_bound": "14476720225405007812500000000",
+  "individual_runner_results": [
+    {
+      "report": "target/test-diagnostics/20261012T052410715854Z-620043/results.json",
+      "rows": [
+        {
+          "name": "compile only",
+          "stage": "compile",
+          "exit_status": 0,
+          "elapsed_seconds": 3.2656638469998143,
+          "peak_rss_bytes": 412553216,
+          "cgroup_peak_bytes": 415240192,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02165598500141641,
+          "peak_rss_bytes": 16302080,
+          "cgroup_peak_bytes": 8695808,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list ignored tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.02098413900239393,
+          "peak_rss_bytes": 16302080,
+          "cgroup_peak_bytes": 8683520,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::complete_role_shared_slice_has_structural_certificates",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 5.336327771998185,
+          "peak_rss_bytes": 15958016,
+          "cgroup_peak_bytes": 24616960,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::structural_examples_distinguish_profile_checks_from_elaboration",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 2.378714967999258,
+          "peak_rss_bytes": 16097280,
+          "cgroup_peak_bytes": 12124160,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    },
+    {
+      "report": "target/test-diagnostics/20261014T001229375198Z-866102/results.json",
+      "rows": [
+        {
+          "name": "compile only",
+          "stage": "compile",
+          "exit_status": 0,
+          "elapsed_seconds": 2.694868431004579,
+          "peak_rss_bytes": 399126528,
+          "cgroup_peak_bytes": 674336768,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021230755010037683,
+          "peak_rss_bytes": 16281600,
+          "cgroup_peak_bytes": 8736768,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list ignored tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021085646003484726,
+          "peak_rss_bytes": 16072704,
+          "cgroup_peak_bytes": 8687616,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::structural_examples_distinguish_profile_checks_from_elaboration",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 2.3407145719975233,
+          "peak_rss_bytes": 16117760,
+          "cgroup_peak_bytes": 12070912,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    },
+    {
+      "report": "target/test-diagnostics/20261014T001727417313Z-869959/results.json",
+      "rows": [
+        {
+          "name": "compile only",
+          "stage": "compile",
+          "exit_status": 0,
+          "elapsed_seconds": 2.1616038089996437,
+          "peak_rss_bytes": 387379200,
+          "cgroup_peak_bytes": 413798400,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021161569995456375,
+          "peak_rss_bytes": 16334848,
+          "cgroup_peak_bytes": 8957952,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "list ignored tests",
+          "stage": "list",
+          "exit_status": 0,
+          "elapsed_seconds": 0.021199633003561758,
+          "peak_rss_bytes": 16248832,
+          "cgroup_peak_bytes": 8683520,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        },
+        {
+          "name": "cli::tests::legal_geometry::structural_generation::structural_examples_distinguish_profile_checks_from_elaboration",
+          "stage": "test",
+          "exit_status": 0,
+          "elapsed_seconds": 2.399197289996664,
+          "peak_rss_bytes": 15929344,
+          "cgroup_peak_bytes": 11415552,
+          "memory_events": {
+            "low": "0",
+            "high": "0",
+            "max": "0",
+            "oom": "0",
+            "oom_kill": "0",
+            "oom_group_kill": "0"
+          },
+          "stop_reason": null
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "memory_max_bytes": 1073741824,
+    "memory_swap_max_bytes": 0,
+    "cargo_jobs": 1,
+    "harness_threads": 1,
+    "compile_timeout_seconds": 45,
+    "test_timeout_seconds": 15
+  },
+  "artifacts": [
+    {
+      "file": "docs/legal-geometry/structural-generation/counts.tsv",
+      "sha256": "fe8946d84eba21388606fc65f0e7fa45e1a93850d4de03e4c120eb4251409a6e",
+      "bytes": 103
+    },
+    {
+      "file": "docs/legal-geometry/structural-generation/enumeration.tsv.gz",
+      "sha256": "a0d60289c4e3f4b2e84bb5dfa1bd80dcb4131d961f421ec1533d8edeb1c334e7",
+      "bytes": 301948
+    },
+    {
+      "file": "docs/legal-geometry/structural-generation/parent-lower-bound.tsv",
+      "sha256": "c52c4e694e7718cdd2ba23e6bce040e156116b139d48ebb7ecc4151357575a13",
+      "bytes": 117
+    },
+    {
+      "file": "docs/legal-geometry/structural-generation/examples.tsv",
+      "sha256": "fd208fc886b31e3af69c89353e57161592c57bdc2e34b9f6cc2dc14987864c12",
+      "bytes": 8160
+    },
+    {
+      "file": "docs/legal-geometry/structural-generation/unit-budget-counterexample.tsv",
+      "sha256": "395589efac00bb1c4786d47044572bd326d047ad5668c7626f8d0afde9d50d20",
+      "bytes": 547
+    }
+  ],
+  "uncompressed_enumeration": {
+    "file": "target/legal-structural-generation/enumeration.tsv",
+    "sha256": "5477580d0ad51226dd21486883ab280b05d03288caca472c6233ba2f714faa20",
+    "bytes": 12848827
+  },
+  "harness_source": {
+    "file": "src/bin/residuum/cli/legal_geometry_structural_generation_tests.rs",
+    "sha256": "2e1c4b3afe3ebf9f5c75c4f38fc34803f2b9054ef5807b4e20c582af40282016",
+    "bytes": 22918
+  },
+  "core_checks": [
+    {
+      "file": "src/typed.rs",
+      "sha256": "25d041e7eb6472f19b0749bfc832f7e3cf44cf4a061cc5c8e9859f4e8a3f43ec",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/elab.rs",
+      "sha256": "de48a529aaa2bef4d0a0b9fe802fe49cb62e7c4f034913272c3a8e52278b2a4f",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/derive.rs",
+      "sha256": "9c8183878799a3db7f56ebb330947321d7a85a9137cc1cefe3308e6b94106f9f",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/derive/incremental.rs",
+      "sha256": "44652e30b542624bc1b600726ff23b54d61d33353c69b8975b4a86956b349232",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/derive/program_incremental.rs",
+      "sha256": "662d48fc2d4996d3548edc109aa9854bb7ff99a992bac88059054b5a5dcc5c44",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/formal.rs",
+      "sha256": "2ae39ce4053c62ef45f12db1627646eac8a9b3d771d28b98b841fbb5d5c40234",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/surface.rs",
+      "sha256": "83a38fa3845ecb90708e7427f8521718962cf58cca44113efe6e41be4d563c4e",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/runtime.rs",
+      "sha256": "5a94e61af8efb2282c1b87545ac9dd056fec5eef922c0945c5600995399e212f",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/programs.rs",
+      "sha256": "83a6c03b01d4427c9bcff744165c5e65585f21a7494e2ed3468bc14398f97e37",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/defaults.rs",
+      "sha256": "35e4c0c35c11d6ed5b281c6612d6230fd792a31b2b31e4ccf349937b55a55041",
+      "byte_equal_to_HEAD": true
+    },
+    {
+      "file": "src/modules.rs",
+      "sha256": "4068694ac934c702bfb43fc21fbb105a58e02e7a89e97df52bd319a2f3e78c1c",
+      "byte_equal_to_HEAD": true
+    }
+  ],
+  "reference_sources_checked": [
+    {
+      "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "sha256": "639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc"
+    },
+    {
+      "file": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res",
+      "sha256": "f7daf4d5eb937a7fde8534dba5618acc50d5aaa5b05ff86c9656892eb3a03fbf"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/legal_monotonic.res",
+      "sha256": "24655c98ede7b128b8cd82df3a4473c114428b987bb0fe6a6d370c2b37f5575e"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/experiments/legal_geometry/general.res",
+      "sha256": "34e798fb540c73c1377320f512deb80931905bcba1071c7e79434db192b099cd"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/sales.res",
+      "sha256": "e95260e194553095db6063a5c5d5ddb107c4182104eeb6e22db6156da5f413dd"
+    },
+    {
+      "file": "/home/maitreya/residuum/examples/legal/modules/associated_program.res",
+      "sha256": "3b85a3a184ddf3c072e849e24c6575fdc8c7b649562cb2a6f4d1e3b053a4e547"
+    }
+  ],
+  "registration": "one new module registration in the existing geometry test harness; no engine registration",
+  "preexisting_hash_snapshot_limit": "/tmp/legal-enumeration-before.json did not survive the interruption; no blanket claim of all 611 files rechecked is made; protected core/source checks above are reproducible",
+  "original_closure_checks": [
+    "complete event Debug representation including proposition kind and transition",
+    "all original DerivationRecords retained",
+    "ordered antecedents and canonical substitutions",
+    "all imported declaration origins identical",
+    "additional candidate justification identified"
+  ],
+  "report": {
+    "file": "docs/legal-structural-generation-enumeration.md",
+    "sha256": "f64b2a6015f46ec7ecc134e298f1c7d018e860a6c6e3e26649742debfb1d66bd"
+  },
+  "integration_revalidation": {
+    "runner_report": "target/test-diagnostics/20261014T003601652199Z-884120/results.json",
+    "status": "both structural tests passed with repo-local ontology snapshots",
+    "harness_source_sha256": "69ce5876e2f4eb2f8768c20e378f450176846b5e6ce13c774febea5751f68589",
+    "historical_sources_preserved": true
+  }
+}

@@ -1,0 +1,4 @@
+observation_domain	class	hypotheses
+32_states_over_5_seeded_facts	0	APM+AD;APM+AD+AV;APM+APD;APM+APD+APV
+32_states_over_5_seeded_facts	1	AP
+32_states_over_5_seeded_facts	2	AM+AD;AM+AD+AV;AM+APD;AM+APD+APV

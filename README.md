@@ -11,6 +11,53 @@ El pipeline activo es:
 Formal → SurfaceAST → TypedAST → derivation/runtime
 ```
 
+La [primera teoría experimental de la geometría inferencial](docs/inferential-geometry-experimental-theory.md)
+reúne los estudios de clausura jurídica, bases extremas, fronteras mínimas e
+identificabilidad mediante particiones. Distingue teoremas condicionados,
+resultados finitos y preguntas abiertas; no modifica la ontología ni afirma una
+geometría universal para todos los programas de Residuum.
+
+El [experimento de recalcitrancia y funciones justificativas](docs/legal-recalcitrance-justificatory-functions.md)
+mantiene la norma fija y filtra anticadenas de soportes mediante valoraciones
+externas hipotéticas. Separa compatibilidad, identificabilidad y adecuación
+jurídica; ninguna revisión se integra automáticamente.
+
+La [continuación conversacional](docs/legal-conversational-justification-learning.md)
+actualiza las once funciones compatibles con una séptima valoración estipulada,
+conserva los empates entre preguntas minimax y diagnostica espacios vacíos sin
+inventar funciones ni modificar la norma.
+
+La [evaluación jurídica de las preguntas minimax](docs/legal-minimax-questions-juridical-assessment.md)
+distingue deberes y pretensiones correlativas, permisos y evidencia de realización.
+Formula las objeciones posibles sin añadir valoraciones al experimento.
+
+El [experimento de expedientes y explicaciones tipadas](docs/legal-typed-explanations-fixed-theory.md)
+calcula el cierre íntegro de LegalGeneral antes de evaluar explicaciones mediante
+resultados compatibles, incompatibles o indeterminados. No reemplaza productores
+de consecuencias ni convierte esas evaluaciones en hechos jurídicos.
+
+El [caso histórico Riggs v. Palmer](docs/legal-riggs-fixed-reference-experiment.md)
+certifica una atribución sucesoria literal bajo supuestos delimitados y examina
+argumentos documentados sobre sus cierres. Conserva la teoría de referencia,
+provenance y preguntas contrafactuales para deliberación jurídica independiente.
+
+El [aprendizaje conversacional de argumentos de Riggs](docs/legal-riggs-conversational-argument-learning.md)
+separa apoyo factual, valoración externa y permanencia de hipótesis. Comprueba
+ramas hipotéticas de respuesta, particiones y preguntas posteriores conservando
+los mismos cierres jurídicos.
+
+El [aprendizaje experimental de reglas sobre Riggs](docs/legal-riggs-normative-rule-learning.md)
+genera 64 cláusulas relacionales y conserva 16 compatibles con la observación
+histórica. Sus impedimentos hipotéticos preservan la teoría literal; se verifican
+fronteras, particiones y geometría sin resolver automáticamente la exclusión efectiva.
+
+El [contrato de búsqueda relacional](docs/legal-relational-search-space-contract.md)
+y la [enumeración estructural acotada](docs/legal-structural-generation-enumeration.md)
+distinguen admisión tipada de adecuación normativa. La enumeración certifica un
+subperfil y documenta la corrección pendiente de finitud por inserciones de `I`.
+La [revisión de integración](docs/legal-geometry-integration-review.md) registra
+36 tests individuales y las fuentes ontológicas locales verificadas.
+
 La CLI mínima usa las declaraciones, seeds y queries del archivo existente:
 
 ```sh
@@ -507,12 +554,43 @@ negativa. `query_program_residual_with_abducibles` permite restringir esa lista
 por verbo y polaridad. La
 búsqueda exige parámetros determinados por el head; ciclos, variables pendientes
 y límites agotados devuelven error, sin resultados truncados. Cada resultado
-se filtra contra los abducibles y se certifica mediante replay finito con el
-matcher forward del programa. `failure` distingue `NotAbducible` de
+se filtra contra los abducibles y se certifica mediante replay finito de las
+cláusulas Horn explícitas. Ese certificado no comprueba la activación dinámica
+de `Verb.program`. `failure` distingue `NotAbducible` de
 `NotForwardSupported`; ambas condiciones dejan `required: None`. Conserva las ramas
 sin preferencia por `≤_L`, y no modifica el conocimiento ni ejecuta efectos.
 El [contrato de la consulta sobre programas](docs/program-residual-query.md)
 precisa ese alcance y sus tests de suficiencia y cobertura finita.
+
+La extensión experimental `query_active_program_residual(&module, &evidence,
+&goal, limits, &mut clock)` devuelve `ActiveProgramResidualQuery`. Incluye las
+guardas de activación de `Verb.program` y certifica cada hipótesis mediante el
+`close_program` original sobre evidencia hipotética, conservando provenance de
+Rule/Program/Module. No modifica Known ni ejecuta State. La API Horn anterior
+conserva su nombre, firma y comportamiento; la CLI aún utiliza sus rutas previas.
+El [contrato de la API activa](docs/active-residual-api.md) resume sus garantías,
+precondiciones y regresiones independientes del harness jurídico.
+
+| Resultado de la consulta activa | Significado |
+|---|---|
+| Rama con `candidate.required = Unit` | Explicación certificada sin hipótesis pendientes |
+| Rama con eventos o conjunciones pendientes | Hipótesis suficientes si se aportan, fuera de Known |
+| `required = None`, cero explicaciones y `failure` | No se certificó una explicación en el fragmento buscado |
+| `Err` | Búsqueda/validación no completada; no es una respuesta negativa ni `I` |
+
+El resumen `Join` puede conservar `I` junto con alternativas pendientes; deben
+examinarse las ramas sin descartar sus justificaciones. La API activa requiere
+objetivos ground y parámetros determinados por el head, no admite defaults ni
+amplía existenciales. `SearchLimits` acota búsqueda, no el cierre hipotético: su
+terminación es una precondición del llamador. El
+[informe de preparación de integración](docs/residual-active-query-integration-review.md)
+separa estos contratos y la verificación individual disponible.
+
+El [oráculo jurídico de la consulta activa](docs/legal-ontology-active-residual-oracle.md)
+contrasta suficiencia y cobertura con las fronteras mínimas del cierre real:
+16 casos controlados y 146 objetivos de la ontología, conservando como límites
+explícitos los parámetros no determinados y los requisitos fuera del catálogo.
+
 El bloque abductivo queda congelado sin preferencia. El experimento de valoración
 y satisfacción compara el puente con el cierre ground, antes de incrementalizar
 el cierre forward y sin cambios a esta búsqueda.

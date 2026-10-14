@@ -1,0 +1,28 @@
+digraph G {
+rankdir=LR;
+node [fontname="sans-serif", fontsize=10];
+"P0: masks [0]" [shape=ellipse, label="P0: masks [0]"];
+"P1: masks [2]" [shape=ellipse, label="P1: masks [2]"];
+"P2: masks [1]" [shape=ellipse, label="P2: masks [1]"];
+"P3: masks [8]" [shape=ellipse, label="P3: masks [8]"];
+"P4: masks [4, 12]" [shape=ellipse, label="P4: masks [4, 12]"];
+"P5: masks [10]" [shape=ellipse, label="P5: masks [10]"];
+"P6: masks [6, 14]" [shape=ellipse, label="P6: masks [6, 14]"];
+"P7: masks [9]" [shape=ellipse, label="P7: masks [9]"];
+"P8: masks [5, 13]" [shape=ellipse, label="P8: masks [5, 13]"];
+"P9: masks [3, 7, 11, 15]" [shape=ellipse, label="P9: masks [3, 7, 11, 15]"];
+"P0: masks [0]" -> "P1: masks [2]" [label="inclusion cover", fontsize=8];
+"P0: masks [0]" -> "P2: masks [1]" [label="inclusion cover", fontsize=8];
+"P0: masks [0]" -> "P3: masks [8]" [label="inclusion cover", fontsize=8];
+"P1: masks [2]" -> "P5: masks [10]" [label="inclusion cover", fontsize=8];
+"P2: masks [1]" -> "P7: masks [9]" [label="inclusion cover", fontsize=8];
+"P3: masks [8]" -> "P4: masks [4, 12]" [label="inclusion cover", fontsize=8];
+"P3: masks [8]" -> "P5: masks [10]" [label="inclusion cover", fontsize=8];
+"P3: masks [8]" -> "P7: masks [9]" [label="inclusion cover", fontsize=8];
+"P4: masks [4, 12]" -> "P6: masks [6, 14]" [label="inclusion cover", fontsize=8];
+"P4: masks [4, 12]" -> "P8: masks [5, 13]" [label="inclusion cover", fontsize=8];
+"P5: masks [10]" -> "P6: masks [6, 14]" [label="inclusion cover", fontsize=8];
+"P6: masks [6, 14]" -> "P9: masks [3, 7, 11, 15]" [label="inclusion cover", fontsize=8];
+"P7: masks [9]" -> "P8: masks [5, 13]" [label="inclusion cover", fontsize=8];
+"P8: masks [5, 13]" -> "P9: masks [3, 7, 11, 15]" [label="inclusion cover", fontsize=8];
+}

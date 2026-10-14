@@ -1,0 +1,6 @@
+case	direct_seed_input	minimal_seed_supports_for_reachability	minimal_seed_supports_without_prior_C	fixture
+AP	true	P+A	P+A	directAP
+AM	true	M+A	M+A	directAM
+AD	false	O+B+A;R+B+A;O+A+N;R+M+A+N		reachableAD
+AV	false	B+A;O+A+N;M+A+N	B+A;M+A+N	reachableAV
+APV	false	B+P+A;O+P+A+N;M+P+A+N	B+P+A;M+P+A+N	reachableAPV

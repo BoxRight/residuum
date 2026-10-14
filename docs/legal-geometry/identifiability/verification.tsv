@@ -1,0 +1,7 @@
+stage	name	exit	seconds	RSS_MiB	report
+compile	compile only	0	3.0136	362.44	20261010T162759696259Z-455364
+test	cli::tests::legal_geometry::region_revision::dependencies::identifiability::fixed_hypotheses_have_all_inclusion_minimal_discriminating_cases	0	0.7926	15.55	20261010T162829345746Z-456143
+test	cli::tests::legal_geometry::region_revision::dependencies::identifiability::informative_cases_replay_closures_and_preserve_unanswered_external_labels	0	0.4688	15.55	20261010T162829345746Z-456143
+test	cli::tests::legal_geometry::region_revision::dependencies::minimal_revision_feedback_is_conditional_and_invariant_under_equal_closures	0	0.2452	15.36	20261010T162829345746Z-456143
+compile	compile only	0	2.4635	349.79	20261010T162951025307Z-457031
+test	cli::tests::legal_geometry::region_revision::dependencies::identifiability::fixed_hypotheses_have_all_inclusion_minimal_discriminating_cases	0	0.9994	15.36	20261010T163214807933Z-459280

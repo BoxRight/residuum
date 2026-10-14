@@ -1,0 +1,10 @@
+# Simulated external answers; not doctrinal claims or results of the current norm.
+# All histories branch after the original six answers; controls never replace them.
+# The OP question is stipulated from tied minimax optima, not selected by priority.
+scenario	case	value	source	status	rationale
+seventh	candidateOP	1	stipulation:conversation/seventh	hypothetical_external_assumption	Include OP for this simulated turn; legal adequacy remains unevaluated
+strict_monotonicity	challengeO	1	stipulation:conversation/strict-monotonicity	hypothetical_external_assumption	Challenge monotonicity: O positive while the earlier OA answer is negative
+same_snapshot	candidateOP	0	stipulation:conversation/same-snapshot	hypothetical_external_assumption	Oppose the seventh answer on the exact same typed case and goal
+catalog_gap	candidateOP	1	stipulation:conversation/catalog-gap	hypothetical_external_assumption	Diagnostic control: restrict the available catalog to the already existing H033
+outside_features	outsideFeatures	0	stipulation:conversation/outside-features	hypothetical_external_assumption	Extra negative Act is outside the declared four-feature hypothesis scope
+outside_time	outsideTime	0	stipulation:conversation/outside-time	hypothetical_external_assumption	Different temporal query context must not collapse into the existing one

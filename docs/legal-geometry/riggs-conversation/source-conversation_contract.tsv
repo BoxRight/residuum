@@ -1,0 +1,7 @@
+# Fixed three-argument catalog. Commitments concern the common question only.
+# These hypothetical interpretive commitments precede all external answers.
+# Premise compatibility is read from the existing Riggs assessor, never relabeled.
+argument	compatible_response	incompatible_response	indeterminate_response	status	source
+EarlCausalWrong	sustain	reject	pending	hypothetical_reading_commitment	stipulation:riggs-conversation/causal-reading
+EarlAcquisitionPurpose	sustain	reject	pending	hypothetical_reading_commitment	stipulation:riggs-conversation/purpose-reading
+GrayStatutoryRoute	reject	pending	pending	hypothetical_reading_commitment	stipulation:riggs-conversation/statutory-reading

@@ -1,0 +1,9 @@
+# All labels are independent experimental assumptions, not legal assessments.
+# The source identifies a hypothetical valuation stipulated for this study.
+step	case	value	source	status	rationale
+1	empty	0	stipulation:recalcitrance-study/1	hypothetical_external_assumption	Negative agreement control; no evidence supplied
+2	rightAct	1	stipulation:recalcitrance-study/2	hypothetical_external_assumption	Positive agreement control stipulated independently
+3	obligationAct	0	stipulation:recalcitrance-study/3	hypothetical_external_assumption	Deliberate overinclusion probe; not a doctrinal claim
+4	actPermission	1	stipulation:recalcitrance-study/4	hypothetical_external_assumption	Deliberate underinclusion probe; not a doctrinal claim
+5	actOnly	0	stipulation:recalcitrance-study/5	hypothetical_external_assumption	Act alone excluded by external assumption
+6	permissionOnly	0	stipulation:recalcitrance-study/6	hypothetical_external_assumption	Permission alone excluded by external assumption

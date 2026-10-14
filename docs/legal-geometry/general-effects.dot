@@ -1,0 +1,25 @@
+digraph G {
+rankdir=LR;
+node [fontname="sans-serif", fontsize=10];
+"State input" [shape=ellipse, label="State input"];
+"State output" [shape=ellipse, label="State output"];
+"beneficiary.patrimony.rights" [shape=ellipse, label="beneficiary.patrimony.rights"];
+"do" [shape=ellipse, label="do"];
+"give" [shape=ellipse, label="give"];
+"notDo" [shape=ellipse, label="notDo"];
+"recipient.patrimony.assets" [shape=ellipse, label="recipient.patrimony.assets"];
+"subject.patrimony.assets" [shape=ellipse, label="subject.patrimony.assets"];
+"subject.patrimony.obligations" [shape=ellipse, label="subject.patrimony.obligations"];
+"State input" -> "do" [label="execute, externally requested", fontsize=8];
+"State input" -> "give" [label="execute, externally requested", fontsize=8];
+"State input" -> "notDo" [label="execute, externally requested", fontsize=8];
+"do" -> "State output" [label="functional snapshot", fontsize=8];
+"do" -> "beneficiary.patrimony.rights" [label="insert: Set(Entity(\"Relation\"))", fontsize=8];
+"do" -> "subject.patrimony.obligations" [label="insert: Set(Entity(\"Relation\"))", fontsize=8];
+"give" -> "State output" [label="functional snapshot", fontsize=8];
+"give" -> "recipient.patrimony.assets" [label="insert: Set(Entity(\"Thing\"))", fontsize=8];
+"give" -> "subject.patrimony.assets" [label="remove: Set(Entity(\"Thing\"))", fontsize=8];
+"notDo" -> "State output" [label="functional snapshot", fontsize=8];
+"notDo" -> "beneficiary.patrimony.rights" [label="insert: Set(Entity(\"Relation\"))", fontsize=8];
+"notDo" -> "subject.patrimony.obligations" [label="insert: Set(Entity(\"Relation\"))", fontsize=8];
+}

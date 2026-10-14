@@ -1,0 +1,5 @@
+model	mask	input	closure	proofs
+general	0	[]	{}	0
+patrimonial	0	[]	{}	0
+general	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]	{"capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau", "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau", "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau", "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"}	3
+patrimonial	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]	{"capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau", "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau", "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau", "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"}	3

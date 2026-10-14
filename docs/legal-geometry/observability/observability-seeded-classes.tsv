@@ -1,0 +1,8 @@
+class	hypotheses	observation
+0	APM+AD;APM+APD	all_17_ground_events_over_128_Seeded_inputs
+1	APM+APD+APV	all_17_ground_events_over_128_Seeded_inputs
+2	AP	all_17_ground_events_over_128_Seeded_inputs
+3	AM+AD;AM+APD	all_17_ground_events_over_128_Seeded_inputs
+4	AM+APD+APV	all_17_ground_events_over_128_Seeded_inputs
+5	APM+AD+AV	all_17_ground_events_over_128_Seeded_inputs
+6	AM+AD+AV	all_17_ground_events_over_128_Seeded_inputs

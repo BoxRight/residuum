@@ -1,0 +1,9 @@
+model	event	minimal_mask	support
+general	capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+general	owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+general	patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+general	patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+patrimonial	capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+patrimonial	owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+patrimonial	patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]
+patrimonial	patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau	1	["patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"]

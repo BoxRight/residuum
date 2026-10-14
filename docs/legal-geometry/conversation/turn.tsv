@@ -1,0 +1,2 @@
+observation	case	value	source	status	rationale	before	after	all_minimax_ties	next_minimax_ties
+seventh	candidateOP	true	stipulation:conversation/seventh	hypothetical_external_assumption	Include OP for this simulated turn; legal adequacy remains unevaluated	11	5	candidateOR,candidateOP,candidateRP	candidateOR,candidateRP

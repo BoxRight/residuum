@@ -1,0 +1,11 @@
+model	event	minimal_mask	support
+general	Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+general	capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+general	give(gSubject, gObject, gBeneficiary) @ after(gTau)	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+general	owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+general	transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+patrimonial	Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+patrimonial	capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+patrimonial	give(gSubject, gObject, gBeneficiary) @ after(gTau)	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+patrimonial	owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]
+patrimonial	transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau	1	["Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"]

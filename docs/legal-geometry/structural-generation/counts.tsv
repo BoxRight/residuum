@@ -1,0 +1,6 @@
+length	enumerated	admitted	rejected
+0	1	0	1
+1	12	0	12
+2	144	28	116
+3	1728	630	1098
+4	20736	10192	10544

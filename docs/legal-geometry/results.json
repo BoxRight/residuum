@@ -1,0 +1,2128 @@
+{
+  "graphs": {
+    "general": {
+      "declarations": {
+        "entity": 8,
+        "constant": 10,
+        "verb": 31,
+        "rule": 27
+      },
+      "verb_categories": {
+        "Seeded": 12,
+        "Derived": 16,
+        "Effect": 3
+      },
+      "type_components": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct",
+          "Patrimony",
+          "PerformanceMode",
+          "Person",
+          "Relation",
+          "Thing"
+        ],
+        [
+          "Fact"
+        ]
+      ],
+      "type_scc": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct"
+        ],
+        [
+          "Fact"
+        ],
+        [
+          "Patrimony",
+          "Person",
+          "Relation"
+        ],
+        [
+          "PerformanceMode"
+        ],
+        [
+          "Thing"
+        ]
+      ],
+      "predicate_components": [
+        [
+          "Act",
+          "annulled",
+          "capacity",
+          "compliance",
+          "disputedPerformance",
+          "do",
+          "enforceability",
+          "give",
+          "higherAuthority",
+          "inconsistent",
+          "law",
+          "legislationText",
+          "legislativeCapacity",
+          "legislativePower",
+          "notDo",
+          "notEarlier",
+          "obligation",
+          "obligationFiled",
+          "omissionProhibition",
+          "owns",
+          "patrimonialAsset",
+          "patrimonialHolding",
+          "patrimonialLiability",
+          "permission",
+          "permissionFiled",
+          "powerGranted",
+          "prohibition",
+          "right",
+          "transferred",
+          "violation",
+          "~Act"
+        ],
+        [
+          "extinguished"
+        ]
+      ],
+      "predicate_scc": [
+        [
+          "Act"
+        ],
+        [
+          "annulled"
+        ],
+        [
+          "capacity"
+        ],
+        [
+          "compliance"
+        ],
+        [
+          "disputedPerformance"
+        ],
+        [
+          "do"
+        ],
+        [
+          "enforceability"
+        ],
+        [
+          "extinguished"
+        ],
+        [
+          "give"
+        ],
+        [
+          "higherAuthority"
+        ],
+        [
+          "inconsistent"
+        ],
+        [
+          "law"
+        ],
+        [
+          "legislationText"
+        ],
+        [
+          "legislativeCapacity"
+        ],
+        [
+          "legislativePower"
+        ],
+        [
+          "notDo"
+        ],
+        [
+          "notEarlier"
+        ],
+        [
+          "obligation"
+        ],
+        [
+          "obligationFiled"
+        ],
+        [
+          "omissionProhibition"
+        ],
+        [
+          "owns"
+        ],
+        [
+          "patrimonialAsset"
+        ],
+        [
+          "patrimonialHolding"
+        ],
+        [
+          "patrimonialLiability"
+        ],
+        [
+          "permission"
+        ],
+        [
+          "permissionFiled"
+        ],
+        [
+          "powerGranted"
+        ],
+        [
+          "prohibition"
+        ],
+        [
+          "right"
+        ],
+        [
+          "transferred"
+        ],
+        [
+          "violation"
+        ],
+        [
+          "~Act"
+        ]
+      ],
+      "predicate_count": 32,
+      "hypergraph_node_count": 59,
+      "hypergraph_edge_count": 76
+    },
+    "patrimonial": {
+      "declarations": {
+        "entity": 8,
+        "constant": 12,
+        "verb": 31,
+        "rule": 28
+      },
+      "verb_categories": {
+        "Seeded": 12,
+        "Derived": 16,
+        "Effect": 3
+      },
+      "type_components": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct",
+          "Patrimony",
+          "PerformanceMode",
+          "Person",
+          "Relation",
+          "Thing"
+        ],
+        [
+          "Fact"
+        ]
+      ],
+      "type_scc": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct"
+        ],
+        [
+          "Fact"
+        ],
+        [
+          "Patrimony",
+          "Person",
+          "Relation"
+        ],
+        [
+          "PerformanceMode"
+        ],
+        [
+          "Thing"
+        ]
+      ],
+      "predicate_components": [
+        [
+          "Act",
+          "annulled",
+          "capacity",
+          "compliance",
+          "disputedPerformance",
+          "do",
+          "enforceability",
+          "give",
+          "higherAuthority",
+          "inconsistent",
+          "law",
+          "legislationText",
+          "legislativeCapacity",
+          "legislativePower",
+          "notDo",
+          "notEarlier",
+          "obligation",
+          "obligationFiled",
+          "omissionProhibition",
+          "owns",
+          "patrimonialAsset",
+          "patrimonialHolding",
+          "patrimonialLiability",
+          "permission",
+          "permissionFiled",
+          "powerGranted",
+          "prohibition",
+          "right",
+          "transferred",
+          "violation",
+          "~Act"
+        ],
+        [
+          "extinguished"
+        ]
+      ],
+      "predicate_scc": [
+        [
+          "Act"
+        ],
+        [
+          "annulled"
+        ],
+        [
+          "capacity"
+        ],
+        [
+          "compliance"
+        ],
+        [
+          "disputedPerformance"
+        ],
+        [
+          "do"
+        ],
+        [
+          "enforceability"
+        ],
+        [
+          "extinguished"
+        ],
+        [
+          "give"
+        ],
+        [
+          "higherAuthority"
+        ],
+        [
+          "inconsistent"
+        ],
+        [
+          "law"
+        ],
+        [
+          "legislationText"
+        ],
+        [
+          "legislativeCapacity"
+        ],
+        [
+          "legislativePower"
+        ],
+        [
+          "notDo"
+        ],
+        [
+          "notEarlier"
+        ],
+        [
+          "obligation"
+        ],
+        [
+          "obligationFiled"
+        ],
+        [
+          "omissionProhibition"
+        ],
+        [
+          "owns"
+        ],
+        [
+          "patrimonialAsset"
+        ],
+        [
+          "patrimonialHolding"
+        ],
+        [
+          "patrimonialLiability"
+        ],
+        [
+          "permission"
+        ],
+        [
+          "permissionFiled"
+        ],
+        [
+          "powerGranted"
+        ],
+        [
+          "prohibition"
+        ],
+        [
+          "right"
+        ],
+        [
+          "transferred"
+        ],
+        [
+          "violation"
+        ],
+        [
+          "~Act"
+        ]
+      ],
+      "predicate_count": 32,
+      "hypergraph_node_count": 60,
+      "hypergraph_edge_count": 78
+    },
+    "reference": {
+      "declarations": {
+        "entity": 8,
+        "constant": 12,
+        "verb": 31,
+        "rule": 28
+      },
+      "verb_categories": {
+        "Seeded": 12,
+        "Derived": 16,
+        "Effect": 3
+      },
+      "type_components": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct",
+          "Patrimony",
+          "PerformanceMode",
+          "Person",
+          "Relation",
+          "Thing"
+        ],
+        [
+          "Fact"
+        ]
+      ],
+      "type_scc": [
+        [
+          "Authority"
+        ],
+        [
+          "Conduct"
+        ],
+        [
+          "Fact"
+        ],
+        [
+          "Patrimony",
+          "Person",
+          "Relation"
+        ],
+        [
+          "PerformanceMode"
+        ],
+        [
+          "Thing"
+        ]
+      ],
+      "predicate_components": [
+        [
+          "Act",
+          "annulled",
+          "capacity",
+          "compliance",
+          "disputedPerformance",
+          "do",
+          "enforceability",
+          "give",
+          "higherAuthority",
+          "inconsistent",
+          "law",
+          "legislationText",
+          "legislativeCapacity",
+          "legislativePower",
+          "notDo",
+          "notEarlier",
+          "obligation",
+          "obligationFiled",
+          "omissionProhibition",
+          "owns",
+          "patrimonialAsset",
+          "patrimonialHolding",
+          "patrimonialLiability",
+          "permission",
+          "permissionFiled",
+          "powerGranted",
+          "prohibition",
+          "right",
+          "transferred",
+          "violation",
+          "~Act"
+        ],
+        [
+          "extinguished"
+        ]
+      ],
+      "predicate_scc": [
+        [
+          "Act"
+        ],
+        [
+          "annulled"
+        ],
+        [
+          "capacity"
+        ],
+        [
+          "compliance"
+        ],
+        [
+          "disputedPerformance"
+        ],
+        [
+          "do"
+        ],
+        [
+          "enforceability"
+        ],
+        [
+          "extinguished"
+        ],
+        [
+          "give"
+        ],
+        [
+          "higherAuthority"
+        ],
+        [
+          "inconsistent"
+        ],
+        [
+          "law"
+        ],
+        [
+          "legislationText"
+        ],
+        [
+          "legislativeCapacity"
+        ],
+        [
+          "legislativePower"
+        ],
+        [
+          "notDo"
+        ],
+        [
+          "notEarlier"
+        ],
+        [
+          "obligation"
+        ],
+        [
+          "obligationFiled"
+        ],
+        [
+          "omissionProhibition"
+        ],
+        [
+          "owns"
+        ],
+        [
+          "patrimonialAsset"
+        ],
+        [
+          "patrimonialHolding"
+        ],
+        [
+          "patrimonialLiability"
+        ],
+        [
+          "permission"
+        ],
+        [
+          "permissionFiled"
+        ],
+        [
+          "powerGranted"
+        ],
+        [
+          "prohibition"
+        ],
+        [
+          "right"
+        ],
+        [
+          "transferred"
+        ],
+        [
+          "violation"
+        ],
+        [
+          "~Act"
+        ]
+      ],
+      "predicate_count": 32,
+      "hypergraph_node_count": 60,
+      "hypergraph_edge_count": 78
+    }
+  },
+  "windows": {
+    "performance": {
+      "general": {
+        "input_states": 128,
+        "distinct_closures": 128,
+        "min_events": 0,
+        "max_events": 17,
+        "max_justifications": 13,
+        "minimal_supports": {
+          "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 32,
+              "support": [
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "compliance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 33,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 34,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "disputedPerformance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 37,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 38,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 97,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 106,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "enforceability(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 66,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "inconsistent(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 96,
+              "support": [
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialLiability(gSubject, gObject, gNorm, administrative, gDate) @ gTau": [
+            {
+              "mask": 36,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 65,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 72,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "violation(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 36,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 65,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 72,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 64,
+              "support": [
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 64,
+          "compliance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 48,
+          "disputedPerformance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 34,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 64,
+          "enforceability(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 32,
+          "inconsistent(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 32,
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 64,
+          "obligation(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "patrimonialLiability(gSubject, gObject, gNorm, administrative, gDate) @ gTau": 68,
+          "permission(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "violation(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 68,
+          "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 64
+        }
+      },
+      "patrimonial": {
+        "input_states": 128,
+        "distinct_closures": 128,
+        "min_events": 0,
+        "max_events": 20,
+        "max_justifications": 16,
+        "minimal_supports": {
+          "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 32,
+              "support": [
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "capacity(gBeneficiary, use, gObject, gNorm, administrative, gDate) @ gTau": [
+            {
+              "mask": 33,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 34,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "compliance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 33,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 34,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "disputedPerformance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 37,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 38,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 97,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 106,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "enforceability(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 66,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "inconsistent(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 96,
+              "support": [
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "owns(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau": [
+            {
+              "mask": 33,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 34,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialAsset(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau": [
+            {
+              "mask": 33,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 34,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialLiability(gSubject, gObject, gNorm, administrative, gDate) @ gTau": [
+            {
+              "mask": 36,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 65,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 72,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "violation(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": [
+            {
+              "mask": 36,
+              "support": [
+                "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 65,
+              "support": [
+                "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 72,
+              "support": [
+                "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau",
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 64,
+              "support": [
+                "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 64,
+          "capacity(gBeneficiary, use, gObject, gNorm, administrative, gDate) @ gTau": 48,
+          "compliance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 48,
+          "disputedPerformance(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 34,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 64,
+          "enforceability(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 32,
+          "inconsistent(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 32,
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 64,
+          "obligation(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "obligationFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "omissionProhibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "owns(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau": 48,
+          "patrimonialAsset(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau": 48,
+          "patrimonialLiability(gSubject, gObject, gNorm, administrative, gDate) @ gTau": 68,
+          "permission(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "permissionFiled(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "prohibition(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "right(gNorm, gSubject, gConduct, gObject, gBeneficiary, administrative, gDate) @ gTau": 64,
+          "violation(gNorm, gAct, gSubject, gObject, gBeneficiary, administrative, gDate) @ gTau": 68,
+          "~Act(gAct, gSubject, gConduct, gObject, gBeneficiary, private, gDate) @ gTau": 64
+        }
+      }
+    },
+    "authority": {
+      "general": {
+        "input_states": 256,
+        "distinct_closures": 256,
+        "min_events": 0,
+        "max_events": 15,
+        "max_justifications": 12,
+        "minimal_supports": {
+          "annulled(gLow, gHigh, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 204,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 212,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 225,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 226,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "higherAuthority(constitutional, administrative) @ gTau": [
+            {
+              "mask": 64,
+              "support": [
+                "higherAuthority(constitutional, administrative) @ gTau"
+              ]
+            }
+          ],
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 32,
+              "support": [
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "notEarlier(gLateDate, gEarlyDate) @ gTau": [
+            {
+              "mask": 128,
+              "support": [
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 32,
+              "support": [
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "annulled(gLow, gHigh, constitutional, gLateDate) @ gTau": 39,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 192,
+          "higherAuthority(constitutional, administrative) @ gTau": 128,
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 192,
+          "notEarlier(gLateDate, gEarlyDate) @ gTau": 128,
+          "obligation(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "obligation(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "permission(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "permission(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128
+        }
+      },
+      "patrimonial": {
+        "input_states": 256,
+        "distinct_closures": 256,
+        "min_events": 0,
+        "max_events": 15,
+        "max_justifications": 12,
+        "minimal_supports": {
+          "annulled(gLow, gHigh, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 204,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 212,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 225,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 226,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau",
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau",
+                "higherAuthority(constitutional, administrative) @ gTau",
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "higherAuthority(constitutional, administrative) @ gTau": [
+            {
+              "mask": 64,
+              "support": [
+                "higherAuthority(constitutional, administrative) @ gTau"
+              ]
+            }
+          ],
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            },
+            {
+              "mask": 32,
+              "support": [
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "notEarlier(gLateDate, gEarlyDate) @ gTau": [
+            {
+              "mask": 128,
+              "support": [
+                "notEarlier(gLateDate, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 16,
+              "support": [
+                "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "permission(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 8,
+              "support": [
+                "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau"
+              ]
+            }
+          ],
+          "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": [
+            {
+              "mask": 32,
+              "support": [
+                "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "annulled(gLow, gHigh, constitutional, gLateDate) @ gTau": 39,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 192,
+          "higherAuthority(constitutional, administrative) @ gTau": 128,
+          "notDo(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 192,
+          "notEarlier(gLateDate, gEarlyDate) @ gTau": 128,
+          "obligation(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "obligation(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "obligationFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "obligationFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "permission(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "permission(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "permissionFiled(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "permissionFiled(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128,
+          "prohibition(gHigh, gSubject, gConduct, gObject, gBeneficiary, constitutional, gLateDate) @ gTau": 128,
+          "prohibition(gLow, gSubject, gConduct, gObject, gBeneficiary, administrative, gEarlyDate) @ gTau": 128
+        }
+      }
+    },
+    "legislation": {
+      "general": {
+        "input_states": 8,
+        "distinct_closures": 8,
+        "min_events": 0,
+        "max_events": 8,
+        "max_justifications": 5,
+        "minimal_supports": {
+          "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "law(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislativeCapacity(gLegislator, gObject, gGrant, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislativePower(gLegislator, gGrant, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau": 4,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 1,
+          "law(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 1,
+          "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 4,
+          "legislativeCapacity(gLegislator, gObject, gGrant, legislative, gDate) @ gTau": 4,
+          "legislativePower(gLegislator, gGrant, legislative, gDate) @ gTau": 4,
+          "obligation(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 1,
+          "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau": 4
+        }
+      },
+      "patrimonial": {
+        "input_states": 8,
+        "distinct_closures": 8,
+        "min_events": 0,
+        "max_events": 8,
+        "max_justifications": 5,
+        "minimal_supports": {
+          "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 2,
+              "support": [
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "law(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 4,
+              "support": [
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislativeCapacity(gLegislator, gObject, gGrant, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "legislativePower(gLegislator, gGrant, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "obligation(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": [
+            {
+              "mask": 7,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau",
+                "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau",
+                "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gEnact, gLegislator, enact, gObject, gBeneficiary, legislative, gDate) @ gTau": 4,
+          "do(gSubject, gConduct, gObject, gBeneficiary) @ after(gTau)": 1,
+          "law(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 1,
+          "legislationText(gEnact, gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 4,
+          "legislativeCapacity(gLegislator, gObject, gGrant, legislative, gDate) @ gTau": 4,
+          "legislativePower(gLegislator, gGrant, legislative, gDate) @ gTau": 4,
+          "obligation(gStatute, gSubject, gConduct, gObject, gBeneficiary, legislative, gDate) @ gTau": 1,
+          "powerGranted(gGrant, gLegislator, enact, gObject, legislative, gDate) @ gTau": 4
+        }
+      }
+    },
+    "transferCase": {
+      "general": {
+        "input_states": 2,
+        "distinct_closures": 2,
+        "min_events": 0,
+        "max_events": 5,
+        "max_justifications": 4,
+        "minimal_supports": {
+          "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "give(gSubject, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau": 1,
+          "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau": 1,
+          "give(gSubject, gObject, gBeneficiary) @ after(gTau)": 1,
+          "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau": 1,
+          "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau": 1
+        }
+      },
+      "patrimonial": {
+        "input_states": 2,
+        "distinct_closures": 2,
+        "min_events": 0,
+        "max_events": 5,
+        "max_justifications": 4,
+        "minimal_supports": {
+          "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "give(gSubject, gObject, gBeneficiary) @ after(gTau)": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ],
+          "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "Act(gTransfer, gSubject, transfer, gObject, gBeneficiary, private, gDate) @ gTau": 1,
+          "capacity(gBeneficiary, use, gObject, gTransfer, private, gDate) @ gTau": 1,
+          "give(gSubject, gObject, gBeneficiary) @ after(gTau)": 1,
+          "owns(gBeneficiary, gObject, gTransfer, private, gDate) @ gTau": 1,
+          "transferred(gTransfer, gSubject, gObject, gBeneficiary, private, gDate) @ gTau": 1
+        }
+      }
+    },
+    "holding": {
+      "general": {
+        "input_states": 2,
+        "distinct_closures": 2,
+        "min_events": 0,
+        "max_events": 4,
+        "max_justifications": 3,
+        "minimal_supports": {
+          "capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau": 1
+        }
+      },
+      "patrimonial": {
+        "input_states": 2,
+        "distinct_closures": 2,
+        "min_events": 0,
+        "max_events": 4,
+        "max_justifications": 3,
+        "minimal_supports": {
+          "capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ],
+          "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau": [
+            {
+              "mask": 1,
+              "support": [
+                "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau"
+              ]
+            }
+          ]
+        },
+        "region_cardinalities": {
+          "capacity(gBeneficiary, use, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "owns(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "patrimonialAsset(gBeneficiary, gObject, gHolding, administrative, gDate) @ gTau": 1,
+          "patrimonialHolding(gHolding, gBeneficiary, gObject, administrative, gDate) @ gTau": 1
+        }
+      }
+    }
+  },
+  "common_universe_events": 73,
+  "initial_evidence_events": 23,
+  "anti_exchange": [
+    {
+      "model": "general",
+      "base_states": "16",
+      "ordered_pairs_checked": "74886",
+      "new_derivability_implications": "892"
+    },
+    {
+      "model": "patrimonial",
+      "base_states": "16",
+      "ordered_pairs_checked": "72858",
+      "new_derivability_implications": "1186"
+    }
+  ],
+  "theory_quotients": {
+    "general": [
+      {
+        "class": "G0: masks [0]",
+        "events": 0,
+        "masks": [
+          0
+        ],
+        "minimal_input_mask": 0
+      },
+      {
+        "class": "G1: masks [2]",
+        "events": 1,
+        "masks": [
+          2
+        ],
+        "minimal_input_mask": 2
+      },
+      {
+        "class": "G2: masks [4]",
+        "events": 1,
+        "masks": [
+          4
+        ],
+        "minimal_input_mask": 4
+      },
+      {
+        "class": "G3: masks [6]",
+        "events": 2,
+        "masks": [
+          6
+        ],
+        "minimal_input_mask": 6
+      },
+      {
+        "class": "G4: masks [1]",
+        "events": 3,
+        "masks": [
+          1
+        ],
+        "minimal_input_mask": 1
+      },
+      {
+        "class": "G5: masks [8]",
+        "events": 3,
+        "masks": [
+          8
+        ],
+        "minimal_input_mask": 8
+      },
+      {
+        "class": "G6: masks [5]",
+        "events": 4,
+        "masks": [
+          5
+        ],
+        "minimal_input_mask": 5
+      },
+      {
+        "class": "G7: masks [10]",
+        "events": 4,
+        "masks": [
+          10
+        ],
+        "minimal_input_mask": 10
+      },
+      {
+        "class": "G8: masks [12]",
+        "events": 4,
+        "masks": [
+          12
+        ],
+        "minimal_input_mask": 12
+      },
+      {
+        "class": "G9: masks [3, 7]",
+        "events": 5,
+        "masks": [
+          3,
+          7
+        ],
+        "minimal_input_mask": 3
+      },
+      {
+        "class": "G10: masks [14]",
+        "events": 5,
+        "masks": [
+          14
+        ],
+        "minimal_input_mask": 14
+      },
+      {
+        "class": "G11: masks [9]",
+        "events": 6,
+        "masks": [
+          9
+        ],
+        "minimal_input_mask": 9
+      },
+      {
+        "class": "G12: masks [13]",
+        "events": 7,
+        "masks": [
+          13
+        ],
+        "minimal_input_mask": 13
+      },
+      {
+        "class": "G13: masks [11, 15]",
+        "events": 8,
+        "masks": [
+          11,
+          15
+        ],
+        "minimal_input_mask": 11
+      }
+    ],
+    "patrimonial": [
+      {
+        "class": "P0: masks [0]",
+        "events": 0,
+        "masks": [
+          0
+        ],
+        "minimal_input_mask": 0
+      },
+      {
+        "class": "P1: masks [2]",
+        "events": 1,
+        "masks": [
+          2
+        ],
+        "minimal_input_mask": 2
+      },
+      {
+        "class": "P2: masks [1]",
+        "events": 3,
+        "masks": [
+          1
+        ],
+        "minimal_input_mask": 1
+      },
+      {
+        "class": "P3: masks [8]",
+        "events": 3,
+        "masks": [
+          8
+        ],
+        "minimal_input_mask": 8
+      },
+      {
+        "class": "P4: masks [4, 12]",
+        "events": 4,
+        "masks": [
+          4,
+          12
+        ],
+        "minimal_input_mask": 4
+      },
+      {
+        "class": "P5: masks [10]",
+        "events": 4,
+        "masks": [
+          10
+        ],
+        "minimal_input_mask": 10
+      },
+      {
+        "class": "P6: masks [6, 14]",
+        "events": 5,
+        "masks": [
+          6,
+          14
+        ],
+        "minimal_input_mask": 6
+      },
+      {
+        "class": "P7: masks [9]",
+        "events": 6,
+        "masks": [
+          9
+        ],
+        "minimal_input_mask": 9
+      },
+      {
+        "class": "P8: masks [5, 13]",
+        "events": 7,
+        "masks": [
+          5,
+          13
+        ],
+        "minimal_input_mask": 5
+      },
+      {
+        "class": "P9: masks [3, 7, 11, 15]",
+        "events": 8,
+        "masks": [
+          3,
+          7,
+          11,
+          15
+        ],
+        "minimal_input_mask": 3
+      }
+    ]
+  },
+  "full_event_frontiers": {
+    "totals": [
+      {
+        "model": "general",
+        "ground_clauses": "65",
+        "frontier_supports": "284",
+        "verified_supports": "284"
+      },
+      {
+        "model": "patrimonial",
+        "ground_clauses": "69",
+        "frontier_supports": "332",
+        "verified_supports": "332"
+      }
+    ],
+    "changed_conclusions": [
+      "capacity(gBeneficiary, use, gObject, gHigh, constitutional, gLateDate) @ gTau",
+      "capacity(gBeneficiary, use, gObject, gLow, administrative, gEarlyDate) @ gTau",
+      "capacity(gBeneficiary, use, gObject, gNorm, administrative, gDate) @ gTau",
+      "capacity(gBeneficiary, use, gObject, gStatute, legislative, gDate) @ gTau",
+      "owns(gBeneficiary, gObject, gHigh, constitutional, gLateDate) @ gTau",
+      "owns(gBeneficiary, gObject, gLow, administrative, gEarlyDate) @ gTau",
+      "owns(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau",
+      "owns(gBeneficiary, gObject, gStatute, legislative, gDate) @ gTau",
+      "patrimonialAsset(gBeneficiary, gObject, gHigh, constitutional, gLateDate) @ gTau",
+      "patrimonialAsset(gBeneficiary, gObject, gLow, administrative, gEarlyDate) @ gTau",
+      "patrimonialAsset(gBeneficiary, gObject, gNorm, administrative, gDate) @ gTau",
+      "patrimonialAsset(gBeneficiary, gObject, gStatute, legislative, gDate) @ gTau"
+    ]
+  },
+  "sources": [
+    {
+      "path": "/home/maitreya/residuum/examples/legal/modules/legal_monotonic.res",
+      "bytes": 17466,
+      "sha256": "24655c98ede7b128b8cd82df3a4473c114428b987bb0fe6a6d370c2b37f5575e"
+    },
+    {
+      "path": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_general.res",
+      "bytes": 16922,
+      "sha256": "639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc"
+    },
+    {
+      "path": "/home/maitreya/12hectareas/vendor/residuum/modules/legal_patrimonial.res",
+      "bytes": 594,
+      "sha256": "f7daf4d5eb937a7fde8534dba5618acc50d5aaa5b05ff86c9656892eb3a03fbf"
+    }
+  ]
+}

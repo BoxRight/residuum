@@ -1,0 +1,25 @@
+{
+  "unchanged_preexisting_files": 606,
+  "unchanged_refs": {
+    "HEAD": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "main": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "v1": "f6a83e33fa1edb606748a47394e2bde8b4ce635d"
+  },
+  "new_deliverables": [
+    "docs/legal-relational-search-space-contract.md",
+    "docs/legal-geometry/search-space/signatures.json",
+    "docs/legal-geometry/search-space/signatures.tsv",
+    "docs/legal-geometry/search-space/verification.json",
+    "docs/legal-geometry/search-space/protected-verification.json"
+  ],
+  "checks": [
+    "all preexisting file hashes",
+    "all protected refs",
+    "relative document links",
+    "input source hashes",
+    "AST export hashes",
+    "11 signatures and 12 signed literals",
+    "do/notDo argument type equality",
+    "initial manifest explicitly fixes LegalGeneral and positive compliance head"
+  ]
+}

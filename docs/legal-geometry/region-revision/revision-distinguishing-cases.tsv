@@ -1,0 +1,17 @@
+left	right	case	left_derives	right_derives
+AP	AM+AD	AP	true	false
+AP	AM+AD	AM	false	true
+AP	AM+AD	AD	false	true
+AP	APM+AD	AP	true	false
+AP	APM+AD	AD	false	true
+AP	AM+APD	AP	true	false
+AP	AM+APD	AM	false	true
+AP	APM+APD	AP	true	false
+AM+AD	APM+AD	AM	true	false
+AM+AD	AM+APD	AD	true	false
+AM+AD	APM+APD	AM	true	false
+AM+AD	APM+APD	AD	true	false
+APM+AD	AM+APD	AM	false	true
+APM+AD	AM+APD	AD	true	false
+APM+AD	APM+APD	AD	true	false
+AM+APD	APM+APD	AM	true	false

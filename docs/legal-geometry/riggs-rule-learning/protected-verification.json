@@ -1,0 +1,13 @@
+{
+  "protected_files": 263,
+  "changed_preexisting_files": [
+    "/home/maitreya/residuum/src/bin/residuum/cli/legal_geometry_riggs_tests.rs"
+  ],
+  "test_registration_only": true,
+  "other_files_identical": true,
+  "refs": {
+    "main": "7b14cb8ac86d07c8d101dc36ca9f1161580f6c22",
+    "v1": "f6a83e33fa1edb606748a47394e2bde8b4ce635d"
+  },
+  "branch": "experiment-legal-order-geometry"
+}

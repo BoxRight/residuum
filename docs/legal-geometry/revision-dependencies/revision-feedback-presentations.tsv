@@ -1,0 +1,6 @@
+package	cyclic_components	anti_exchange	reordered_full_closure_equal	reordered_provenance_equal
+AP	[]	true	true	false
+AM+AD	[[1, 2]]	false	true	false
+APM+AD	[[1, 2]]	false	true	false
+AM+APD	[[1, 2]]	false	true	false
+APM+APD	[[1, 2]]	false	true	false

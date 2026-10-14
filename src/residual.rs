@@ -4,8 +4,17 @@
 use crate::elab::Error;
 use crate::typed::{Antecedent, Residual, ResidualClause, Rule, RuleBody};
 
+mod bindings;
 mod query;
+pub use bindings::{
+    HornQueryScope, QueryBinding, QueryParameterScope, QueryWithBindings,
+    begin_active_residual_query_with_bindings, begin_residual_query_with_bindings,
+    query_active_program_residual_with_bindings, query_program_residual_with_bindings,
+    query_residual_with_bindings,
+};
+mod steps;
 pub use query::query_residual;
+pub use steps::{ActiveResidualSession, ResidualSearchTree, ResidualSession, ResidualStep};
 mod active;
 mod program;
 pub use active::{

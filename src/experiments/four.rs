@@ -58,6 +58,32 @@ fn evaluate(antecedent: &Antecedent, world: &BTreeMap<Event, Value>) -> Value {
     }
 }
 pub(super) fn entailment(experiment: &Experiment, rules: &[Rule]) -> Result<FourEntailment, Error> {
+    let (atoms, clauses) = prepare(experiment, rules)?;
+    let interpretations = 1 << (2 * atoms.len());
+    let mut models = 0;
+    let mut entailed = true;
+    for mask in 0..interpretations {
+        let world = world(&atoms, mask);
+        if experiment.input.iter().all(|fact| value(fact, &world).p)
+            && clauses.iter().all(|clause| {
+                evaluate(&clause.antecedent, &world).le(value(&clause.consequent, &world))
+            })
+        {
+            models += 1;
+            entailed &= value(&experiment.goal, &world).p;
+        }
+    }
+    Ok(FourEntailment {
+        interpretations,
+        models,
+        entailed,
+    })
+}
+
+fn prepare(
+    experiment: &Experiment,
+    rules: &[Rule],
+) -> Result<(Vec<Event>, Vec<crate::typed::HornClause>), Error> {
     if rules.iter().any(|rule| !rule.parameters.is_empty()) {
         return Err(Error::new(
             "fourFusion fixture comparison requires ground rules",
@@ -90,35 +116,134 @@ pub(super) fn entailment(experiment: &Experiment, rules: &[Rule]) -> Result<Four
         ));
     }
     let atoms: Vec<_> = atoms.into_iter().collect();
-    let interpretations = 1 << (2 * atoms.len());
-    let mut models = 0;
-    let mut entailed = true;
-    for mask in 0..interpretations {
-        let world: BTreeMap<_, _> = atoms
-            .iter()
-            .enumerate()
-            .map(|(i, atom)| {
-                (
-                    atom.clone(),
-                    Value {
-                        p: mask & (1 << (2 * i)) != 0,
-                        n: mask & (1 << (2 * i + 1)) != 0,
-                    },
+    Ok((atoms, clauses))
+}
+
+fn world(atoms: &[Event], mask: usize) -> BTreeMap<Event, Value> {
+    atoms
+        .iter()
+        .enumerate()
+        .map(|(i, atom)| {
+            (
+                atom.clone(),
+                Value {
+                    p: mask & (1 << (2 * i)) != 0,
+                    n: mask & (1 << (2 * i + 1)) != 0,
+                },
+            )
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FourStep {
+    pub round: usize,
+    pub constraint: Option<String>,
+    /// Interpretation IDs use two bits per atom in atoms(), in sorted order.
+    pub eliminated: Vec<usize>,
+    pub surviving: Vec<usize>,
+    pub interpretations: usize,
+    /// None while any theory constraint is still pending.
+    pub entailed: Option<bool>,
+    pub complete: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct FourSession {
+    experiment: Experiment,
+    rules: Vec<Rule>,
+    atoms: Vec<Event>,
+    clauses: Vec<crate::typed::HornClause>,
+    remaining: Vec<usize>,
+    cursor: usize,
+    round: usize,
+    result: Option<FourEntailment>,
+}
+impl FourSession {
+    pub fn new(experiment: &Experiment, rules: &[Rule]) -> Result<Self, Error> {
+        let (atoms, clauses) = prepare(experiment, rules)?;
+        let remaining = (0..1 << (2 * atoms.len())).collect();
+        Ok(Self {
+            experiment: experiment.clone(),
+            rules: rules.to_vec(),
+            atoms,
+            clauses,
+            remaining,
+            cursor: 0,
+            round: 0,
+            result: None,
+        })
+    }
+    pub fn atoms(&self) -> &[Event] {
+        &self.atoms
+    }
+    pub fn result(&self) -> Option<&FourEntailment> {
+        self.result.as_ref()
+    }
+    pub fn step(&mut self) -> FourStep {
+        let mut eliminated = Vec::new();
+        let mut constraint = None;
+        let facts = self.experiment.input.len();
+        if self.cursor < facts + self.clauses.len() {
+            constraint = Some(if self.cursor < facts {
+                format!(
+                    "premise {}",
+                    super::render_event(&self.experiment.input[self.cursor])
                 )
-            })
-            .collect();
-        if experiment.input.iter().all(|fact| value(fact, &world).p)
-            && clauses.iter().all(|clause| {
-                evaluate(&clause.antecedent, &world).le(value(&clause.consequent, &world))
-            })
-        {
-            models += 1;
-            entailed &= value(&experiment.goal, &world).p;
+            } else {
+                format!("rule {}", self.rules[self.cursor - facts].name)
+            });
+            let mut next = Vec::new();
+            for mask in &self.remaining {
+                let world = world(&self.atoms, *mask);
+                let satisfies = if self.cursor < facts {
+                    value(&self.experiment.input[self.cursor], &world).p
+                } else {
+                    let clause = &self.clauses[self.cursor - facts];
+                    evaluate(&clause.antecedent, &world).le(value(&clause.consequent, &world))
+                };
+                if satisfies {
+                    next.push(*mask);
+                } else {
+                    eliminated.push(*mask);
+                }
+            }
+            self.remaining = next;
+            self.cursor += 1;
+        }
+        let complete = self.cursor == facts + self.clauses.len();
+        if complete {
+            let entailed = self
+                .remaining
+                .iter()
+                .all(|mask| value(&self.experiment.goal, &world(&self.atoms, *mask)).p);
+            self.result = Some(FourEntailment {
+                interpretations: 1 << (2 * self.atoms.len()),
+                models: self.remaining.len(),
+                entailed,
+            });
+        }
+        self.round += 1;
+        FourStep {
+            round: self.round,
+            constraint,
+            eliminated,
+            surviving: self.remaining.clone(),
+            interpretations: 1 << (2 * self.atoms.len()),
+            entailed: self.result.as_ref().map(|r| r.entailed),
+            complete,
         }
     }
-    Ok(FourEntailment {
-        interpretations,
-        models,
-        entailed,
-    })
+    pub fn trace(&mut self, max_steps: usize) -> Vec<FourStep> {
+        let mut steps = Vec::new();
+        for _ in 0..max_steps {
+            let step = self.step();
+            let done = step.complete;
+            steps.push(step);
+            if done {
+                break;
+            }
+        }
+        steps
+    }
 }

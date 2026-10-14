@@ -5,10 +5,12 @@ from pathlib import Path
 import sys
 
 
-USAGE = """Usage: residuum <run|query|explain> <case.res>
+USAGE = """Usage: residuum <run|query|explain> <case.res> [--steps N] [--trace]
   run      Forward closure and goals; no state execution
   query    Declared residual or FOUR queries
   explain  Forward justifications and default selection
+  --steps N  At most N synchronous transitions (1..=4096)
+  --trace    Show every transition; default budget 64
 """
 
 
@@ -16,14 +18,30 @@ def main():
     if sys.argv[1:] in (["--help"], ["-h"]):
         print(USAGE, end="")
         return 0
-    if len(sys.argv) != 3 or sys.argv[1] not in ("run", "query", "explain"):
+    if len(sys.argv) < 3 or sys.argv[1] not in ("run", "query", "explain"):
         print(USAGE, end="", file=sys.stderr)
         return 2
+    extra = sys.argv[3:]
+    seen = set()
+    index = 0
+    while index < len(extra):
+        option = extra[index]
+        if option in seen or option not in ('--steps', '--trace'):
+            print(USAGE, end="", file=sys.stderr)
+            return 2
+        seen.add(option)
+        if option == '--steps':
+            index += 1
+            if (index >= len(extra) or not extra[index].isascii()
+                    or not extra[index].isdecimal() or not 1 <= int(extra[index]) <= 4096):
+                print('--steps requires an integer in 1..=4096', file=sys.stderr)
+                return 2
+        index += 1
     root = Path(__file__).resolve().parent
     # Resolve from the caller's cwd before the runner switches to the repository.
     fixture = Path(sys.argv[2]).resolve()
     os.execv(sys.executable, [sys.executable, str(root / "scripts/test_safe.py"),
-                            "--cli", sys.argv[1], "--fixture", str(fixture)])
+                            "--cli", sys.argv[1], "--fixture", str(fixture)] + extra)
 
 
 if __name__ == "__main__":

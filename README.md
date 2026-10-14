@@ -60,6 +60,11 @@ La [revisión de integración](docs/legal-geometry-integration-review.md) regist
 
 La CLI mínima usa las declaraciones, seeds y queries del archivo existente:
 
+La [evaluación por pasos](docs/stepwise-evaluation.md) añade `--steps N` y
+`--trace` a los mismos comandos. Expone consecuencias inmediatas síncronas,
+fronteras de búsqueda residual, refinamiento de modelos FOUR y fases de defaults;
+una traza acotada distingue siempre cierre completo de prefijo incompleto.
+
 ```sh
 ./residuum run examples/legal/case_monotonic_formal.res
 ./residuum explain examples/legal/case_monotonic_formal.res

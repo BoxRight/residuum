@@ -20,7 +20,17 @@ pub fn query_residual(
     goal: &Event,
     known: &[Event],
 ) -> Result<Vec<ResidualRequirement>, Error> {
-    let Some((antecedent, goal_bindings)) = match_goal(rule, goal) else {
+    query_with_constraints(rule, goal, known, &BTreeMap::new(), false)
+}
+
+pub(super) fn query_with_constraints(
+    rule: &Rule,
+    goal: &Event,
+    known: &[Event],
+    constraints: &Bindings,
+    retain_unit: bool,
+) -> Result<Vec<ResidualRequirement>, Error> {
+    let Some((antecedent, goal_bindings)) = constrained_goal(rule, goal, constraints)? else {
         return Ok(Vec::new());
     };
     let scope = &rule.parameters;
@@ -32,9 +42,10 @@ pub fn query_residual(
         Vec::new(),
     );
     // One complete justification suffices: this rule has no pending requirement.
-    if reduced
-        .iter()
-        .any(|matched| matched.required == Antecedent::Unit)
+    if !retain_unit
+        && reduced
+            .iter()
+            .any(|matched| matched.required == Antecedent::Unit)
     {
         return Ok(Vec::new());
     }
@@ -57,6 +68,32 @@ pub fn query_residual(
                 .collect(),
         })
         .collect())
+}
+
+/// Merge constraints after matching the original head, so a conflict is an
+/// error rather than a silently absent rule. Values retain their typed identity.
+pub(super) fn constrained_goal(
+    rule: &Rule,
+    goal: &Event,
+    constraints: &Bindings,
+) -> Result<Option<(Antecedent, Bindings)>, Error> {
+    let Some((antecedent, mut bindings)) = match_goal(rule, goal) else {
+        return Ok(None);
+    };
+    for (name, value) in constraints {
+        let parameter = rule
+            .parameters
+            .iter()
+            .find(|p| p.name == *name)
+            .ok_or_else(|| Error::new(format!("unknown query parameter `{}.{name}`", rule.name)))?;
+        crate::derive::bind_typed(parameter, value.clone(), &mut bindings).ok_or_else(|| {
+            Error::new(format!(
+                "query binding `{}.{name}` is inconsistent with the goal",
+                rule.name
+            ))
+        })?;
+    }
+    Ok(Some((antecedent, bindings)))
 }
 
 // Return the original antecedent plus goal constraints. Keeping pattern scope
@@ -167,7 +204,12 @@ fn unify_event(pattern: &Event, event: &Event, scope: &[Arg], bindings: &mut Bin
         )
 }
 
-fn unify_term(pattern: &Term, value: &Term, scope: &[Arg], bindings: &mut Bindings) -> bool {
+pub(super) fn unify_term(
+    pattern: &Term,
+    value: &Term,
+    scope: &[Arg],
+    bindings: &mut Bindings,
+) -> bool {
     match (pattern, value) {
         (Term::Var(name), _) if scope.iter().any(|p| p.name == *name) => {
             (!matches!(value, Term::Constructor { .. }) || value.is_ground())

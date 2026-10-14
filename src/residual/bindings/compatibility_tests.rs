@@ -961,21 +961,37 @@ fn active_bindings_match_independent_guarded_specialization_and_original_certifi
             for explanation in &actual.explanations {
                 assert_eq!(explanation.activations.len(), 1);
                 full_eq(&explanation.activations[0].trigger, &e.input[0]);
-                assert_eq!(explanation.hypothetical.derivations.len(), 2);
-                for (i, d) in explanation.hypothetical.derivations.iter().enumerate() {
-                    assert_eq!(d.record.rule, format!("P::{i}::r"));
+                let has_public = known
+                    .iter()
+                    .any(|k| k.args[1] == Term::Const("public".into()));
+                assert_eq!(
+                    explanation.hypothetical.derivations.len(),
+                    if has_public { 4 } else { 2 }
+                );
+                let mut justifications = BTreeSet::new();
+                for d in &explanation.hypothetical.derivations {
                     let origin = program_rule_origin(&m, &d.record.rule).unwrap();
-                    assert_eq!(origin.rule_use, i);
+                    assert!(origin.rule_use < 2);
+                    assert_eq!(d.record.rule, format!("P::{}::r", origin.rule_use));
                     assert_eq!(origin.rule, "r");
                     full_eq(&origin.rule_origin, m.origin("r").unwrap());
-                    full_eq(&d.record.antecedents, &e.input);
+                    let authority = &d
+                        .record
+                        .substitution
+                        .bindings
+                        .iter()
+                        .find(|b| b.parameter == "#P:shared:authority")
+                        .unwrap()
+                        .value;
+                    let mut trigger = e.input[0].clone();
+                    trigger.args[1] = authority.as_term();
+                    full_eq(&d.record.antecedents, &vec![trigger]);
+                    assert!(justifications.insert((origin.rule_use, format!("{authority:?}"))));
                     assert!(
-                        d.record
-                            .substitution
-                            .bindings
-                            .iter()
-                            .any(|b| b.parameter == "#P:shared:authority"
-                                && b.value == bindings[0].value)
+                        authority == &bindings[0].value
+                            || (has_public
+                                && authority
+                                    == &SubstitutionValue::Term(Term::Const("public".into())))
                     );
                 }
             }

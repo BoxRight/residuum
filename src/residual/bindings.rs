@@ -5,9 +5,11 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::active::{certify, guarded_view};
 use super::query::{Bindings, constrained_goal, query_with_constraints, unify_term};
 use super::{Abducible, ActiveProgramResidualQuery, ProgramResidualQuery, SearchLimits};
-use crate::derive::{DerivationClock, substitute_term};
+use crate::derive::DerivationClock;
 use crate::elab::{Error, rule_type_assignable};
-use crate::programs::{compile_program, program_rule_origin, shared_parameter};
+use crate::programs::{
+    compile_program, program_rule_origin, rule_use_substitution, shared_parameter,
+};
 use crate::typed::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -296,31 +298,12 @@ fn resolve(
                 if is_program && program.identity == *identity {
                     Some(Term::Var(shared_parameter(program, &binding.parameter)))
                 } else if !is_program && origin.rule == *identity {
-                    let member = &program.rule_uses[origin.rule_use];
-                    let raw = member
-                        .bindings
-                        .iter()
-                        .find(|b| b.parameter == binding.parameter)
-                        .map(|b| b.value.clone())
-                        .unwrap_or_else(|| {
-                            Term::Var(format!(
-                                "#{}:use{}:{}",
-                                program.identity, origin.rule_use, binding.parameter
-                            ))
-                        });
-                    let shared: BTreeMap<_, _> = program
-                        .parameters
-                        .iter()
-                        .map(|p| {
-                            (
-                                p.name.clone(),
-                                SubstitutionValue::Term(Term::Var(shared_parameter(
-                                    program, &p.name,
-                                ))),
-                            )
-                        })
-                        .collect();
-                    Some(substitute_term(&raw, &shared))
+                    let (_, mapping) = rule_use_substitution(
+                        program,
+                        origin.rule_use,
+                        find_rule(module, &origin.rule)?,
+                    )?;
+                    Some(mapping[&binding.parameter].as_term())
                 } else {
                     None
                 }

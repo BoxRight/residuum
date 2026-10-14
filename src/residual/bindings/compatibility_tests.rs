@@ -958,6 +958,25 @@ fn active_bindings_match_independent_guarded_specialization_and_original_certifi
                 &without_derived_at(actual.clone()),
                 &without_derived_at(expected),
             );
+            let rule_binding = QueryBinding {
+                scope: QueryParameterScope::Rule(RuleRef { name: "r".into() }),
+                ..bindings[0].clone()
+            };
+            let by_rule = query_active_program_residual_with_bindings(
+                &m,
+                &known,
+                &e.goal,
+                &[rule_binding],
+                SearchLimits::default(),
+                allowed,
+                &mut Clock(50),
+            )
+            .unwrap()
+            .query;
+            full_eq(
+                &without_derived_at(by_rule),
+                &without_derived_at(actual.clone()),
+            );
             for explanation in &actual.explanations {
                 assert_eq!(explanation.activations.len(), 1);
                 full_eq(&explanation.activations[0].trigger, &e.input[0]);
@@ -998,4 +1017,138 @@ fn active_bindings_match_independent_guarded_specialization_and_original_certifi
         }
     }
     full_eq(&m, &original);
+}
+
+#[test]
+fn shared_rule_use_helper_preserves_compiler_maps_and_rule_scoped_constraints() {
+    let m = module("examples/experiments/associated_multi_rule_program.res");
+    let item = SubstitutionValue::Term(Term::Const("item".into()));
+    for (identity, rule_name, index, parameters, values) in [
+        (
+            "Chain",
+            "first",
+            0,
+            vec![
+                ("#Chain:shared:object", Type::Entity("Thing".into())),
+                ("#Chain:shared:t", Type::PropositionTime),
+            ],
+            BTreeMap::from([
+                (
+                    "local".into(),
+                    SubstitutionValue::Term(Term::Var("#Chain:shared:object".into())),
+                ),
+                (
+                    "when".into(),
+                    SubstitutionValue::Time(TimeExpr::Var("#Chain:shared:t".into())),
+                ),
+            ]),
+        ),
+        (
+            "WithLocals",
+            "second",
+            0,
+            vec![
+                ("#WithLocals:shared:object", Type::Entity("Thing".into())),
+                ("#WithLocals:use0:when", Type::PropositionTime),
+            ],
+            BTreeMap::from([
+                (
+                    "local".into(),
+                    SubstitutionValue::Term(Term::Var("#WithLocals:shared:object".into())),
+                ),
+                (
+                    "when".into(),
+                    SubstitutionValue::Time(TimeExpr::Var("#WithLocals:use0:when".into())),
+                ),
+            ]),
+        ),
+        (
+            "Ground",
+            "first",
+            0,
+            vec![],
+            BTreeMap::from([
+                ("local".into(), item.clone()),
+                (
+                    "when".into(),
+                    SubstitutionValue::Time(TimeExpr::At("tau".into())),
+                ),
+            ]),
+        ),
+    ] {
+        let program = find_program(&m, identity).unwrap();
+        let original = find_rule(&m, rule_name).unwrap();
+        let (actual_parameters, actual_values) =
+            rule_use_substitution(program, index, original).unwrap();
+        let expected_parameters: Vec<_> = parameters
+            .into_iter()
+            .map(|(name, ty)| Arg {
+                name: name.into(),
+                ty,
+            })
+            .collect();
+        full_eq(&actual_parameters, &expected_parameters);
+        full_eq(&actual_values, &values);
+        let expected = Rule {
+            name: format!("{identity}::{index}::{rule_name}"),
+            parameters: expected_parameters,
+            body: crate::elab::substitute_rule_body(&original.body, &values),
+        };
+        full_eq(&compile_program(program, &m).unwrap()[index], &expected);
+    }
+    // Constructor mapping requires inversion of the same compiled RuleUse
+    // expression; a copied raw-variable mapping would miss this constraint.
+    let mut p = find_program(&m, "Temporal").unwrap().clone();
+    let b = p.rule_uses[0]
+        .bindings
+        .iter_mut()
+        .find(|b| b.parameter == "effective")
+        .unwrap();
+    b.value = Term::Constructor {
+        constructor: Constructor::After,
+        argument: Box::new(Term::Var("effective".into())),
+    };
+    let mut m = m.clone();
+    for d in &mut m.declarations {
+        if let Declaration::Program(program) = d {
+            if program.identity == "Temporal" {
+                *program = p.clone();
+            }
+        }
+    }
+    let rules = compile_program(&p, &m).unwrap();
+    let mut goal = match &rules[0].body {
+        RuleBody::HornClause(c) => c.consequent.clone(),
+        _ => unreachable!(),
+    };
+    goal.args = vec![
+        Term::Const("item".into()),
+        Term::Constructor {
+            constructor: Constructor::After,
+            argument: Box::new(Term::Const("later".into())),
+        },
+    ];
+    goal.proposition.time = TimeExpr::After(Box::new(TimeExpr::At("tau".into())));
+    let bindings = [QueryBinding {
+        scope: QueryParameterScope::Rule(RuleRef {
+            name: "remember".into(),
+        }),
+        parameter: "effective".into(),
+        ty: Type::PropositionTime,
+        value: SubstitutionValue::Time(TimeExpr::After(Box::new(TimeExpr::At("later".into())))),
+    }];
+    // Local reduction can represent I; Horn certification intentionally rejects
+    // this unactivated Unit producer whose head binders lack forward witnesses.
+    let q = query_residual_with_bindings(&m, &rules[0], &goal, &[], &bindings)
+        .unwrap()
+        .query;
+    assert_eq!(q.len(), 1);
+    let substitution = &q[0].substitution;
+    assert!(
+        substitution
+            .bindings
+            .iter()
+            .any(|b| b.parameter == "#Temporal:shared:effective"
+                && b.value == SubstitutionValue::Time(TimeExpr::At("later".into())))
+    );
 }

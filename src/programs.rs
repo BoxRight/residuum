@@ -183,6 +183,31 @@ pub(crate) fn shared_parameter(program: &Program, name: &str) -> String {
 /// Lower all uses together. The caller supplies this whole vector to one close.
 /// Unbound Program parameters remain binders; unmapped Rule binders stay local.
 pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, Error> {
+    let mut output = Vec::new();
+    for (index, member) in program.rule_uses.iter().enumerate() {
+        let original = find_rule(&module.declarations, &member.rule.name)?;
+        let (parameters, substitution) = rule_use_substitution(program, index, original)?;
+        output.push(Rule {
+            name: format!("{}::{index}::{}", program.identity, original.name),
+            parameters,
+            body: substitute_rule_body(&original.body, &substitution),
+        });
+    }
+    Ok(output)
+}
+
+/// The compiler's original RuleUse binder mapping, shared with query scoping.
+/// Returns typed beta values and all hygienic shared/local parameters, without
+/// reducing a body or implementing a second specialization algorithm.
+pub(crate) fn rule_use_substitution(
+    program: &Program,
+    index: usize,
+    original: &Rule,
+) -> Result<(Vec<Arg>, BTreeMap<String, SubstitutionValue>), Error> {
+    let member = program
+        .rule_uses
+        .get(index)
+        .ok_or_else(|| Error::new("unknown RuleUse index"))?;
     let shared: BTreeMap<_, _> = program
         .parameters
         .iter()
@@ -193,44 +218,35 @@ pub fn compile_program(program: &Program, module: &Module) -> Result<Vec<Rule>, 
             )
         })
         .collect();
-    let mut output = Vec::new();
-    for (index, member) in program.rule_uses.iter().enumerate() {
-        let original = find_rule(&module.declarations, &member.rule.name)?;
-        let values: BTreeMap<_, _> = member
-            .bindings
-            .iter()
-            .map(|b| (b.parameter.clone(), substitute_term(&b.value, &shared)))
-            .collect();
-        let mut substitution = BTreeMap::new();
-        let mut parameters: Vec<_> = program
-            .parameters
-            .iter()
-            .map(|p| Arg {
-                name: shared_parameter(program, &p.name),
+    let values: BTreeMap<_, _> = member
+        .bindings
+        .iter()
+        .map(|b| (b.parameter.clone(), substitute_term(&b.value, &shared)))
+        .collect();
+    let mut substitution = BTreeMap::new();
+    let mut parameters: Vec<_> = program
+        .parameters
+        .iter()
+        .map(|p| Arg {
+            name: shared_parameter(program, &p.name),
+            ty: p.ty.clone(),
+        })
+        .collect();
+    for p in &original.parameters {
+        let value = values.get(&p.name).cloned().unwrap_or_else(|| {
+            let name = format!("#{}:use{index}:{}", program.identity, p.name);
+            parameters.push(Arg {
+                name: name.clone(),
                 ty: p.ty.clone(),
-            })
-            .collect();
-        for p in &original.parameters {
-            let value = values.get(&p.name).cloned().unwrap_or_else(|| {
-                let name = format!("#{}:use{index}:{}", program.identity, p.name);
-                parameters.push(Arg {
-                    name: name.clone(),
-                    ty: p.ty.clone(),
-                });
-                Term::Var(name)
             });
-            let value = SubstitutionValue::Term(value)
-                .canonical_for_type(&p.ty)
-                .ok_or_else(|| Error::new("temporal binding must be a PropositionTime term"))?;
-            substitution.insert(p.name.clone(), value);
-        }
-        output.push(Rule {
-            name: format!("{}::{index}::{}", program.identity, original.name),
-            parameters,
-            body: substitute_rule_body(&original.body, &substitution),
+            Term::Var(name)
         });
+        let value = SubstitutionValue::Term(value)
+            .canonical_for_type(&p.ty)
+            .ok_or_else(|| Error::new("temporal binding must be a PropositionTime term"))?;
+        substitution.insert(p.name.clone(), value);
     }
-    Ok(output)
+    Ok((parameters, substitution))
 }
 
 /// Decode a compiled producer without modifying DerivationRecord or logical Event identity.

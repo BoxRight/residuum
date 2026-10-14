@@ -507,12 +507,20 @@ negativa. `query_program_residual_with_abducibles` permite restringir esa lista
 por verbo y polaridad. La
 búsqueda exige parámetros determinados por el head; ciclos, variables pendientes
 y límites agotados devuelven error, sin resultados truncados. Cada resultado
-se filtra contra los abducibles y se certifica mediante replay finito con el
-matcher forward del programa. `failure` distingue `NotAbducible` de
+se filtra contra los abducibles y se certifica mediante replay finito de las
+cláusulas Horn explícitas. Ese certificado no comprueba la activación dinámica
+de `Verb.program`. `failure` distingue `NotAbducible` de
 `NotForwardSupported`; ambas condiciones dejan `required: None`. Conserva las ramas
 sin preferencia por `≤_L`, y no modifica el conocimiento ni ejecuta efectos.
 El [contrato de la consulta sobre programas](docs/program-residual-query.md)
 precisa ese alcance y sus tests de suficiencia y cobertura finita.
+
+La API adicional `query_active_program_residual` incluye guardas de activación
+y certifica sus hipótesis mediante el `close_program` original. Conserva Known,
+State y la consulta Horn histórica. Distingue `Unit`, requisitos pendientes,
+ausencia de explicación y errores, sin ampliar existenciales ni admitir defaults.
+El [contrato de la API activa](docs/active-residual-api.md) documenta esas
+garantías y sus regresiones independientes. La CLI conserva sus rutas previas.
 El bloque abductivo queda congelado sin preferencia. El experimento de valoración
 y satisfacción compara el puente con el cierre ground, antes de incrementalizar
 el cierre forward y sin cambios a esta búsqueda.

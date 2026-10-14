@@ -25,8 +25,10 @@ pub use elab::{Error, elaborate_cnl, elaborate_formal};
 pub use formal::parse_formal;
 pub use modules::load_formal_module;
 pub use residual::{
-    Abducible, AbductionFailure, ProgramResidualQuery, RequirementFormula, ResidualExplanation,
-    ResidualProof, SearchLimits, SearchMetrics, query_program_residual,
+    Abducible, AbductionFailure, ActiveProgramResidualQuery, CertifiedActiveExplanation,
+    ProgramResidualQuery, RequirementFormula, ResidualActivation, ResidualExplanation,
+    ResidualProof, SearchLimits, SearchMetrics, query_active_program_residual,
+    query_active_program_residual_with_abducibles, query_program_residual,
     query_program_residual_with_abducibles, query_residual, residuate, unresiduate,
 };
 pub use runtime::execute_effect;

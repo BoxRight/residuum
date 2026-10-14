@@ -101,6 +101,8 @@ pub enum AbductionFailure {
 pub struct ProgramResidualQuery {
     pub goal: Event,
     /// None means no explanation, not Unit and not an invented bottom Event.
+    /// Join can retain Unit alongside pending branches; inspect explanations
+    /// to find a branch needing no hypotheses without discarding alternatives.
     pub required: Option<RequirementFormula>,
     /// Separate proof branches are retained even when their requirements agree.
     pub explanations: Vec<ResidualExplanation>,
@@ -111,6 +113,8 @@ pub struct ProgramResidualQuery {
 
 /// Search proof branches against immutable evidence, with Seeded abducible by
 /// default in both explicit polarities. Returned branches are forward-certified.
+/// Certification is for the explicit Horn clauses, not dynamic Verb.program
+/// activation. Use query_active_program_residual for executable module behavior.
 ///
 /// The supported fragment has ground goals, with every matched rule parameter
 /// determined by its head. Already evidenced atoms stop expansion. Missing seeds
@@ -143,6 +147,8 @@ pub fn query_program_residual(
 
 /// Optional explicit restriction of the default seeded hypotheses. This is an
 /// admissibility policy, never a preference or a second mathematical order.
+/// Like query_program_residual, certification is Horn-only; this does not apply
+/// dynamic Verb.program guards or run close_program.
 pub fn query_program_residual_with_abducibles(
     program: &Module,
     evidence: &[Event],

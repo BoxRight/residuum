@@ -6,7 +6,12 @@ use crate::typed::{Antecedent, Residual, ResidualClause, Rule, RuleBody};
 
 mod query;
 pub use query::query_residual;
+mod active;
 mod program;
+pub use active::{
+    ActiveProgramResidualQuery, CertifiedActiveExplanation, ResidualActivation,
+    query_active_program_residual, query_active_program_residual_with_abducibles,
+};
 pub use program::{
     Abducible, AbductionFailure, ProgramResidualQuery, RequirementFormula, ResidualExplanation,
     ResidualProof, SearchLimits, SearchMetrics, query_program_residual,

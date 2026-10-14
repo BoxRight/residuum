@@ -528,11 +528,77 @@ fn module_elaboration_rejects_unknown_symbols_and_consumer_scope_leaks() {
 #[test]
 fn module_graph_keeps_the_existing_source_budget() {
     let files = Files::new();
-    let large = format!("module Large\n//{}", "x".repeat(40 * 1024));
-    files.write("large.res", &large);
-    let root = format!(
-        "module Root\nimport \"./large.res\"\n//{}",
-        "x".repeat(30 * 1024)
+    // Each file fits individually; the sum of unique modules exceeds 1 MiB.
+    files.write(
+        "large.res",
+        &format!("module Large\n//{}", "x".repeat(600 * 1024)),
     );
-    assert!(files.error("root.res", &root).contains("64 KiB"));
+    files.write(
+        "other.res",
+        &format!("module Other\n//{}", "x".repeat(500 * 1024)),
+    );
+    let root = "module Root\nimport \"./large.res\"\nimport \"./other.res\"\n";
+    assert!(root.len() < 64 * 1024);
+    assert_eq!(
+        files.error("root.res", root),
+        "module graph exceeds 1 MiB of source"
+    );
+}
+
+#[test]
+fn module_graph_above_v1_budget_preserves_elaboration_and_derivations() {
+    let files = Files::new();
+    let base = "module Base\nentity Thing\nconst tau : PropositionTime\nseeded verb starts(object : Thing)\nderived verb intermediate(object : Thing)\nderived verb finished(object : Thing)\nrule first(x, t) = starts(x) @ t <= intermediate(x) @ after t\n";
+    let chain = "module Chain\nimport \"./base.res\"\nrule second(x, t) = intermediate(x) @ t <= finished(x) @ after t\n";
+    // A diamond import exercises shared declarations along two dependency paths.
+    let root = "module Root\nimport \"./base.res\"\nimport \"./chain.res\"\nconst item : Thing\nexperiment chain { seeds { starts(item) @ tau, } query residual intermediate(item) @ after tau }\n";
+    files.write("base.res", base);
+    files.write("chain.res", chain);
+    let path = files.write("root.res", root);
+    assert!(base.len() + chain.len() + root.len() < 64 * 1024);
+    let small = residuum::load_formal_module(&path).unwrap();
+    let expected = run_forward_experiments(&small).unwrap();
+    assert_eq!(expected.len(), 1);
+    assert!(expected[0].horn_goal);
+    assert_eq!(expected[0].closure.derivations.len(), 2);
+    assert!(
+        expected[0]
+            .closure
+            .known
+            .iter()
+            .any(|e| e.verb == "finished"
+                && e.proposition.time
+                    == TimeExpr::After(Box::new(TimeExpr::After(Box::new(TimeExpr::At(
+                        "tau".into()
+                    ))))))
+    );
+
+    // Only comments change: about 192 KiB, with a root below the runner's 64 KiB.
+    let padded_base = format!("{base}//{}\n", "x".repeat(96 * 1024));
+    let padded_chain = format!("{chain}//{}\n", "x".repeat(96 * 1024));
+    let bytes = root.len() + padded_base.len() + padded_chain.len();
+    assert!(bytes > 64 * 1024 && bytes < 1024 * 1024);
+    assert!(root.len() < 64 * 1024);
+    files.write("base.res", &padded_base);
+    files.write("chain.res", &padded_chain);
+    let large = residuum::load_formal_module(&path).unwrap();
+    assert_eq!(
+        large, small,
+        "source padding must not change typed declarations or origins"
+    );
+    let actual = run_forward_experiments(&large).unwrap();
+    assert_eq!(actual.len(), expected.len());
+    assert_same_closure(&actual[0].closure, &expected[0].closure);
+    assert_eq!(
+        actual, expected,
+        "events, substitutions, times, provenance and stamps are unchanged"
+    );
+    for command in [Command::Run, Command::Query, Command::Explain] {
+        files.write("base.res", base);
+        files.write("chain.res", chain);
+        let before = execute_file(command, &path).unwrap();
+        files.write("base.res", &padded_base);
+        files.write("chain.res", &padded_chain);
+        assert_eq!(execute_file(command, &path).unwrap(), before);
+    }
 }

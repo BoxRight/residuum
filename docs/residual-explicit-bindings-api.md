@@ -125,9 +125,11 @@ these clauses retain their legacy path and behavior.
 
 See [the source syntax and reuse review](residual-query-source-bindings.md) for
 complete examples, supported fragment, errors, call paths and verification.
-The CLI command remains `./residuum query case.res`. Stepwise flags remain on
-the separately preserved branch. Defaults, State, forward semantics and ontology
-files are unchanged.
+The CLI command remains `./residuum query case.res`. The merged stepwise feature
+also accepts `--steps N --trace` on the same scoped and active queries. Bindings
+alone do not change defaults, State or forward semantics. See the
+[integration report](worktree-integration-20261014.md) for the separately merged
+stepwise and literal ontology partition work.
 
 ## Verification
 
@@ -158,7 +160,8 @@ independent specialization oracles with full metadata/provenance comparisons,
 and a shared compiler RuleUse mapping. Final checks pass 35 selected tests
 individually. See [the reuse and compatibility review](residual-explicit-bindings-reuse-review.md)
 for call paths, reproduced failures, typed-validation policies, reports and the
-separately preserved stepwise audit status.
+historical stepwise audit status. The later authorized stepwise merge and its
+verification are recorded in the [integration report](worktree-integration-20261014.md).
 
 The two boundary regressions subsequently passed individually, without changing
 production code or policy:

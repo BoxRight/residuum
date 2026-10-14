@@ -5,6 +5,7 @@ use crate::elab::Error;
 use crate::typed::{Antecedent, Residual, ResidualClause, Rule, RuleBody};
 
 mod bindings;
+mod engine;
 mod query;
 pub use bindings::{
     HornQueryScope, QueryBinding, QueryParameterScope, QueryWithBindings,

@@ -3,8 +3,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::query::match_goal;
-use crate::derive::{instantiate_from_witness, substitute_antecedent, substitution_record};
+use super::engine;
+use crate::derive::instantiate_from_witness;
 use crate::elab::Error;
 use crate::typed::{
     Antecedent, Declaration, Event, Module, Polarity, PropositionKind, Rule, RuleRef, Substitution,
@@ -128,20 +128,7 @@ pub fn query_program_residual(
     goal: &Event,
     limits: SearchLimits,
 ) -> Result<ProgramResidualQuery, Error> {
-    let abducibles: Vec<_> = program
-        .declarations
-        .iter()
-        .filter_map(|declaration| match declaration {
-            Declaration::Verb(verb) if verb.is_abducible() => Some(verb),
-            _ => None,
-        })
-        .flat_map(|verb| {
-            [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                verb: verb.name.clone(),
-                polarity,
-            })
-        })
-        .collect();
+    let abducibles = engine::default_abducibles(program);
     query_program_residual_with_abducibles(program, evidence, goal, &abducibles, limits)
 }
 
@@ -167,46 +154,7 @@ pub(super) fn query_with_constraints(
     limits: SearchLimits,
     constraints: Option<&BTreeMap<String, super::query::Bindings>>,
 ) -> Result<ProgramResidualQuery, Error> {
-    if limits.max_depth == 0
-        || limits.max_depth > 64
-        || limits.max_nodes == 0
-        || limits.max_branches == 0
-    {
-        return Err(Error::new(
-            "invalid residual search limits (depth must be 1..=64)",
-        ));
-    }
-    let mut rules = Vec::new();
-    let mut verbs = BTreeMap::new();
-    for declaration in &program.declarations {
-        match declaration {
-            Declaration::Verb(verb) => {
-                verbs.insert(verb.name.as_str(), verb);
-            }
-            Declaration::Rule(rule) => rules.push(rule),
-            Declaration::Default(_) => {
-                return Err(Error::new(
-                    "program residual search requires a monotonic program without defaults",
-                ));
-            }
-            _ => {}
-        }
-    }
-    validate_event(goal, &verbs)?;
-    for event in evidence {
-        validate_event(event, &verbs)?;
-    }
-    for abducible in abducibles {
-        if !verbs
-            .get(abducible.verb.as_str())
-            .is_some_and(|verb| verb.kind == VerbKind::Seeded)
-        {
-            return Err(Error::new(format!(
-                "abducible `{}` must be a declared seeded verb",
-                abducible.verb
-            )));
-        }
-    }
+    let rules = engine::validate_search(program, evidence, goal, limits, abducibles)?;
     let mut search = Search {
         rules,
         evidence,
@@ -361,13 +309,7 @@ struct Search<'a> {
 
 impl Search<'_> {
     fn visit(&mut self, depth: usize) -> Result<(), Error> {
-        if depth > self.limits.max_depth || self.metrics.nodes >= self.limits.max_nodes {
-            return Err(Error::new(
-                "residual search depth/node limit exceeded; no complete result",
-            ));
-        }
-        self.metrics.nodes += 1;
-        Ok(())
+        engine::visit(self.limits, &mut self.metrics, depth)
     }
 
     fn branch(
@@ -375,87 +317,37 @@ impl Search<'_> {
         required: Antecedent,
         proof: ResidualProof,
     ) -> Result<ResidualExplanation, Error> {
-        if self.metrics.branches_generated >= self.limits.max_branches {
-            return Err(Error::new(
-                "residual search branch limit exceeded; no complete result",
-            ));
-        }
-        self.metrics.branches_generated += 1;
+        engine::reserve_branch(self.limits, &mut self.metrics)?;
         Ok(ResidualExplanation { required, proof })
     }
 
     fn event(&mut self, goal: &Event, depth: usize) -> Result<Vec<ResidualExplanation>, Error> {
         self.visit(depth)?;
-        if let Some(event) = self.evidence.iter().find(|event| *event == goal) {
-            return Ok(vec![self.branch(
-                Antecedent::Unit,
-                ResidualProof::Evidence(event.clone()),
-            )?]);
-        }
-        if goal.proposition.kind == PropositionKind::Seeded {
-            if self.abducibles.contains(&Abducible {
-                verb: goal.verb.clone(),
-                polarity: goal.polarity,
-            }) {
-                return Ok(vec![self.branch(
-                    Antecedent::Event(goal.clone()),
-                    ResidualProof::Hypothesis(goal.clone()),
-                )?]);
+        match engine::classify_event(self.evidence, &self.abducibles, goal, &self.active)? {
+            engine::EventDisposition::Missing => return Ok(Vec::new()),
+            engine::EventDisposition::Expand => {}
+            leaf => {
+                engine::reserve_branch(self.limits, &mut self.metrics)?;
+                return Ok(vec![engine::leaf_explanation(leaf).unwrap()]);
             }
-            return Ok(Vec::new());
-        }
-        if self.active.contains(goal) {
-            return Err(Error::new(format!(
-                "cyclic residual search at `{}`; no complete result",
-                goal.verb
-            )));
         }
         self.active.push(goal.clone());
         let mut explanations = Vec::new();
         for index in 0..self.rules.len() {
             let rule = self.rules[index];
-            self.metrics.rules_examined += 1;
-            let matched = if let Some(constraints) = self.constraints {
-                super::query::constrained_goal(
-                    rule,
-                    goal,
-                    constraints.get(&rule.name).unwrap_or(&BTreeMap::new()),
-                )?
-            } else {
-                match_goal(rule, goal)
-            };
-            let Some((pattern, bindings)) = matched else {
+            let Some(expansion) =
+                engine::expand_rule(rule, goal, self.constraints, &mut self.metrics, false)?
+            else {
                 continue;
             };
-            self.metrics.head_matches += 1;
-            let unresolved: Vec<_> = rule
-                .parameters
-                .iter()
-                .filter(|arg| !bindings.contains_key(&arg.name))
-                .collect();
-            if let Some(parameter) = unresolved.first() {
-                if self.constraints.is_some() {
-                    return Err(Error::new(format!(
-                        "rule `{}` has unresolved query parameters {unresolved:?}; no complete result",
-                        rule.name
-                    )));
-                }
-                return Err(Error::new(format!(
-                    "rule `{}` has parameter `{}` not determined by the goal",
-                    rule.name, parameter.name
-                )));
-            }
-            let antecedent = substitute_antecedent(&pattern, &bindings);
-            for candidate in self.antecedent(&antecedent, depth + 1)? {
-                let proof = ResidualProof::Rule {
-                    rule: RuleRef {
-                        name: rule.name.clone(),
-                    },
-                    goal: goal.clone(),
-                    substitution: substitution_record(&bindings),
-                    antecedent: Box::new(candidate.proof),
-                };
-                explanations.push(self.branch(candidate.required, proof)?);
+            for candidate in self.antecedent(&expansion.antecedent, depth + 1)? {
+                engine::reserve_branch(self.limits, &mut self.metrics)?;
+                explanations.push(engine::rule_explanation(
+                    &expansion.rule,
+                    &expansion.goal,
+                    &expansion.substitution,
+                    candidate,
+                ));
             }
         }
         self.active.pop();
@@ -480,23 +372,8 @@ impl Search<'_> {
                 let mut products = Vec::new();
                 for a in &left {
                     for b in &right {
-                        // Check budget before allocating/cloning a product proof.
-                        if self.metrics.branches_generated >= self.limits.max_branches {
-                            return Err(Error::new(
-                                "residual search branch limit exceeded; no complete result",
-                            ));
-                        }
-                        let required = match (&a.required, &b.required) {
-                            (Antecedent::Unit, other) | (other, Antecedent::Unit) => other.clone(),
-                            (a, b) => Antecedent::And(Box::new(a.clone()), Box::new(b.clone())),
-                        };
-                        products.push(self.branch(
-                            required,
-                            ResidualProof::Tensor(
-                                Box::new(a.proof.clone()),
-                                Box::new(b.proof.clone()),
-                            ),
-                        )?);
+                        engine::reserve_branch(self.limits, &mut self.metrics)?;
+                        products.push(engine::tensor_explanations(a, b));
                     }
                 }
                 Ok(products)

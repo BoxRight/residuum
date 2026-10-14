@@ -1,8 +1,10 @@
 # Stepwise evaluation
 
 This additive change starts at `9f78f88`. Existing full evaluators keep their
-behavior; new sessions expose their intermediate states. No Formal/CNL source
-syntax, ontology, State execution, or default selection policy is changed.
+behavior; new sessions expose their intermediate states. Step budgets remain
+CLI execution options. The integrated explicit-bindings change separately adds
+[scoped Formal queries](residual-query-source-bindings.md). CNL, State execution
+and default selection policy are unchanged by the stepwise feature.
 
 ## Forward and the discrete derivative
 
@@ -101,8 +103,10 @@ Existing invocations retain legacy dispatch and output. New flags are:
 `--trace` displays every transition and defaults to 64 steps. N is 1..4096.
 The CLI starts a fresh session per invocation. Status explicitly distinguishes
 complete evaluation from a step limit. Residual requirements and FOUR entailment
-are displayed only after completion. `query` retains its existing source-runner
-restrictions on Program declarations/defaults; active sessions are a library API.
+are displayed only after completion. `query` retains the legacy rejection of
+unscoped queries in Program-bearing modules; explicit scoped residual and active
+residual source queries can opt into those modules. Defaults remain unsupported
+for residual queries. Active traces include original producers and guard metadata.
 Forward step sessions can observe bounded prefixes of cycles without computing
 an unbounded full closure. No flags execute State transformations.
 
@@ -112,17 +116,25 @@ swap, job, thread, timeout and stop controls remain in force.
 
 ## Scoped bindings in sessions
 
-Explicit typed bindings are independently reviewable on
-`feat/residual-explicit-bindings`, also based at `9f78f88`. This branch includes
-that API and adds `begin_residual_query_with_bindings` and
-`begin_active_residual_query_with_bindings`. They return `QueryWithBindings` of
+Explicit typed bindings were developed independently on
+`feat/residual-explicit-bindings`, also based at `9f78f88`. The integration includes
+that API and adds `begin_residual_query_with_bindings`,
+`begin_active_residual_query_with_bindings` and its explicitly scoped variant
+`begin_active_residual_query_in_scope_with_bindings`. They return `QueryWithBindings` of
 the corresponding resumable session, preserving validated supplied constraints
 alongside the evolving search. Both full and stepwise queries use the same scoped
 resolver and typed constraint merger. Pending obligations never bypass ordinary
 forward replay or original-module active certification. No global-name
-substitution interface or existential enumeration is introduced. CLI binding
-flags remain the separately documented proposal; Rust callers can combine both
-features now without changing Formal source syntax.
+substitution interface or existential enumeration is introduced. Bindings are
+provided through the agreed `.res` `using` / `with` syntax, not extra binding
+flags. Both Rust callers and source queries can combine bindings with stepping.
+
+The authorized audit commit `1f7b274` extracts common residual operations into
+`residual::engine` and derivation retention into `derive::retain_derivation`.
+DFS and layered search retain different continuation schedules and budget
+accounting. The synchronous forward loop remains a separate scheduler for
+frozen-snapshot T(X), sharing existing inference operations and proof retention.
+See the [integration audit](worktree-integration-20261014.md) for exact call paths.
 
 ## Verification
 
@@ -134,7 +146,7 @@ derivative, residual alternatives and provenance, guard certification, FOUR
 model refinement, and one-time default selection. CLI tests cover both new
 options and unchanged legacy dispatch. The full suite is not run.
 
-Successful selected verification reports:
+Initial successful selected verification reports (before the source integration):
 
 * 14 evaluator tests: `target/test-diagnostics/20261014T013402154660Z-931558`
 * 8 CLI tests: `target/test-diagnostics/20261014T013615213566Z-933704`
@@ -152,6 +164,11 @@ These reports contain 49 selected individual test executions, plus the two
 end-to-end CLI fixture runs. The standalone binding branch separately records
 21 selected tests. Some compatibility tests are deliberately repeated after
 integration; these counts do not describe a full-suite run.
+
+The final combined integration reruns 24 library and 15 CLI tests individually,
+including empty-binding compatibility, independent specialization, source traces,
+activation guards, incremental provenance and the literal ontology partition.
+Reports are recorded in the [integration report](worktree-integration-20261014.md).
 
 Tests ran sequentially in verified 1 GiB cgroups, zero swap, one Cargo job and one
 harness thread, with all timeout and stop controls retained. Disabling test debug

@@ -47,7 +47,7 @@ pub fn query_residual_with_bindings(
             goal,
             known,
             constraints.get(&rule.name).unwrap_or(&empty),
-            true,
+            !bindings.is_empty(),
         )?,
         bindings,
     })
@@ -98,7 +98,7 @@ pub fn query_program_residual_with_bindings(
             goal,
             allowed.unwrap_or(&defaults),
             limits,
-            Some(&constraints),
+            (!bindings.is_empty()).then_some(&constraints),
         )?,
         bindings,
     })
@@ -431,20 +431,7 @@ fn binding_parameter<'a>(
 }
 
 pub(super) fn default_abducibles(module: &Module) -> Vec<Abducible> {
-    module
-        .declarations
-        .iter()
-        .filter_map(|d| match d {
-            Declaration::Verb(v) if v.is_abducible() => Some(v),
-            _ => None,
-        })
-        .flat_map(|v| {
-            [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                verb: v.name.clone(),
-                polarity,
-            })
-        })
-        .collect()
+    super::engine::default_abducibles(module)
 }
 
 fn find_rule<'a>(module: &'a Module, name: &str) -> Result<&'a Rule, Error> {

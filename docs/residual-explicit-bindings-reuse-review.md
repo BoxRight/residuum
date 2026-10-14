@@ -1,8 +1,10 @@
 # Explicit residual bindings: implementation and reuse review
 
 Worktree: `/tmp/residuum-explicit-query-bindings`, branch
-`feat/residual-explicit-bindings`, based on main `9f78f88`. No merge or push.
-Main remains `9f78f88`; v1 remains `f6a83e3`.
+`feat/residual-explicit-bindings`, based on main `9f78f88`. This document records
+the standalone review checkpoint, before merge. The later authorized integration,
+including the now committed stepwise audit edits, is recorded in the
+[integration report](worktree-integration-20261014.md). v1 remains `f6a83e3`.
 
 ## Changes in this continuation
 
@@ -192,10 +194,10 @@ corrected after failures; all corrected tests passed in the final run. The first
 record-policy fixture had a parser error; the corrected fixture subsequently
 reproduced the actual validation discrepancy before the final correction.
 
-`/tmp/residuum-stepwise-query` remains at `e62232a`, with its **ten modified
+At that review checkpoint, `/tmp/residuum-stepwise-query` remained at `e62232a`, with its **ten modified
 tracked files** and untracked `src/residual/engine.rs` preserved. These audit edits
 contain the broad shared residual engine, retention/driver and related
-refactors. They remain uncompiled and unverified; prior committed stepwise test
+refactors. They were then uncompiled and unverified; prior committed stepwise test
 results do not validate them. This continuation did not edit or test that
 worktree. A SHA-256 over those eleven audit files is identical before and after:
 `f03f2023a65f20f9936063754bc0b3c3a973d6ba59cdc41608cc659772446969`.
@@ -229,10 +231,11 @@ proposed for this integration. Normalizing typed record permutations or widening
 positional Program application would be a separate semantic change requiring a
 proposal before implementation.
 
-**The standalone bindings branch is ready for integration review under these
+**The standalone bindings branch was ready for integration review under these
 documented contracts.** The two previously unverified boundaries no longer
 require a semantic decision for this change. The later agreed source/CLI
 integration is now implemented and covered in the
-[source query review](residual-query-source-bindings.md). No merge or push
-has occurred. The stepwise worktree remains separately paused, unchanged and
-unverified; its broad audit refactors are not prerequisites for this branch.
+[source query review](residual-query-source-bindings.md). No push has occurred.
+Stepwise audit refactors were not prerequisites for this standalone branch.
+They were subsequently authorized, tested and committed as `1f7b274`; current
+reuse paths and verification are in the [integration report](worktree-integration-20261014.md).

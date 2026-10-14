@@ -207,7 +207,8 @@ pub(crate) fn rule_use_substitution(
     let member = program
         .rule_uses
         .get(index)
-        .ok_or_else(|| Error::new("unknown RuleUse index"))?;
+        .filter(|member| member.rule.name == original.name)
+        .ok_or_else(|| Error::new("invalid query RuleUse identity"))?;
     let shared: BTreeMap<_, _> = program
         .parameters
         .iter()

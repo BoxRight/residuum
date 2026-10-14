@@ -1,7 +1,8 @@
 //! Layered residual search. Open obligations are never certified explanations.
 //! Completion reuses the existing forward replay and active certification.
+use super::engine;
 use super::*;
-use crate::derive::{DerivationClock, substitute_antecedent, substitution_record};
+use crate::derive::DerivationClock;
 use crate::typed::*;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -36,25 +37,22 @@ impl ResidualSearchTree {
         }
     }
     fn explanation(&self) -> Option<ResidualExplanation> {
-        let (required, proof) = match self {
-            Self::Pending { .. } => return None,
-            Self::Unit => (Antecedent::Unit, ResidualProof::Unit),
-            Self::Evidence(e) => (Antecedent::Unit, ResidualProof::Evidence(e.clone())),
-            Self::Hypothesis(e) => (
-                Antecedent::Event(e.clone()),
-                ResidualProof::Hypothesis(e.clone()),
-            ),
+        match self {
+            Self::Pending { .. } => None,
+            Self::Unit => Some(ResidualExplanation {
+                required: Antecedent::Unit,
+                proof: ResidualProof::Unit,
+            }),
+            Self::Evidence(e) => {
+                engine::leaf_explanation(engine::EventDisposition::Evidence(e.clone()))
+            }
+            Self::Hypothesis(e) => {
+                engine::leaf_explanation(engine::EventDisposition::Hypothesis(e.clone()))
+            }
             Self::Tensor(a, b) => {
                 let a = a.explanation()?;
                 let b = b.explanation()?;
-                let required = match (a.required, b.required) {
-                    (Antecedent::Unit, other) | (other, Antecedent::Unit) => other,
-                    (a, b) => Antecedent::And(Box::new(a), Box::new(b)),
-                };
-                (
-                    required,
-                    ResidualProof::Tensor(Box::new(a.proof), Box::new(b.proof)),
-                )
+                Some(engine::tensor_explanations(&a, &b))
             }
             Self::Rule {
                 rule,
@@ -63,18 +61,9 @@ impl ResidualSearchTree {
                 antecedent,
             } => {
                 let child = antecedent.explanation()?;
-                (
-                    child.required,
-                    ResidualProof::Rule {
-                        rule: rule.clone(),
-                        goal: goal.clone(),
-                        substitution: substitution.clone(),
-                        antecedent: Box::new(child.proof),
-                    },
-                )
+                Some(engine::rule_explanation(rule, goal, substitution, child))
             }
-        };
-        Some(ResidualExplanation { required, proof })
+        }
     }
 }
 
@@ -109,65 +98,11 @@ impl ResidualSession {
         limits: SearchLimits,
         allowed: Option<&[Abducible]>,
     ) -> Result<Self, Error> {
-        if limits.max_depth == 0
-            || limits.max_depth > 64
-            || limits.max_nodes == 0
-            || limits.max_branches == 0
-        {
-            return Err(Error::new(
-                "invalid residual search limits (depth must be 1..=64)",
-            ));
-        }
-        if module
-            .declarations
-            .iter()
-            .any(|d| matches!(d, Declaration::Default(_)))
-        {
-            return Err(Error::new(
-                "program residual search requires a monotonic program without defaults",
-            ));
-        }
-        let verbs: BTreeMap<_, _> = module
-            .declarations
-            .iter()
-            .filter_map(|d| match d {
-                Declaration::Verb(v) => Some((v.name.as_str(), v)),
-                _ => None,
-            })
-            .collect();
-        super::program::validate_event(goal, &verbs)?;
-        for event in evidence {
-            super::program::validate_event(event, &verbs)?;
-        }
-        let default: Vec<_> = verbs
-            .values()
-            .filter(|v| v.is_abducible())
-            .flat_map(|v| {
-                [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                    verb: v.name.clone(),
-                    polarity,
-                })
-            })
-            .collect();
+        let default = engine::default_abducibles(module);
         let allowed = allowed.unwrap_or(&default);
-        for a in allowed {
-            if !verbs
-                .get(a.verb.as_str())
-                .is_some_and(|v| v.kind == VerbKind::Seeded)
-            {
-                return Err(Error::new(format!(
-                    "abducible `{}` must be a declared seeded verb",
-                    a.verb
-                )));
-            }
-        }
-        let rules = module
-            .declarations
-            .iter()
-            .filter_map(|d| match d {
-                Declaration::Rule(r) => Some(r.clone()),
-                _ => None,
-            })
+        let rules = engine::validate_search(module, evidence, goal, limits, allowed)?
+            .into_iter()
+            .cloned()
             .collect();
         Ok(Self {
             rules,
@@ -262,22 +197,10 @@ impl ResidualSession {
         Ok(steps)
     }
     fn visit(&mut self, depth: usize) -> Result<(), Error> {
-        if depth > self.limits.max_depth || self.metrics.nodes >= self.limits.max_nodes {
-            return Err(Error::new(
-                "residual search depth/node limit exceeded; no complete result",
-            ));
-        }
-        self.metrics.nodes += 1;
-        Ok(())
+        engine::visit(self.limits, &mut self.metrics, depth)
     }
     fn allocation(&mut self) -> Result<(), Error> {
-        if self.metrics.branches_generated >= self.limits.max_branches {
-            return Err(Error::new(
-                "residual search branch limit exceeded; no complete result",
-            ));
-        }
-        self.metrics.branches_generated += 1;
-        Ok(())
+        engine::reserve_branch(self.limits, &mut self.metrics)
     }
     fn antecedent(
         &mut self,
@@ -307,66 +230,42 @@ impl ResidualSession {
                 ancestors,
             } => {
                 self.visit(*depth)?;
-                if self.evidence.contains(goal) {
-                    self.allocation()?;
-                    vec![ResidualSearchTree::Evidence(goal.clone())]
-                } else if goal.proposition.kind == PropositionKind::Seeded {
-                    if self.allowed.contains(&Abducible {
-                        verb: goal.verb.clone(),
-                        polarity: goal.polarity,
-                    }) {
+                match engine::classify_event(&self.evidence, &self.allowed, goal, ancestors)? {
+                    engine::EventDisposition::Evidence(event) => {
                         self.allocation()?;
-                        vec![ResidualSearchTree::Hypothesis(goal.clone())]
-                    } else {
-                        Vec::new()
+                        vec![ResidualSearchTree::Evidence(event)]
                     }
-                } else {
-                    if ancestors.contains(goal) {
-                        return Err(Error::new(format!(
-                            "cyclic residual search at `{}`; no complete result",
-                            goal.verb
-                        )));
+                    engine::EventDisposition::Hypothesis(event) => {
+                        self.allocation()?;
+                        vec![ResidualSearchTree::Hypothesis(event)]
                     }
-                    let mut path = ancestors.clone();
-                    path.push(goal.clone());
-                    let mut alternatives = Vec::new();
-                    for rule in self.rules.clone() {
-                        self.metrics.rules_examined += 1;
-                        let matched = if let Some(constraints) = &self.constraints {
-                            super::query::constrained_goal(
+                    engine::EventDisposition::Missing => Vec::new(),
+                    engine::EventDisposition::Expand => {
+                        let mut path = ancestors.clone();
+                        path.push(goal.clone());
+                        let mut alternatives = Vec::new();
+                        for rule in self.rules.clone() {
+                            let Some(expansion) = engine::expand_rule(
                                 &rule,
                                 goal,
-                                constraints.get(&rule.name).unwrap_or(&BTreeMap::new()),
+                                self.constraints.as_ref(),
+                                &mut self.metrics,
+                                true,
                             )?
-                        } else {
-                            super::query::match_goal(&rule, goal)
-                        };
-                        let Some((pattern, bindings)) = matched else {
-                            continue;
-                        };
-                        self.metrics.head_matches += 1;
-                        let pending: Vec<_> = rule
-                            .parameters
-                            .iter()
-                            .filter(|p| !bindings.contains_key(&p.name))
-                            .collect();
-                        if !pending.is_empty() {
-                            return Err(Error::new(format!(
-                                "rule `{}` has parameters {pending:?} not determined by the goal; no complete result",
-                                rule.name
-                            )));
+                            else {
+                                continue;
+                            };
+                            let child = self.antecedent(&expansion.antecedent, depth + 1, &path)?;
+                            self.allocation()?;
+                            alternatives.push(ResidualSearchTree::Rule {
+                                rule: expansion.rule,
+                                goal: expansion.goal,
+                                substitution: expansion.substitution,
+                                antecedent: Box::new(child),
+                            });
                         }
-                        let instantiated = substitute_antecedent(&pattern, &bindings);
-                        let child = self.antecedent(&instantiated, depth + 1, &path)?;
-                        self.allocation()?;
-                        alternatives.push(ResidualSearchTree::Rule {
-                            rule: RuleRef { name: rule.name },
-                            goal: goal.clone(),
-                            substitution: substitution_record(&bindings),
-                            antecedent: Box::new(child),
-                        });
+                        alternatives
                     }
-                    alternatives
                 }
             }
             ResidualSearchTree::Tensor(a, b) => {

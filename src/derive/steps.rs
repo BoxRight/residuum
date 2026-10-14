@@ -71,12 +71,6 @@ impl ForwardSession {
         }
         for source in &self.programs {
             for trigger in &self.closure.known {
-                if trigger.verb != source.verb.name
-                    || trigger.polarity != Polarity::Positive
-                    || trigger.args.len() != source.verb.args.len()
-                {
-                    continue;
-                }
                 let Some(bindings) = activation_bindings(source, trigger) else {
                     continue;
                 };
@@ -108,12 +102,13 @@ impl ForwardSession {
             if consequence_keys.insert(witness.event.clone()) {
                 consequences.push(witness.event.clone());
             }
-            if known_keys.insert(witness.event.clone()) {
-                added.push(witness.event.clone());
-            }
-            if !self.seen.contains(witness) {
-                self.seen.push(witness.clone());
-                derivations.push(stamp(witness.clone(), clock.next_derivation_time()));
+            if let Some((derived, is_new)) =
+                retain_derivation(witness.clone(), &mut self.seen, &mut known_keys, clock)
+            {
+                if is_new {
+                    added.push(derived.event.clone());
+                }
+                derivations.push(derived);
             }
         }
         self.closure.known.extend(added.iter().cloned());

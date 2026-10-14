@@ -149,10 +149,17 @@ Run the supplied examples from the repository root:
 ```
 
 The launcher continues to use `test_safe.py` and enforced process limits.
-No step budget is embedded in `.res`. The stepwise branch's `--steps` / `--trace`
-interface remains separately preserved and paused; those flags have not been
-transplanted into this standalone branch. Future integration can pass the same
-typed `QueryOptions` to its sessions without new source stepping syntax.
+No step budget is embedded in `.res`. The integrated stepwise interface accepts
+`--steps` / `--trace` for the same scoped, bound and active source queries:
+
+```sh
+./residuum query examples/experiments/legal_geometry/explicit_query_bindings.res --steps 64 --trace
+./residuum query examples/experiments/active_query_bindings.res --steps 64 --trace
+```
+
+The CLI passes the existing typed `QueryOptions` to the bound sessions. Completed
+active traces certify against the original module, including activation guards.
+An incomplete trace reports a frontier rather than a certified requirement.
 
 ## Reuse audit
 
@@ -171,8 +178,10 @@ typed `QueryOptions` to its sessions without new source stepping syntax.
 No runtime substitution, matching, DFS, closure, proof or activation machinery
 was copied or independently implemented. New logic is parsing, interface data,
 source elaboration context, scope filtering, dispatch and presentation. The
-existing typed structural boundary validator and duplicated seeded-abducible
-enumeration remain as recorded in the previous reuse review.
+existing typed structural boundary validator remains as recorded in the previous
+reuse review. The subsequently authorized stepwise merge extracts seeded
+abducibles and other residual operations into `residual::engine`; see the
+[integration report](worktree-integration-20261014.md) for current shared paths.
 
 For the compliance fixture, the concrete path is: parse `rule
 rightCompliance.actEffective = gDate` → `lower_term` resolves `gDate` as a
@@ -209,13 +218,13 @@ Module and real evidence immutability, partial failures and legacy errors remain
 covered. Forward/explain output for configured queries is compared against the
 same original module with legacy query options.
 
-The standalone source extension is ready for integration review. No merge or
-push has occurred. Main and v1 remain unchanged. The stepwise worktree remains
-at `e62232a` with its ten tracked audit edits and untracked residual engine file
-preserved and unverified. Its eleven-file SHA-256 remains
-`f03f2023a65f20f9936063754bc0b3c3a973d6ba59cdc41608cc659772446969`.
-No broad retention, forward-driver, incremental or profiling refactor was
-transplanted; `src/derive.rs` and its submodules remain unchanged.
+At the standalone review checkpoint, main and v1 were unchanged and stepwise
+audit edits were preserved without testing or transplanting them. The user later
+authorized merging all worktrees and explicitly committing the pending stepwise
+edits. Those edits are now tested and committed as `1f7b274`; the integrated
+retention and residual helpers are documented in the
+[integration report](worktree-integration-20261014.md). This source extension
+itself did not require those broader helpers. No push has occurred; v1 is intact.
 
 **Verdict:** existing inference infrastructure reused; scope/parameter lookup and
 the source runner's existing termination check extracted into shared helpers;

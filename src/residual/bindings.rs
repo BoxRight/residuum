@@ -6,7 +6,7 @@ use super::active::{certify, guarded_view};
 use super::query::{Bindings, constrained_goal, query_with_constraints, unify_term};
 use super::{Abducible, ActiveProgramResidualQuery, ProgramResidualQuery, SearchLimits};
 use crate::derive::DerivationClock;
-use crate::elab::{Error, rule_type_assignable};
+use crate::elab::{Error, is_assignable, rule_type_assignable};
 use crate::programs::{
     compile_program, program_rule_origin, rule_use_substitution, shared_parameter,
 };
@@ -364,9 +364,15 @@ fn check_value(value: &SubstitutionValue, ty: &Type, module: &Module) -> Result<
     if matches!(value, SubstitutionValue::Time(_)) && *ty != Type::PropositionTime {
         return Err(Error::new("temporal query value requires PropositionTime"));
     }
-    check_term(&value.as_term(), ty, module, 0)
+    check_term(&value.as_term(), ty, module, 0, false)
 }
-fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Result<(), Error> {
+fn check_term(
+    term: &Term,
+    expected: &Type,
+    module: &Module,
+    depth: usize,
+    record_field: bool,
+) -> Result<(), Error> {
     if depth > 64 {
         return Err(Error::new(
             "query binding value exceeds structural depth limit",
@@ -376,6 +382,13 @@ fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Re
         Error::new(format!(
             "query binding value {term:?} is incompatible with {expected:?}"
         ))
+    };
+    let assignable = |actual: &Type| {
+        if record_field {
+            is_assignable(actual, expected)
+        } else {
+            rule_type_assignable(actual, expected, &module.declarations)
+        }
     };
     match term {
         Term::Const(name) => {
@@ -387,7 +400,7 @@ fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Re
                     _ => None,
                 })
                 .ok_or_else(|| Error::new(format!("unknown query binding constant `{name}`")))?;
-            if !rule_type_assignable(actual, expected, &module.declarations) {
+            if !assignable(actual) {
                 return Err(mismatch());
             }
         }
@@ -404,17 +417,13 @@ fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Re
             argument,
         } => {
             let (input, output) = constructor.signature();
-            if !rule_type_assignable(&output, expected, &module.declarations) {
+            if !assignable(&output) {
                 return Err(mismatch());
             }
-            check_term(argument, &input, module, depth + 1)?;
+            check_term(argument, &input, module, depth + 1, false)?;
         }
         Term::RecordLiteral { entity, fields } => {
-            if !rule_type_assignable(
-                &Type::Entity(entity.clone()),
-                expected,
-                &module.declarations,
-            ) {
+            if !assignable(&Type::Entity(entity.clone())) {
                 return Err(mismatch());
             }
             let declaration = module
@@ -440,7 +449,7 @@ fn check_term(term: &Term, expected: &Type, module: &Module, depth: usize) -> Re
                             entity, field.field
                         ))
                     })?;
-                check_term(&field.value, &declared.ty, module, depth + 1)?;
+                check_term(&field.value, &declared.ty, module, depth + 1, true)?;
             }
             if fields.len() != declaration.fields.len() {
                 return Err(Error::new("missing query record fields"));

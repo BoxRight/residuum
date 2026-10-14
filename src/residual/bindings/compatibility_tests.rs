@@ -1152,3 +1152,43 @@ fn shared_rule_use_helper_preserves_compiler_maps_and_rule_scoped_constraints() 
                 && b.value == SubstitutionValue::Time(TimeExpr::At("later".into())))
     );
 }
+
+#[test]
+fn typed_record_field_validation_reuses_source_assignability_policy() {
+    let source = "module RecordPolicy\nentity Thing\nentity Special <: Thing\nentity Pair { left : Thing right : Thing }\nconst item : Thing\nconst special : Special\nconst tau : PropositionTime\nderived verb target(pair : Pair)\nrule r(pair) = I <= target(pair) @ tau\n";
+    let m = crate::parse_formal_to_typed(source).unwrap();
+    let r = find_rule(&m, "r").unwrap();
+    // Existing source elaboration rejects a subtype in a record field even
+    // though named RuleUse root binding assignment supports entity subtypes.
+    assert!(
+        crate::parse_formal_to_typed(&format!(
+            "{source}program Bad {{ use r {{ pair = Pair {{ left = special, right = item }} }} }}"
+        ))
+        .is_err()
+    );
+    let value = Term::RecordLiteral {
+        entity: "Pair".into(),
+        fields: vec![
+            RecordFieldValue {
+                field: "left".into(),
+                value: Term::Const("special".into()),
+            },
+            RecordFieldValue {
+                field: "right".into(),
+                value: Term::Const("item".into()),
+            },
+        ],
+    };
+    let binding = QueryBinding {
+        scope: QueryParameterScope::Rule(RuleRef { name: "r".into() }),
+        parameter: "pair".into(),
+        ty: Type::Entity("Pair".into()),
+        value: SubstitutionValue::Term(value.clone()),
+    };
+    let mut goal = match &r.body {
+        RuleBody::HornClause(c) => c.consequent.clone(),
+        _ => unreachable!(),
+    };
+    goal.args[0] = value;
+    assert!(query_residual_with_bindings(&m, r, &goal, &[], &[binding]).is_err());
+}

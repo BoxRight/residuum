@@ -1242,7 +1242,7 @@ pub(crate) fn lower_term(
     }
 }
 
-fn is_assignable(actual: &Type, expected: &Type) -> bool {
+pub(crate) fn is_assignable(actual: &Type, expected: &Type) -> bool {
     if actual == expected {
         return true;
     }

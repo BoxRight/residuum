@@ -13,8 +13,9 @@ and unresolved typed parameters. This is a syntactic reduction of one Rule,
 not a forward-certified assertion. A head that does not match returns an empty
 vector. A supplied binding conflicting with a matching goal is an error; an
 independently specialized Rule whose head is incompatible returns no match.
-An empty bindings list retains the legacy local convention: fully satisfied
-branches are omitted. This distinction is intentional and is confined to local
+An empty bindings list retains the legacy local convention: if any complete
+witness satisfies the Rule, the entire local result is empty. This distinction
+is intentional and is confined to local
 queries; Horn and active queries already represent successful Unit explanations.
 
 `QueryBinding` contains a `QueryParameterScope::Rule(RuleRef)` or
@@ -94,3 +95,10 @@ regressions and 4 selected CLI regressions (21 individual tests). Reports:
 All ran sequentially with 1 GiB cgroups, zero swap, one Cargo job and one harness
 thread. Test debug information was disabled to reduce compilation memory; the
 limits and stop controls were retained. The full suite was not run.
+
+The compatibility continuation adds legacy delegation for empty bindings,
+independent specialization oracles with full metadata/provenance comparisons,
+and a shared compiler RuleUse mapping. Final checks pass 35 selected tests
+individually. See [the reuse and compatibility review](residual-explicit-bindings-reuse-review.md)
+for call paths, reproduced failures, typed-validation policies, reports and the
+separately preserved stepwise audit status.

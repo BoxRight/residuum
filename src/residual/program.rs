@@ -156,6 +156,17 @@ pub fn query_program_residual_with_abducibles(
     abducibles: &[Abducible],
     limits: SearchLimits,
 ) -> Result<ProgramResidualQuery, Error> {
+    query_with_constraints(program, evidence, goal, abducibles, limits, None)
+}
+
+pub(super) fn query_with_constraints(
+    program: &Module,
+    evidence: &[Event],
+    goal: &Event,
+    abducibles: &[Abducible],
+    limits: SearchLimits,
+    constraints: Option<&BTreeMap<String, super::query::Bindings>>,
+) -> Result<ProgramResidualQuery, Error> {
     if limits.max_depth == 0
         || limits.max_depth > 64
         || limits.max_nodes == 0
@@ -203,6 +214,7 @@ pub fn query_program_residual_with_abducibles(
         limits,
         metrics: SearchMetrics::default(),
         active: Vec::new(),
+        constraints,
     };
     let candidates = search.event(goal, 0)?;
     let mut explanations = Vec::new();
@@ -331,6 +343,7 @@ struct Search<'a> {
     limits: SearchLimits,
     metrics: SearchMetrics,
     active: Vec<Event>,
+    constraints: Option<&'a BTreeMap<String, super::query::Bindings>>,
 }
 
 impl Search<'_> {
@@ -389,15 +402,31 @@ impl Search<'_> {
         for index in 0..self.rules.len() {
             let rule = self.rules[index];
             self.metrics.rules_examined += 1;
-            let Some((pattern, bindings)) = match_goal(rule, goal) else {
+            let matched = if let Some(constraints) = self.constraints {
+                super::query::constrained_goal(
+                    rule,
+                    goal,
+                    constraints.get(&rule.name).unwrap_or(&BTreeMap::new()),
+                )?
+            } else {
+                match_goal(rule, goal)
+            };
+            let Some((pattern, bindings)) = matched else {
                 continue;
             };
             self.metrics.head_matches += 1;
-            if let Some(parameter) = rule
+            let unresolved: Vec<_> = rule
                 .parameters
                 .iter()
-                .find(|arg| !bindings.contains_key(&arg.name))
-            {
+                .filter(|arg| !bindings.contains_key(&arg.name))
+                .collect();
+            if let Some(parameter) = unresolved.first() {
+                if self.constraints.is_some() {
+                    return Err(Error::new(format!(
+                        "rule `{}` has unresolved query parameters {unresolved:?}; no complete result",
+                        rule.name
+                    )));
+                }
                 return Err(Error::new(format!(
                     "rule `{}` has parameter `{}` not determined by the goal",
                     rule.name, parameter.name

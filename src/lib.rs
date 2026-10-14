@@ -26,10 +26,12 @@ pub use formal::parse_formal;
 pub use modules::load_formal_module;
 pub use residual::{
     Abducible, AbductionFailure, ActiveProgramResidualQuery, CertifiedActiveExplanation,
-    ProgramResidualQuery, RequirementFormula, ResidualActivation, ResidualExplanation,
-    ResidualProof, SearchLimits, SearchMetrics, query_active_program_residual,
-    query_active_program_residual_with_abducibles, query_program_residual,
-    query_program_residual_with_abducibles, query_residual, residuate, unresiduate,
+    HornQueryScope, ProgramResidualQuery, QueryBinding, QueryParameterScope, QueryWithBindings,
+    RequirementFormula, ResidualActivation, ResidualExplanation, ResidualProof, SearchLimits,
+    SearchMetrics, query_active_program_residual, query_active_program_residual_with_abducibles,
+    query_active_program_residual_with_bindings, query_program_residual,
+    query_program_residual_with_abducibles, query_program_residual_with_bindings, query_residual,
+    query_residual_with_bindings, residuate, unresiduate,
 };
 pub use runtime::execute_effect;
 pub use typed::{Module, ResidualRequirement};

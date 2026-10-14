@@ -350,3 +350,636 @@ fn empty_active_bindings_preserve_all_guards_provenance_and_policies() {
         );
     }
 }
+
+type Fixed = BTreeMap<String, BTreeMap<String, SubstitutionValue>>;
+
+fn ordered_atoms(a: &Antecedent, out: &mut Vec<Event>) {
+    match a {
+        Antecedent::Unit => {}
+        Antecedent::Event(e) => out.push(e.clone()),
+        Antecedent::And(a, b) => {
+            ordered_atoms(a, out);
+            ordered_atoms(b, out);
+        }
+    }
+}
+
+fn fixed_compliance() -> Fixed {
+    let values = BTreeMap::from([
+        (
+            "conduct".into(),
+            SubstitutionValue::Term(Term::Const("gConduct".into())),
+        ),
+        (
+            "actAuthority".into(),
+            SubstitutionValue::Term(Term::Const("private".into())),
+        ),
+        (
+            "actEffective".into(),
+            SubstitutionValue::Time(TimeExpr::At("gDate".into())),
+        ),
+    ]);
+    BTreeMap::from([
+        ("obligationCompliance".into(), values.clone()),
+        ("rightCompliance".into(), values),
+    ])
+}
+
+fn supplied(m: &Module, fixed: &Fixed) -> Vec<QueryBinding> {
+    fixed
+        .iter()
+        .flat_map(|(name, values)| {
+            values.iter().map(move |(parameter, value)| QueryBinding {
+                scope: QueryParameterScope::Rule(RuleRef { name: name.clone() }),
+                parameter: parameter.clone(),
+                ty: find_rule(m, name)
+                    .unwrap()
+                    .parameters
+                    .iter()
+                    .find(|p| p.name == *parameter)
+                    .unwrap()
+                    .ty
+                    .clone(),
+                value: value.clone(),
+            })
+        })
+        .collect()
+}
+
+// Independent oracle: beta-reduce manually specified typed values, then invoke
+// legacy APIs. It deliberately does not call resolve or constrained_goal.
+fn specialize_rules(m: &Module, fixed: &Fixed) -> Module {
+    let mut result = m.clone();
+    for d in &mut result.declarations {
+        if let Declaration::Rule(r) = d {
+            if let Some(values) = fixed.get(&r.name) {
+                r.body = crate::elab::substitute_rule_body(&r.body, values);
+                r.parameters.retain(|p| !values.contains_key(&p.name));
+            }
+        }
+    }
+    result
+}
+fn restore_substitution(s: &mut Substitution, values: &BTreeMap<String, SubstitutionValue>) {
+    let mut restored = values.clone();
+    for b in &s.bindings {
+        assert!(
+            restored
+                .insert(b.parameter.clone(), b.value.clone())
+                .is_none(),
+            "oracle parameter was not eliminated"
+        );
+    }
+    *s = crate::derive::substitution_record(&restored);
+}
+fn restore_proof(p: &mut super::super::ResidualProof, fixed: &Fixed) {
+    use super::super::ResidualProof;
+    match p {
+        ResidualProof::Rule {
+            rule,
+            substitution,
+            antecedent,
+            ..
+        } => {
+            if let Some(values) = fixed.get(&rule.name) {
+                restore_substitution(substitution, values);
+            }
+            restore_proof(antecedent, fixed);
+        }
+        ResidualProof::Tensor(a, b) => {
+            restore_proof(a, fixed);
+            restore_proof(b, fixed);
+        }
+        _ => {}
+    }
+}
+
+// Test-only decoding back to source Rules. The Program alias and use index are
+// asserted before projecting them; event metadata and branch multiplicity stay
+// intact. The independent mapping is not used by the bindings implementation.
+fn source_proof(p: &mut super::super::ResidualProof, m: &Module, identity: &str) {
+    use super::super::ResidualProof;
+    match p {
+        ResidualProof::Rule {
+            rule,
+            substitution,
+            antecedent,
+            ..
+        } => {
+            let origin = program_rule_origin(m, &rule.name).unwrap();
+            assert_eq!(origin.program, identity);
+            let program = find_program(m, identity).unwrap();
+            let member = &program.rule_uses[origin.rule_use];
+            assert_eq!(member.rule.name, origin.rule);
+            let original = find_rule(m, &origin.rule).unwrap();
+            let values: BTreeMap<_, _> = substitution
+                .bindings
+                .iter()
+                .map(|b| (b.parameter.clone(), b.value.clone()))
+                .collect();
+            let shared: BTreeMap<_, _> = program
+                .parameters
+                .iter()
+                .map(|p| {
+                    (
+                        p.name.clone(),
+                        SubstitutionValue::Term(Term::Var(format!(
+                            "#{identity}:shared:{}",
+                            p.name
+                        ))),
+                    )
+                })
+                .collect();
+            let source_values = original
+                .parameters
+                .iter()
+                .map(|p| {
+                    let term = member
+                        .bindings
+                        .iter()
+                        .find(|b| b.parameter == p.name)
+                        .map(|b| crate::derive::substitute_term(&b.value, &shared))
+                        .unwrap_or_else(|| {
+                            Term::Var(format!("#{identity}:use{}:{}", origin.rule_use, p.name))
+                        });
+                    let value =
+                        SubstitutionValue::Term(crate::derive::substitute_term(&term, &values))
+                            .canonical_for_type(&p.ty)
+                            .unwrap();
+                    (p.name.clone(), value)
+                })
+                .collect();
+            *substitution = crate::derive::substitution_record(&source_values);
+            rule.name = origin.rule;
+            full_eq(&m.origin(&rule.name), &Some(&origin.rule_origin));
+            source_proof(antecedent, m, identity);
+        }
+        ResidualProof::Tensor(a, b) => {
+            source_proof(a, m, identity);
+            source_proof(b, m, identity);
+        }
+        _ => {}
+    }
+}
+
+#[test]
+fn nonempty_compliance_matches_independent_rules_and_named_program_full_proofs() {
+    let m = module("examples/experiments/legal_geometry/explicit_substitutions.res");
+    let selected = view(
+        &m,
+        &["obligationCompliance", "rightCompliance", "filedObligation"],
+    );
+    let fixed = fixed_compliance();
+    let bindings = supplied(&m, &fixed);
+    let independent = specialize_rules(&selected, &fixed);
+    let mut program_view = view(&m, &[]);
+    program_view.declarations.extend(
+        compile_program(find_program(&m, "ComplianceBound").unwrap(), &m)
+            .unwrap()
+            .into_iter()
+            .map(Declaration::Rule),
+    );
+    let g = module("examples/experiments/legal_geometry/general.res");
+    let input = &experiment(&g, "performance").input;
+    let inputs = [input[0].clone(), input[1].clone(), input[5].clone()];
+    let goal = &experiment(&m, "suppliedContext").goal;
+    for mask in 0..8 {
+        let known: Vec<_> = inputs
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| mask & (1 << i) != 0)
+            .map(|(_, e)| e.clone())
+            .collect();
+        let actual = query_program_residual_with_bindings(
+            &m,
+            &rules_scope(&selected),
+            &known,
+            goal,
+            &bindings,
+            SearchLimits::default(),
+            None,
+        )
+        .unwrap()
+        .query;
+        let mut expected =
+            query_program_residual(&independent, &known, goal, SearchLimits::default()).unwrap();
+        for e in &mut expected.explanations {
+            restore_proof(&mut e.proof, &fixed);
+        }
+        full_eq(&actual, &expected);
+        let mut named =
+            query_program_residual(&program_view, &known, goal, SearchLimits::default()).unwrap();
+        for e in &mut named.explanations {
+            source_proof(&mut e.proof, &m, "ComplianceBound");
+        }
+        full_eq(&actual, &named);
+        assert_eq!(actual.explanations.len(), 2);
+        // Certification uses original producers, including both compliance paths.
+        for e in &actual.explanations {
+            let mut hypothetical = known.clone();
+            ordered_atoms(&e.required, &mut hypothetical);
+            let closure = crate::close_program(hypothetical, &m, &mut Clock::default()).unwrap();
+            assert!(closure.known.contains(goal));
+            assert!(
+                closure
+                    .derivations
+                    .iter()
+                    .any(|d| d.record.rule == "obligationCompliance"
+                        || d.record.rule == "rightCompliance")
+            );
+        }
+    }
+    full_eq(
+        &m,
+        &module("examples/experiments/legal_geometry/explicit_substitutions.res"),
+    );
+}
+
+#[test]
+fn nonempty_program_scope_matches_independent_specialization_and_partial_application() {
+    let m = module("examples/experiments/legal_geometry/explicit_substitutions.res");
+    let goal = &experiment(&m, "suppliedContext").goal;
+    let constants = m
+        .declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Const(c) => Some((c.name.clone(), c.ty.clone())),
+            _ => None,
+        })
+        .collect();
+    for (identity, args, names) in [
+        (
+            "ComplianceContext",
+            vec!["gConduct", "private", "gDate"],
+            vec!["conduct", "actAuthority", "actEffective"],
+        ),
+        (
+            "CompliancePartial",
+            vec!["private", "gDate"],
+            vec!["actAuthority", "actEffective"],
+        ),
+    ] {
+        let program = find_program(&m, identity).unwrap();
+        let specialized = crate::programs::specialize_program(
+            program,
+            &args.iter().map(|a| (*a).into()).collect::<Vec<_>>(),
+            &constants,
+        )
+        .unwrap();
+        let bindings: Vec<_> = names
+            .iter()
+            .zip(&args)
+            .map(|(name, value)| {
+                let p = program.parameters.iter().find(|p| p.name == *name).unwrap();
+                QueryBinding {
+                    scope: QueryParameterScope::Program(ProgramRef {
+                        name: identity.into(),
+                    }),
+                    parameter: (*name).into(),
+                    ty: p.ty.clone(),
+                    value: SubstitutionValue::Term(Term::Const((*value).into())),
+                }
+            })
+            .collect();
+        let mut oracle = view(&m, &[]);
+        let rules = compile_program(&specialized, &m).unwrap();
+        let fixed: Fixed = rules
+            .iter()
+            .map(|r| {
+                (
+                    r.name.clone(),
+                    bindings
+                        .iter()
+                        .map(|b| {
+                            (
+                                format!("#{identity}:shared:{}", b.parameter),
+                                b.value.canonical_for_type(&b.ty).unwrap(),
+                            )
+                        })
+                        .collect(),
+                )
+            })
+            .collect();
+        oracle
+            .declarations
+            .extend(rules.into_iter().map(Declaration::Rule));
+        let mut expected =
+            query_program_residual(&oracle, &[], goal, SearchLimits::default()).unwrap();
+        for e in &mut expected.explanations {
+            restore_proof(&mut e.proof, &fixed);
+        }
+        let actual = query_program_residual_with_bindings(
+            &m,
+            &HornQueryScope::Program(ProgramRef {
+                name: identity.into(),
+            }),
+            &[],
+            goal,
+            &bindings,
+            SearchLimits::default(),
+            None,
+        )
+        .unwrap()
+        .query;
+        full_eq(&actual, &expected);
+    }
+}
+
+#[test]
+fn nonempty_local_partial_and_temporal_queries_match_independent_rules() {
+    let m = module("examples/experiments/legal_geometry/explicit_substitutions.res");
+    let goal = &experiment(&m, "suppliedContext").goal;
+    let fixed = BTreeMap::from([(
+        "rightCompliance".into(),
+        BTreeMap::from([(
+            "conduct".into(),
+            SubstitutionValue::Term(Term::Const("gConduct".into())),
+        )]),
+    )]);
+    let independent = specialize_rules(&m, &fixed);
+    let rule = find_rule(&m, "rightCompliance").unwrap();
+    let mut expected = query_residual(
+        find_rule(&independent, "rightCompliance").unwrap(),
+        goal,
+        &[],
+    )
+    .unwrap();
+    for e in &mut expected {
+        restore_substitution(&mut e.goal_substitution, &fixed["rightCompliance"]);
+        restore_substitution(&mut e.substitution, &fixed["rightCompliance"]);
+    }
+    let actual = query_residual_with_bindings(&m, rule, goal, &[], &supplied(&m, &fixed))
+        .unwrap()
+        .query;
+    full_eq(&actual, &expected);
+    assert_eq!(actual[0].parameters.len(), 2);
+    assert!(
+        actual[0]
+            .parameters
+            .iter()
+            .any(|p| p.ty == Type::PropositionTime)
+    );
+
+    let m=crate::parse_formal_to_typed("module OracleTemporal\nentity Thing\nconst x : Thing\nconst tau : PropositionTime\nseeded verb source(object : Thing, effective : PropositionTime)\nseeded verb needed(object : Thing)\nderived verb target(object : Thing)\nrule r(x, effective, t) = source(x, effective) @ t & needed(x) @ t <= target(x) @ after t\nexperiment e { seeds {} query residual target(x) @ after tau }").unwrap();
+    for term in [Term::Const("x".into()), Term::Var("x".into())] {
+        let fixed = BTreeMap::from([(
+            "r".into(),
+            BTreeMap::from([
+                ("x".into(), SubstitutionValue::Term(term.clone())),
+                (
+                    "effective".into(),
+                    SubstitutionValue::Time(TimeExpr::After(Box::new(TimeExpr::At("tau".into())))),
+                ),
+            ]),
+        )]);
+        let independent = specialize_rules(&m, &fixed);
+        let rule = find_rule(&m, "r").unwrap();
+        let bindings = supplied(&m, &fixed);
+        let mut goal = experiment(&m, "e").goal.clone();
+        goal.args[0] = term;
+        let initial = query_residual(find_rule(&independent, "r").unwrap(), &goal, &[]).unwrap();
+        let mut atoms = Vec::new();
+        ordered_atoms(&initial[0].required, &mut atoms);
+        // Evidence metadata is preserved in witnesses even when not logical identity.
+        atoms[0].transition = Some(StateTransitionType {
+            input: StateTime::Unresolved,
+            output: StateTime::At(TimeExpr::At("tau".into())),
+        });
+        for known in [vec![], vec![atoms[0].clone(), atoms[0].clone()]] {
+            let mut expected =
+                query_residual(find_rule(&independent, "r").unwrap(), &goal, &known).unwrap();
+            for e in &mut expected {
+                restore_substitution(&mut e.goal_substitution, &fixed["r"]);
+                restore_substitution(&mut e.substitution, &fixed["r"]);
+            }
+            let actual = query_residual_with_bindings(&m, rule, &goal, &known, &bindings)
+                .unwrap()
+                .query;
+            full_eq(&actual, &expected);
+        }
+        let unit = query_residual_with_bindings(&m, rule, &goal, &atoms, &bindings)
+            .unwrap()
+            .query;
+        assert_eq!(unit.len(), 1);
+        assert!(
+            query_residual(find_rule(&independent, "r").unwrap(), &goal, &atoms)
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(unit[0].required, Antecedent::Unit);
+        full_eq(&unit[0].evidence, &atoms);
+        let witness = crate::derive::instantiate_from_witness(rule, &atoms).unwrap();
+        full_eq(&unit[0].substitution, &witness.record.substitution);
+        full_eq(&unit[0].goal, &witness.event);
+    }
+}
+
+#[test]
+fn explicit_conflicts_differ_from_incompatible_specialized_heads_and_pending_errors() {
+    let m = module("examples/experiments/associated_multi_rule_program.res");
+    let goal = &experiment(&m, "real").goal;
+    let fixed = BTreeMap::from([(
+        "second".into(),
+        BTreeMap::from([(
+            "local".into(),
+            SubstitutionValue::Term(Term::Const("other".into())),
+        )]),
+    )]);
+    let independent = specialize_rules(&view(&m, &["second"]), &fixed);
+    let bindings = supplied(&m, &fixed);
+    for known in [vec![], vec![goal.clone()]] {
+        assert!(
+            query_residual_with_bindings(
+                &m,
+                find_rule(&m, "second").unwrap(),
+                goal,
+                &known,
+                &bindings
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("inconsistent with the goal")
+        );
+        assert!(
+            query_residual(find_rule(&independent, "second").unwrap(), goal, &known)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            query_program_residual_with_bindings(
+                &m,
+                &rules_scope(&independent),
+                &known,
+                goal,
+                &bindings,
+                SearchLimits::default(),
+                None
+            )
+            .is_err()
+        );
+    }
+    assert!(
+        query_program_residual(&independent, &[], goal, SearchLimits::default())
+            .unwrap()
+            .required
+            .is_none()
+    );
+    let m = module("examples/experiments/legal_geometry/explicit_substitutions.res");
+    let goal = &experiment(&m, "suppliedContext").goal;
+    let partial = BTreeMap::from([(
+        "rightCompliance".into(),
+        BTreeMap::from([(
+            "conduct".into(),
+            SubstitutionValue::Term(Term::Const("gConduct".into())),
+        )]),
+    )]);
+    let independent = specialize_rules(&view(&m, &["rightCompliance"]), &partial);
+    let old = query_program_residual(&independent, &[], goal, SearchLimits::default())
+        .unwrap_err()
+        .to_string();
+    let new = query_program_residual_with_bindings(
+        &m,
+        &rules_scope(&independent),
+        &[],
+        goal,
+        &supplied(&m, &partial),
+        SearchLimits::default(),
+        None,
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(old.contains("actAuthority"));
+    assert!(
+        new.contains("actAuthority")
+            && new.contains("Entity(\"Authority\")")
+            && new.contains("actEffective")
+            && new.contains("PropositionTime"),
+        "{new}"
+    );
+    let constants = m
+        .declarations
+        .iter()
+        .filter_map(|d| match d {
+            Declaration::Const(c) => Some((c.name.clone(), c.ty.clone())),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        crate::programs::specialize_program(
+            find_program(&m, "ComplianceContext").unwrap(),
+            &["private".into()],
+            &constants
+        )
+        .is_err()
+    );
+    let invalid = QueryBinding {
+        scope: QueryParameterScope::Program(ProgramRef {
+            name: "ComplianceContext".into(),
+        }),
+        parameter: "conduct".into(),
+        ty: Type::Entity("Authority".into()),
+        value: SubstitutionValue::Term(Term::Const("private".into())),
+    };
+    assert!(
+        query_program_residual_with_bindings(
+            &m,
+            &HornQueryScope::Program(ProgramRef {
+                name: "ComplianceContext".into()
+            }),
+            &[],
+            goal,
+            &[invalid],
+            SearchLimits::default(),
+            None
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn active_bindings_match_independent_guarded_specialization_and_original_certification() {
+    let m=crate::parse_formal_to_typed("module OracleActive\nentity Thing\nentity Authority\nconst item : Thing\nconst private : Authority\nconst public : Authority\nconst tau : PropositionTime\nseeded verb starts(object : Thing, authority : Authority) = program P\nderived verb done(object : Thing)\nrule r(object, authority, t) = I <= done(object) @ after t\nprogram P(object : Thing, authority : Authority, t : PropositionTime) { use r { object = object, authority = authority, t = t } use r { object = object, authority = authority, t = t } }\nexperiment e { seeds { starts(item, private) @ tau } query residual done(item) @ after tau }").unwrap();
+    let original = m.clone();
+    let e = experiment(&m, "e");
+    let (v, templates) = guarded_view(&m).unwrap();
+    let fixed: Fixed = templates
+        .keys()
+        .map(|name| {
+            (
+                name.clone(),
+                BTreeMap::from([(
+                    "#P:shared:authority".into(),
+                    SubstitutionValue::Term(Term::Const("private".into())),
+                )]),
+            )
+        })
+        .collect();
+    let independent = specialize_rules(&v, &fixed);
+    let bindings = [QueryBinding {
+        scope: QueryParameterScope::Program(ProgramRef { name: "P".into() }),
+        parameter: "authority".into(),
+        ty: Type::Entity("Authority".into()),
+        value: SubstitutionValue::Term(Term::Const("private".into())),
+    }];
+    let mut wrong = e.input[0].clone();
+    wrong.args[1] = Term::Const("public".into());
+    for known in [vec![], e.input.clone(), vec![wrong]] {
+        for allowed in [None, Some(&[][..])] {
+            let mut search = match allowed {
+                None => {
+                    query_program_residual(&independent, &known, &e.goal, SearchLimits::default())
+                }
+                Some(a) => query_program_residual_with_abducibles(
+                    &independent,
+                    &known,
+                    &e.goal,
+                    a,
+                    SearchLimits::default(),
+                ),
+            }
+            .unwrap();
+            for e in &mut search.explanations {
+                restore_proof(&mut e.proof, &fixed);
+            }
+            let expected =
+                certify(&m, &known, &e.goal, search, &templates, &mut Clock(100)).unwrap();
+            let actual = query_active_program_residual_with_bindings(
+                &m,
+                &known,
+                &e.goal,
+                &bindings,
+                SearchLimits::default(),
+                allowed,
+                &mut Clock(0),
+            )
+            .unwrap()
+            .query;
+            full_eq(
+                &without_derived_at(actual.clone()),
+                &without_derived_at(expected),
+            );
+            for explanation in &actual.explanations {
+                assert_eq!(explanation.activations.len(), 1);
+                full_eq(&explanation.activations[0].trigger, &e.input[0]);
+                assert_eq!(explanation.hypothetical.derivations.len(), 2);
+                for (i, d) in explanation.hypothetical.derivations.iter().enumerate() {
+                    assert_eq!(d.record.rule, format!("P::{i}::r"));
+                    let origin = program_rule_origin(&m, &d.record.rule).unwrap();
+                    assert_eq!(origin.rule_use, i);
+                    assert_eq!(origin.rule, "r");
+                    full_eq(&origin.rule_origin, m.origin("r").unwrap());
+                    full_eq(&d.record.antecedents, &e.input);
+                    assert!(
+                        d.record
+                            .substitution
+                            .bindings
+                            .iter()
+                            .any(|b| b.parameter == "#P:shared:authority"
+                                && b.value == bindings[0].value)
+                    );
+                }
+            }
+        }
+    }
+    full_eq(&m, &original);
+}

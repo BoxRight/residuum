@@ -284,9 +284,21 @@ def main():
         for name in args.python_test:
             # Isolated mode drops the working directory from sys.path; the
             # repository root is added explicitly and nothing else.
-            bootstrap = (f'import sys, unittest; sys.path.insert(0, {str(ROOT)!r}); '
-                         f'unittest.main(module=None, argv=["unittest", "-v", {name!r}])')
-            run_bounded(report, rows, 'python', name, [sys.executable, '-I', '-c', bootstrap], 30)
+            prelude = f'import sys, unittest; sys.path.insert(0, {str(ROOT)!r}); '
+            # A module or class identifier would run several tests; the
+            # authorisation is for exactly one, counted before anything runs.
+            count = run_bounded(report, rows, 'list', f'count {name}', [
+                sys.executable, '-I', '-c',
+                prelude + f'print(unittest.TestLoader().loadTestsFromName({name!r}).countTestCases())'], 15)
+            counted = count.read_text().strip().splitlines()
+            if len(counted) != 1 or counted[0] != '1':
+                raise RuntimeError(f'{name}: selects {counted[-1] if counted else "no"} tests; exactly one is required')
+            output = run_bounded(report, rows, 'python', name, [
+                sys.executable, '-I', '-c',
+                prelude + f'unittest.main(module=None, argv=["unittest", "-v", {name!r}])'], 30)
+            text = output.read_text()
+            if 'Ran 1 test' not in text or 'skipped' in text or not text.rstrip().endswith('OK'):
+                raise RuntimeError(f'{name}: expected exactly one passing, unskipped test')
         print(f'{len(args.python_test)} python tests passed individually.', flush=True)
         return 0
     if args.worker_manifest:

@@ -820,3 +820,17 @@ reporting. Regressions run individually, all passed: partial usage,
 overrun in the budget, overrun through the entry point (one call sent,
 record present, episode exhausted), plus the earlier budget, entry-point,
 adapter and pilot-manifest tests.
+
+## Pilot 001: single authorised run, failed before inference
+
+2026-10-15, one run as authorised, no retry. Runner report
+`20261015T192228339559Z-2754121`, archived with the ledger in
+`pilot-001/run/`. Probe passed before any call. All five requests to
+`claude-sonnet-5-5` rejected with HTTP 400: strict tool schemas exceed the
+provider's limit of 16 union-typed parameters (57 by the API's count).
+Each was charged at its reservation (US$0.4607, usage unknown); after
+US$2.3037 the sixth reservation did not fit and the episode ended
+`budget_exhausted` (controller exit 3, worker exit 0, supervisor
+`worker_lost`). No model answer, no action, no proposal. Real billed cost
+expected about zero, unverified. Details and proposals in
+`pilot-001/README.md`.

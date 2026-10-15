@@ -1,0 +1,15 @@
+{"input_upper":120296,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.46074,"seq":4,"spent_usd":0.0,"turn":1}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":5,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":1}
+{"artifact":"2ac4fed613fdcee0c5ae64d162e012196216ed31236ecf05e2817a11ee88d9f8","kind":"model_request_body","seq":6,"turn":1}
+{"input_upper":120296,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.46074,"seq":9,"spent_usd":0.46074,"turn":2}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":10,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":2}
+{"artifact":"2ac4fed613fdcee0c5ae64d162e012196216ed31236ecf05e2817a11ee88d9f8","kind":"model_request_body","seq":11,"turn":2}
+{"input_upper":120296,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.46074,"seq":14,"spent_usd":0.92148,"turn":3}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":15,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":3}
+{"artifact":"2ac4fed613fdcee0c5ae64d162e012196216ed31236ecf05e2817a11ee88d9f8","kind":"model_request_body","seq":16,"turn":3}
+{"input_upper":120296,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.46074,"seq":19,"spent_usd":1.38222,"turn":4}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":20,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":4}
+{"artifact":"2ac4fed613fdcee0c5ae64d162e012196216ed31236ecf05e2817a11ee88d9f8","kind":"model_request_body","seq":21,"turn":4}
+{"input_upper":120296,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.46074,"seq":24,"spent_usd":1.84296,"turn":5}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":25,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":5}
+{"artifact":"2ac4fed613fdcee0c5ae64d162e012196216ed31236ecf05e2817a11ee88d9f8","kind":"model_request_body","seq":26,"turn":5}

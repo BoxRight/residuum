@@ -1,0 +1,6 @@
+worker pid 2754135; controller pid 2754136
+worker exited 0 at 2.990s
+worker exited first; grace until 4.990s
+controller exited 3 at 3.236s
+worker final status 0
+controller final status 3

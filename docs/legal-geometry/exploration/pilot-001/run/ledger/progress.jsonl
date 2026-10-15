@@ -1,0 +1,1 @@
+{"budgets":{"actions":[0,10],"cost_usd":[2.3037,2.5],"input_tokens":[601480,null],"model_requests":[5,12],"output_tokens":[0,60000],"overrun":null,"usage_partial":0,"usage_unknown":5},"kind":"episode.budget_exhausted","message":"cost ceiling: the next call could cost up to $0.4607, $0.1963 remain","seq":29}

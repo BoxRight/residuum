@@ -1,8 +1,8 @@
 # Pilot 001: first call to a real model, for review
 
-Status: **prepared, not executed.** No request has been sent to a model
-with this manifest, no dependency has been installed, and the latest review
-does not yet authorise either. The manifest is `episode.json` in this
+Status: **executed once on 2026-10-15, technical failure before inference**
+(see *Result of the single run* at the end). Authorised by the person
+responsible, with the conditional US$2.50 ceiling accepted. No second run. The manifest is `episode.json` in this
 directory; it validates with `tools/normative_explorer/manifest.py` and its
 frozen hash is printed by the controller at start.
 
@@ -146,3 +146,59 @@ Acceptance is technical: the probe passes, the controller ends with a
 recorded outcome, no technical stop by the supervisor, the cost charged in
 the ledger stays within the ceiling and matches the reported usage, no
 `reservation_exceeded` record, and the worker exits 0.
+
+## Result of the single run (2026-10-15, 19:22:28 to 19:22:31 UTC)
+
+Records archived in `run/`: the episode ledger (`run/ledger/`), the
+runner's report (`run/runner-report/`) and its standard output. No
+credentials appear in them.
+
+- SDK `anthropic==1.14.0` installed in `.venv-pilot` (not committed). The
+  workspace id was supplied in the command's environment only.
+- Preflight, vocabulary freeze and the idempotence probe ran before any
+  call and passed (replay identical, no double advance, no extra action or
+  step charged).
+- **All five model requests were rejected by the API with HTTP 400
+  `invalid_request_error`, before inference:** "Schemas contains too many
+  parameters with union types (57 parameters with type arrays or anyOf)
+  ... (limit: 16 parameters with unions)". Request ids
+  `req_011Cg4ZrXD8r1oHUiqfC8XsW`, `req_011Cg4ZrZKPGKKvyTVpWUaLX`,
+  `req_011Cg4ZraaYFQ9Lo3ANZgEwi`, `req_011Cg4ZrbjjsBb28HApsF9WV`,
+  `req_011Cg4ZrcuCS9bMTdxpZjqja`. The model never answered; no action was
+  taken; no proposal exists.
+- Accounting: the 400 carries no usage, so each call was charged at its
+  full reservation (US$0.4607 each, `usage_unknown` 5). After five,
+  US$2.3037 was charged and the sixth reservation did not fit the ceiling:
+  outcome `budget_exhausted`, controller exit 3. No `usage_partial`, no
+  `reservation_exceeded`. A request rejected as invalid is expected not to
+  be billed, so the real cost should be about zero; this is to be checked
+  in the console, not assumed.
+- Runner: 3.26 s, 82 MiB cgroup peak, no memory events. The worker closed
+  on EOF with exit 0 before the controller, and the supervisor classified
+  the end as `worker_lost`; given the worker's clean exit and the
+  controller's recorded outcome, this is the normal close order of a
+  controller that stopped, not a worker failure, but the classification is
+  recorded as it was.
+
+### What the run shows
+
+1. The schemas are strict (`strict: true`) and contain many nullable or
+   union-typed parameters. Offline tests validated their structure but no
+   test checked the provider's limit of 16 union parameters per request.
+   Counted locally, the eleven tools of condition C carry 93 union nodes
+   (`begin_residual` and `begin_active_residual` 21 each); the API counts
+   57 by its own rule. Either is far above 16.
+2. A deterministic 400 was resent on each turn: the controller treats
+   every provider error as one failed request and lets the model loop
+   continue. An identical request cannot succeed on retry, so these five
+   reservations bought nothing.
+3. The circuit's protections did their job: nothing ran without a model
+   answer, the probe ran before paying, the ceiling stopped the episode
+   and every request and error is in the ledger.
+
+No correction was made. Proposals for review, before any second
+authorisation: reduce the union-typed parameters below the provider's
+limit (or send the large tools non-strict with validation kept on the
+controller side) with an offline test of that limit; stop the episode on a
+provider `invalid_request_error`, which is deterministic; and recheck the
+supervisor's classification when the worker exits cleanly first.

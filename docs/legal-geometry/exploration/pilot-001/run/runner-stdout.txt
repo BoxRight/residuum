@@ -1,0 +1,4 @@
+Reports: /tmp/residuum-llm-normative-exploration-spec/target/test-diagnostics/20261015T192228339559Z-2754121
+compile residuum-worker | 0 | 0.0826s | 27.34 MiB RSS
+controller+worker | 3 | 3.2568s | 86.32 MiB RSS
+STOPPED: controller+worker: worker_lost; no remaining tests executed. See /tmp/residuum-llm-normative-exploration-spec/target/test-diagnostics/20261015T192228339559Z-2754121/02.output.txt

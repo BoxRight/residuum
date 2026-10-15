@@ -10,6 +10,7 @@ from tools.normative_explorer import manifest, provider_anthropic, run_episode, 
 ROOT = Path(__file__).resolve().parents[3]
 PILOT = ROOT / "docs" / "legal-geometry" / "exploration" / "pilot-001" / "episode.json"
 PILOT2 = ROOT / "docs" / "legal-geometry" / "exploration" / "pilot-002" / "episode.json"
+PILOT3 = ROOT / "docs" / "legal-geometry" / "exploration" / "pilot-003" / "episode.json"
 
 
 class PilotManifestTests(unittest.TestCase):
@@ -61,6 +62,33 @@ class PilotManifestTests(unittest.TestCase):
         provider, _ = run_episode.build_provider(m, None, {"anthropic": lambda t: object()})
         totals = provider_anthropic.check_strict_limits(provider.tools)
         self.assertEqual(totals, {"strict_tools": 4, "optional_parameters": 0, "union_parameters": 16})
+
+    def test_pilot_003_request_differs_from_pilot_002_only_in_strict_flags(self):
+        def body(path):
+            m = manifest.load(path)
+            provider, _ = run_episode.build_provider(m, None, {"anthropic": lambda t: object()})
+            provider.vocabulary = {"verbs": [{"name": "kills", "arity": 2}], "entities": [], "constants": []}
+            return m, provider.build_request([], schemas.catalog(m.condition), 16000)
+        m2, second = body(PILOT2)
+        m3, third = body(PILOT3)
+        self.assertEqual(m3.controller["model"]["tool_strictness"], "none")
+        self.assertEqual(sum(t["strict"] for t in second["tools"]), 4)
+        self.assertEqual(sum(t["strict"] for t in third["tools"]), 0)
+        # Pilot 002's request with every strict flag set to false and its
+        # identity renamed is exactly pilot 003's request: same tools, schemas,
+        # descriptions, arguments, instructions, theory, budgets.
+        for tool in second["tools"]:
+            tool["strict"] = False
+        renamed = json.loads(json.dumps(second).replace("riggs-pilot-002", "riggs-pilot-003")
+                             .replace("h-pilot-002", "h-pilot-003"))
+        self.assertEqual(renamed, third)
+        # And the manifests differ only in identity, paths and strictness.
+        a, b = json.loads(PILOT2.read_text()), json.loads(PILOT3.read_text())
+        b["controller"]["model"].pop("tool_strictness")
+        for doc in (a, b):
+            doc["worker"].pop("episode_id"), doc["worker"].pop("manifest_hash"), doc["worker"].pop("workdir")
+        self.assertEqual(a, b)
+        self.assertEqual(manifest.instrumentation_problems(m3), [])
 
 
 if __name__ == "__main__":

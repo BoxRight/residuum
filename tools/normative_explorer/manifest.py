@@ -31,6 +31,9 @@ CONTROLLER_KEYS = {
 OBSERVATION_KEYS = {"dossier", "required", "source", "status"}
 OBSERVATION_STATUS = ("documented", "hypothetical", "pending")
 MODEL_KEYS = {"provider", "model_id", "parameters"}
+# Optional, Anthropic only: whether tools are sent strict within the
+# documented limits (the default) or all non-strict. Fixed for the episode.
+TOOL_STRICTNESS = {"within_limits", "none"}
 # Real providers need an explicit network deadline; the simulated one has none.
 REAL_PROVIDERS = ("anthropic", "openai")
 CLIENT_KEYS = {"timeout_seconds"}
@@ -159,7 +162,13 @@ def validate(document: dict, source_path: Path) -> EpisodeManifest:
     model = controller["model"]
     if not isinstance(model, dict):
         raise ManifestError("controller.model must be an object")
-    _require({k: v for k, v in model.items() if k != "client"}, MODEL_KEYS, "controller.model")
+    _require({k: v for k, v in model.items() if k not in ("client", "tool_strictness")}, MODEL_KEYS,
+             "controller.model")
+    if "tool_strictness" in model:
+        if model["provider"] != "anthropic":
+            raise ManifestError("controller.model.tool_strictness is only for the anthropic provider")
+        if model["tool_strictness"] not in TOOL_STRICTNESS:
+            raise ManifestError(f"controller.model.tool_strictness must be one of {sorted(TOOL_STRICTNESS)}")
     if model["provider"] in REAL_PROVIDERS:
         if "client" not in model:
             raise ManifestError("a real provider needs controller.model.client.timeout_seconds")

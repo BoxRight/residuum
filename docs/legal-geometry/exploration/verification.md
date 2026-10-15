@@ -886,3 +886,23 @@ documented union limit. The episode ended after that one request as
 `controller_technical_abort`). Internal charge US$0.460757 (reservation,
 usage unknown), not a billed amount; reconciliation pending. No model
 answer, action or proposal. No correction made.
+
+## Pilot 003 prepared for authorisation (not executed); pilot 002 diagnosis corrected
+
+Review of the archived pilot-002 request: the four strict tools carried
+empty `$defs`, so the explanation that shared definitions caused the
+grammar rejection was withdrawn from the pilot-002 README; the rejection
+is confirmed, its internal cause unidentified. Pilot-002 records are
+otherwise unchanged.
+
+New optional manifest key `controller.model.tool_strictness`
+(`within_limits` by default, or `none`; Anthropic only; fixed for the
+episode). `pilot-003/episode.json` is pilot 002's with a new identity and
+`tool_strictness: "none"`. Tests run individually, all passed: the
+option's validation; `none` changes only the strict flags; pilot 003's
+request equals pilot 002's with flags off and identity renamed; malformed
+arguments without strict tools are recorded protocol errors that never
+reach the worker; a configuration error still ends after one call; plus
+the earlier pilot, schema, error and entry-point tests. First-call
+reservation US$0.4608. Proposed conditional ceiling US$2.50, pending a new
+authorisation.

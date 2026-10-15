@@ -164,6 +164,25 @@ class StateAndBudgetTests(unittest.TestCase):
             capped.reserve_request()
         self.assertEqual(capped.snapshot()["input_tokens"], [1200, 1000])
 
+    def test_tool_strictness_is_optional_anthropic_only_and_closed(self):
+        import copy
+        base = document("C")
+        base["controller"]["model"] = {"provider": "anthropic", "model_id": "claude-sonnet-5-5", "parameters": {},
+                                       "client": {"timeout_seconds": 60}}
+        for value in ("none", "within_limits"):
+            doc = copy.deepcopy(base)
+            doc["controller"]["model"]["tool_strictness"] = value
+            manifest.validate(doc, Path("x"))
+        manifest.validate(copy.deepcopy(base), Path("x"))
+        bad = copy.deepcopy(base)
+        bad["controller"]["model"]["tool_strictness"] = "auto"
+        with self.assertRaisesRegex(manifest.ManifestError, "tool_strictness must be one of"):
+            manifest.validate(bad, Path("x"))
+        sim = document("C")
+        sim["controller"]["model"]["tool_strictness"] = "none"
+        with self.assertRaisesRegex(manifest.ManifestError, "only for the anthropic provider"):
+            manifest.validate(sim, Path("x"))
+
     def test_cost_ceiling_reserves_each_call_and_charges_unknown_usage_in_full(self):
         prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
                   "cache_read_per_mtok": 0.10}

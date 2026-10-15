@@ -252,12 +252,15 @@ def check_strict_limits(tools: list[dict]) -> dict:
     return totals
 
 
-def tool_definitions(condition: str) -> list[dict]:
+def tool_definitions(condition: str, strictness: str = "within_limits") -> list[dict]:
     """The condition's catalogue, in catalogue order. Every property is
     required, optional ones nullable; each tool carries only the definitions
-    it reaches. Tools are made strict from the cheapest (ties in catalogue
-    order) while the conservative totals fit the documented limits; the
-    rest are sent non-strict with the same schema."""
+    it reaches. With ``within_limits``, tools are made strict from the
+    cheapest (ties in catalogue order) while the conservative totals fit the
+    documented limits; the rest are sent non-strict with the same schema.
+    With ``none``, every tool is non-strict with the same schema: the
+    provider no longer constrains generation, and what Residuum accepts is
+    unchanged because every action is validated locally and in Rust."""
     definitions = []
     for name in catalog(condition):
         arguments, _, _ = TOOLS[name]
@@ -271,6 +274,10 @@ def tool_definitions(condition: str) -> list[dict]:
             "input_schema": {"type": "object", "properties": properties, "required": list(properties),
                              "additionalProperties": False, "$defs": _reachable(properties, DEFS)},
         })
+    if strictness == "none":
+        return definitions
+    if strictness != "within_limits":
+        raise ProviderError(f"unknown tool strictness {strictness!r}", fatal=True)
     totals = {key: 0 for key in STRICT_LIMITS}
     order = sorted(range(len(definitions)),
                    key=lambda i: (sum(strict_cost(definitions[i]["input_schema"]).values()), i))
@@ -355,7 +362,9 @@ class AnthropicMessagesProvider:
         self.parameters = dict(model.get("parameters") or {})
         _validate_parameters(self.parameters)
         self.system = manifest.controller["explorer_instructions"] + INSTRUCTION_SUFFIX
-        self.tools = tool_definitions(manifest.condition)
+        # Fixed by the manifest for the whole episode: no automatic change of
+        # mode after a rejection.
+        self.tools = tool_definitions(manifest.condition, model.get("tool_strictness", "within_limits"))
         # One entry per accepted answer: its content blocks as replayed
         # (thinking blocks included, unchanged) and its tool_use id.
         self.emitted: list[tuple[list, str]] = []

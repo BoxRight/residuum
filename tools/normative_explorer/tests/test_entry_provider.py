@@ -290,6 +290,44 @@ class BudgetAndInstrumentationTests(unittest.TestCase):
         # The conservative charge stays: unknown usage at the reservation.
         self.assertEqual(summary["budgets"]["usage_unknown"], 1)
 
+    def non_strict_manifest(self):
+        path, tmp = episode_manifest(max_cost_usd=2.5, pricing=self.PRICES, max_output_tokens=4000)
+        doc = json.loads(path.read_text())
+        doc["controller"]["model"]["tool_strictness"] = "none"
+        path.write_text(json.dumps(doc))
+        return path, tmp
+
+    def test_without_strict_tools_malformed_arguments_are_rejected_before_execution(self):
+        path, tmp = self.non_strict_manifest()
+        replies = [
+            message([thinking("sig-1"), tool_use("begin_residual", {"bogus": 1}, "t1")]),
+            message([thinking("sig-2"), tool_use("begin_forward", dict(ARGS, dossier=7, theory=None), "t2")]),
+            message([tool_use("finish_episode", dict(ARGS, candidate_ids=[], explanation="observed"), "t3")]),
+        ]
+        code, err, built, worker = run_with_fakes(path, tmp, replies)
+        bodies = built["client"].messages.bodies
+        self.assertTrue(bodies and all(not t["strict"] for b in bodies for t in b["tools"]))
+        led = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash)
+        errors = [r for r in led.read_file("actions") if r["kind"] == "protocol_error"]
+        self.assertEqual(len(errors), 2, "both malformed calls are rejected and recorded")
+        # Only the vocabulary and the probe reached the worker: nothing malformed ran.
+        self.assertEqual([e["action_id"] for e in worker.received], ["t1", "p1", "p2", "p2", "p3"])
+        self.assertEqual(code, 0)
+
+    def test_without_strict_tools_a_provider_configuration_error_still_ends_after_one_call(self):
+        class APIError(Exception):
+            status_code = 400
+            body = {"type": "error", "error": {"type": "invalid_request_error", "message": "rejected"}}
+            request_id = "req_test_2"
+        path, tmp = self.non_strict_manifest()
+        unused = message([thinking("sig-1"), tool_use("inspect_theory", {}, "t1")])
+        code, err, built, _ = run_with_fakes(path, tmp, [APIError("rejected"), unused, unused])
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        bodies = built["client"].messages.bodies
+        self.assertEqual(len(bodies), 1)
+        self.assertFalse(any(t["strict"] for t in bodies[0]["tools"]))
+        self.assertEqual((code, summary["outcome"]), (4, "technical_abort"))
+
     def test_worker_budget_must_leave_room_for_the_technical_actions(self):
         path, tmp = episode_manifest()
         doc = json.loads(path.read_text())

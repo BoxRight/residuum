@@ -136,6 +136,17 @@ class SchemaTests(unittest.TestCase):
             pa.check_strict_limits(all_strict)
         self.assertTrue(caught.exception.fatal)
 
+    def test_no_strictness_changes_only_the_strict_flags(self):
+        pa = provider_anthropic
+        for condition in "ABC":
+            mixed, none = pa.tool_definitions(condition), pa.tool_definitions(condition, "none")
+            self.assertFalse(any(t["strict"] for t in none))
+            self.assertEqual([dict(t, strict=False) for t in mixed], none)
+            self.assertEqual(pa.check_strict_limits(none), {"strict_tools": 0, "optional_parameters": 0,
+                                                            "union_parameters": 0})
+        with self.assertRaises(ProviderError):
+            pa.tool_definitions("C", "all")
+
     def test_provider_errors_carry_structured_details_and_configuration_errors_are_final(self):
         pa = provider_anthropic
 

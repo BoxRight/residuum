@@ -122,11 +122,19 @@ output. No credentials appear in them.
 ### What the run shows
 
 The mixed catalogue fits the public limits by the conservative count but
-still compiles to a grammar the provider refuses. The four strict tools
-are the cheapest by that count; each carries the shared term, time and
-type definitions, which the grammar may expand in a way the public limits
-do not describe. The integration question remains open. No correction was
-made; any next step needs its own review and authorisation.
+the provider still refused the grammar compiled from it. The rejection is
+confirmed; its precise internal cause is not identified.
+
+*Correction (after review):* an earlier version of this paragraph
+attributed the rejection to shared term, time and type definitions carried
+by the strict tools. The archived request contradicts that: the four
+strict tools (`inspect_theory`, `advance_session`,
+`begin_candidate_evaluation`, `request_valuation`) were sent with empty
+`$defs`. The explanation was withdrawn; no other is offered.
+
+The run confirms the one-request abort, the structured error record and
+the supervisor's classification. It gives no evidence about the model's
+behaviour. The next attempt is `../pilot-003/`.
 
 ## Reconciliation
 

@@ -243,7 +243,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(kinds.count("model_error"), 3)
         snap = ctl.budgets.snapshot()
         self.assertEqual(snap["output_tokens"][0], 11 + 2 + 9 + 5)
-        self.assertEqual(snap["input_tokens"], 100 + 120 + 130 + 140)
+        self.assertEqual(snap["input_tokens"][0], 100 + 120 + 130 + 140)
         self.assertEqual(snap["usage_unknown"], 1)
         self.assertEqual(len(client.messages.bodies), 5, "no hidden retry")
         # Rejected answers are not stored: the requests after them repeat the same prefix.

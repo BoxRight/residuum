@@ -44,7 +44,8 @@ class Controller:
         self.dispatcher = Dispatcher(manifest, self.registry)
         self.state = EpisodeState()
         c = manifest.controller
-        self.budgets = Budgets(c["max_model_requests"], c["max_actions"], c["max_output_tokens"])
+        self.budgets = Budgets(c["max_model_requests"], c["max_actions"], c["max_output_tokens"],
+                               max_input_tokens=c.get("max_input_tokens"))
         self.history: list[dict] = []           # what the model sees, in order
         self.records: dict[str, dict] = {}       # action_id → full backend line
         self.envelopes: dict[str, dict] = {}     # action_id → envelope as sent

@@ -167,9 +167,29 @@ def _schema(tag: str) -> dict:
     return _nullable(schema) if tag.endswith("?") else schema
 
 
+def _reachable(schema, defs: dict) -> dict:
+    """Only the definitions a tool's properties reach, in DEFS order, so
+    that no tool carries definitions it never uses."""
+    seen, pending = set(), [schema]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            ref = node.get("$ref")
+            if ref:
+                name = ref.split("/")[-1]
+                if name not in seen:
+                    seen.add(name)
+                    pending.append(defs[name])
+            pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
+    return {name: definition for name, definition in defs.items() if name in seen}
+
+
 def tool_definitions(condition: str) -> list[dict]:
     """Strict tools for the condition's catalogue, in catalogue order. Every
-    property is required, optional ones nullable."""
+    property is required, optional ones nullable; each tool carries only the
+    definitions it reaches."""
     definitions = []
     for name in catalog(condition):
         arguments, _, _ = TOOLS[name]
@@ -181,7 +201,7 @@ def tool_definitions(condition: str) -> list[dict]:
             "description": f"{name} under the episode contract; arguments are validated locally before anything runs.",
             "strict": True,
             "input_schema": {"type": "object", "properties": properties, "required": list(properties),
-                             "additionalProperties": False, "$defs": DEFS},
+                             "additionalProperties": False, "$defs": _reachable(properties, DEFS)},
         })
     return definitions
 

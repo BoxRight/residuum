@@ -210,7 +210,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(json.loads(led.read_artifact(body0["artifact"]))["model"], "fixed-model-2026-10")
         snap = ctl.budgets.snapshot()
         self.assertEqual(snap["output_tokens"][0], 40 + 7 + 5)
-        self.assertEqual(snap["input_tokens"], 1000 + 1100 + 1200)
+        self.assertEqual(snap["input_tokens"][0], 1000 + 1100 + 1200)
         self.assertEqual(snap["usage_unknown"], 2, "no usage reported and transport failure")
         self.assertEqual(ctl.budgets.model_requests, 5)
         self.assertEqual(len(client.responses.bodies), 5, "no hidden retry")

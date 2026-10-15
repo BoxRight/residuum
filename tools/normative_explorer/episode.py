@@ -44,10 +44,15 @@ class Budgets:
     output_tokens: int = 0
     input_tokens: int = 0
     usage_unknown: int = 0
+    # Optional ceiling on reported input tokens; checked before each request,
+    # so the overshoot is at most one request's input.
+    max_input_tokens: int | None = None
 
     def reserve_request(self) -> None:
         if self.model_requests >= self.max_model_requests:
             raise BudgetExhausted("model requests exhausted")
+        if self.max_input_tokens is not None and self.input_tokens >= self.max_input_tokens:
+            raise BudgetExhausted("input tokens exhausted")
         self.model_requests += 1
 
     def charge_action(self) -> None:
@@ -75,7 +80,7 @@ class Budgets:
             "model_requests": [self.model_requests, self.max_model_requests],
             "actions": [self.actions, self.max_actions],
             "output_tokens": [self.output_tokens, self.max_output_tokens],
-            "input_tokens": self.input_tokens,
+            "input_tokens": [self.input_tokens, self.max_input_tokens],
             "usage_unknown": self.usage_unknown,
         }
 

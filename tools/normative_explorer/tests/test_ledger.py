@@ -157,6 +157,12 @@ class StateAndBudgetTests(unittest.TestCase):
             b.output_cap()
         b.charge_usage(None)
         self.assertEqual(b.snapshot()["usage_unknown"], 1)
+        capped = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=9, max_input_tokens=1000)
+        capped.reserve_request()
+        capped.charge_usage({"output_tokens": 1, "input_tokens": 1200})
+        with self.assertRaisesRegex(episode.BudgetExhausted, "input tokens"):
+            capped.reserve_request()
+        self.assertEqual(capped.snapshot()["input_tokens"], [1200, 1000])
 
 
 def tempple_dir():

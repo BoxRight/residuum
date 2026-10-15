@@ -95,12 +95,18 @@ def _positive(value, what: str) -> int:
     return value
 
 
+OPTIONAL_CONTROLLER_KEYS = {"max_input_tokens"}
+
+
 def validate(document: dict, source_path: Path) -> EpisodeManifest:
     if not isinstance(document, dict) or set(document) != {"worker", "controller"}:
         raise ManifestError("manifest must have exactly the sections worker and controller")
     worker, controller = document["worker"], document["controller"]
     _require(worker, WORKER_KEYS, "worker")
-    _require(controller, CONTROLLER_KEYS, "controller")
+    _require({k: v for k, v in controller.items() if k not in OPTIONAL_CONTROLLER_KEYS},
+             CONTROLLER_KEYS, "controller")
+    if "max_input_tokens" in controller:
+        _positive(controller["max_input_tokens"], "controller.max_input_tokens")
     if worker["wire_version"] != WIRE_VERSION:
         raise ManifestError(f"worker wire_version must be {WIRE_VERSION}")
     _ident(worker["episode_id"], "episode_id")

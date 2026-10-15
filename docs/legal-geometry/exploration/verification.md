@@ -752,3 +752,19 @@ than that on its own. Running the Anthropic provider under the runner
 therefore needs an explicit, reviewed decision on the network deadline and
 the exchange deadline. It will not be widened silently. The other pilot
 decisions also remain: exact model, authorised content, budget.
+
+## Pilot 001 prepared for review (not executed)
+
+`pilot-001/episode.json` and `pilot-001/README.md`: Anthropic, Claude Opus
+5.5 at medium effort, condition C, 12 requests, 10 actions, 60 000 output
+and 600 000 input tokens, 120 s per request, no retries, no fallback, the
+documented historical observation only. Estimated worst-case cost about
+US$5, enforced from reported usage. Two offline changes support it: each
+Anthropic tool now carries only the definitions it reaches (tools fell from
+74 700 to 34 800 characters in condition C), and the controller accepts an
+optional `max_input_tokens` ceiling checked before each request. Test
+`test_pilot_manifest` (individually, passed) validates the manifest, builds
+the provider without a policy, and checks that the request carries no
+catalogue rule, workspace id or key. Still open: review, an exchange
+deadline option in the runner for real providers (15 s today, 1 500 s
+proposed), and the SDK in a virtual environment.

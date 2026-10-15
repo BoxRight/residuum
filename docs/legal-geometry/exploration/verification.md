@@ -872,3 +872,17 @@ also checks the mixed catalogue's conservative totals: 4 strict tools,
 corrections of `fabd851`. First-call reservation measured offline:
 US$0.4608. Proposed conditional ceiling US$2.50, pending a new
 authorisation. Pilot 001's records are unchanged.
+
+## Pilot 002: single authorised run, rejected before inference by grammar size
+
+2026-10-15, one run from `99f1f86`, as authorised, no retry. Runner report
+`20261015T193916560390Z-2766884`, archived with the ledger in
+`pilot-002/run/`. Probe passed before any call. The first request to
+`claude-sonnet-5-5` was rejected with HTTP 400 `invalid_request_error`,
+"The compiled grammar is too large ... reduce the number of strict tools"
+(`req_011Cg4b8pfgs13WpVcUCvTn5`): the provider's internal limit, not the
+documented union limit. The episode ended after that one request as
+`technical_abort` (controller exit 4, worker exit 0, supervisor
+`controller_technical_abort`). Internal charge US$0.460757 (reservation,
+usage unknown), not a billed amount; reconciliation pending. No model
+answer, action or proposal. No correction made.

@@ -1,0 +1,31 @@
+{
+  "stage": "interactive",
+  "name": "controller+worker",
+  "command": [
+    "supervised"
+  ],
+  "timeout": 1500,
+  "stdin": null,
+  "stdout": false,
+  "supervise": {
+    "worker": [
+      "/tmp/residuum-llm-normative-exploration-spec/target/debug/residuum-worker",
+      "--manifest",
+      "/tmp/residuum-llm-normative-exploration-spec/target/exploration/pilot-002/ledger/worker-manifest.json"
+    ],
+    "controller": [
+      "/tmp/residuum-llm-normative-exploration-spec/.venv-pilot/bin/python",
+      "-I",
+      "-c",
+      "import sys; sys.path.insert(0, '/tmp/residuum-llm-normative-exploration-spec'); from tools.normative_explorer import run_episode; sys.exit(run_episode.main(sys.argv[1:]))",
+      "--manifest",
+      "/tmp/residuum-llm-normative-exploration-spec/docs/legal-geometry/exploration/pilot-002/episode.json",
+      "--ledger",
+      "/tmp/residuum-llm-normative-exploration-spec/target/exploration/pilot-002/ledger",
+      "--to-worker",
+      "{to_worker}",
+      "--from-worker",
+      "{from_worker}"
+    ]
+  }
+}

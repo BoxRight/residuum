@@ -1,7 +1,10 @@
 # Pilot 002: rerun of the integration after pilot 001, for authorisation
 
-Status: **prepared, not executed.** Requires its own authorisation and
-budget; the authorisation of pilot 001 does not cover any further call.
+Status: **closed as an integration failure.** Executed once on 2026-10-15
+under its own authorisation; the first request was rejected by the API
+before inference (see *Result of the single run* at the end). It shows
+nothing about exploration, learning or candidate quality. No second run
+under this identifier.
 
 ## Purpose
 
@@ -91,3 +94,41 @@ ceiling and matches the reported usage, no `reservation_exceeded`, and the
 worker exits 0. A first accepted request alone already answers the
 integration question; the rest of the episode is the original pilot's
 technical objective.
+
+## Result of the single run (2026-10-15, 19:39:16 to 19:39:18 UTC)
+
+Run from commit `99f1f86`. Records archived in `run/`: the ledger
+(`run/ledger/`), the runner report (`run/runner-report/`) and its standard
+output. No credentials appear in them.
+
+- Preflight, vocabulary freeze and the idempotence probe passed before any
+  call.
+- **The first request was rejected with HTTP 400 `invalid_request_error`,
+  before inference:** "The compiled grammar is too large, which would cause
+  performance issues. Simplify your tool schemas or reduce the number of
+  strict tools." Request id `req_011Cg4b8pfgs13WpVcUCvTn5`. The documented
+  union limit was no longer the cause; this is the provider's internal
+  complexity limit, which the README above names as not checkable offline.
+- The corrections of `fabd851` behaved as designed: the error was recorded
+  with its structured fields, marked non-recoverable, and the episode ended
+  as `technical_abort` after one request (controller exit 4); the worker
+  exited 0 and the supervisor named the end `controller_technical_abort`,
+  not `worker_lost`.
+- Accounting: one request, usage unknown, charged at its reservation
+  (US$0.460757). This is the conservative internal charge, not a billed
+  amount; reconciliation with the console pending, as for pilot 001.
+- Runner: 1.84 s, 80 MiB cgroup peak, no memory events.
+
+### What the run shows
+
+The mixed catalogue fits the public limits by the conservative count but
+still compiles to a grammar the provider refuses. The four strict tools
+are the cheapest by that count; each carries the shared term, time and
+type definitions, which the grammar may expand in a way the public limits
+do not describe. The integration question remains open. No correction was
+made; any next step needs its own review and authorisation.
+
+## Reconciliation
+
+Pending: the billed amount for `req_011Cg4b8pfgs13WpVcUCvTn5`, from the
+console, next to the internal charge, which stays as recorded.

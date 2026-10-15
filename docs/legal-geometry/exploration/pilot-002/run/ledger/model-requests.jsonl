@@ -1,0 +1,3 @@
+{"input_upper":120303,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.4607575,"seq":4,"spent_usd":0.0,"turn":1}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":5,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":1}
+{"artifact":"bd0ba0bf975d3088afc65d455958181de6ee51136b1996933701e002b66701f6","kind":"model_request_body","seq":6,"turn":1}

@@ -245,6 +245,23 @@ class BudgetAndInstrumentationTests(unittest.TestCase):
         self.assertAlmostEqual(spent, sum(r["reservation_usd"] for r in reservations), places=6)
         self.assertEqual(summary["outcome"], "budget_exhausted")
 
+    def test_an_overrun_is_recorded_and_no_further_call_is_sent(self):
+        path, tmp = episode_manifest(max_cost_usd=2.0, pricing=self.PRICES, max_output_tokens=4000)
+        huge = {"input_tokens": 0, "cache_creation_input_tokens": 10_000_000, "cache_read_input_tokens": 0,
+                "output_tokens": 10}
+        reply = message([thinking("sig-1"), tool_use("inspect_theory", {}, "t1")])
+        reply["usage"] = huge
+        replies = [reply] * 3
+        code, err, built, _ = run_with_fakes(path, tmp, replies)
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        self.assertEqual(len(built["client"].messages.bodies), 1)
+        self.assertEqual(summary["outcome"], "budget_exhausted")
+        self.assertIn("input 10000000 > reserved", summary["budgets"]["overrun"])
+        progress = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash).read_file("progress")
+        self.assertEqual([r["kind"] for r in progress if r["kind"] == "reservation_exceeded"],
+                         ["reservation_exceeded"])
+        self.assertIn("reservation exceeded", progress[-1]["message"])
+
     def test_worker_budget_must_leave_room_for_the_technical_actions(self):
         path, tmp = episode_manifest()
         doc = json.loads(path.read_text())

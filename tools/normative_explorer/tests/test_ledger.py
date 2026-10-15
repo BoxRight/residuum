@@ -187,6 +187,44 @@ class StateAndBudgetTests(unittest.TestCase):
         with self.assertRaisesRegex(episode.BudgetExhausted, "bound is unavailable"):
             no_prices.reserve_call(10, 10)
 
+    def test_partially_reported_usage_is_charged_at_the_reservation_not_as_zero(self):
+        from tools.normative_explorer.provider_anthropic import AnthropicMessagesProvider as A
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        # Absent and null counts are unknown; a declared zero is kept.
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 100}}), {"output_tokens": 100})
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 100, "input_tokens": 0,
+                                                    "cache_creation_input_tokens": None,
+                                                    "cache_read_input_tokens": 0}}),
+                         {"output_tokens": 100, "uncached_input_tokens": 0, "cache_read_input_tokens": 0})
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 1, "input_tokens": 0,
+                                                    "cache_creation_input_tokens": 0,
+                                                    "cache_read_input_tokens": 0}})["input_tokens"], 0)
+        self.assertIsNone(A.extract_usage({"usage": {"output_tokens": None}}))
+        for usage in [{"output_tokens": 100}, A.extract_usage({"usage": {"output_tokens": 100, "input_tokens": 5}})]:
+            b = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=10**6,
+                                max_cost_usd=1.0, pricing=prices)
+            b.reserve_call(100_000, 16_000)
+            b.charge_usage(usage)
+            self.assertAlmostEqual(b.cost_usd, 0.41)
+            self.assertEqual(b.input_tokens, 100_000)
+            self.assertEqual(b.usage_partial, 1)
+            self.assertIsNone(b.overrun)
+
+    def test_usage_above_the_reservation_is_flagged_and_stops_further_calls(self):
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        b = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=10**6,
+                            max_cost_usd=10.0, pricing=prices)
+        b.reserve_call(1000, 100)
+        b.charge_usage({"output_tokens": 50, "input_tokens": 1500, "uncached_input_tokens": 0,
+                        "cache_creation_input_tokens": 1500, "cache_read_input_tokens": 0})
+        self.assertIn("input 1500 > reserved 1000", b.overrun)
+        self.assertIn("cost", b.overrun)
+        self.assertEqual(b.snapshot()["overrun"], b.overrun)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "reservation exceeded"):
+            b.reserve_call(10, 10)
+
 
 def tempple_dir():
     return tempfile.TemporaryDirectory()

@@ -804,3 +804,19 @@ adapter charging tests; probe and condition-C controller tests; the pilot
 manifest. Simulated episode under the runner with the probe first: both
 processes exit 0, 0.62 s, 24 MiB peak, probe passed (report
 `20261015T190152665664Z-2738686`).
+
+## Pilot 001: partial usage and reservation overruns
+
+After review of the cost ceiling. The Anthropic adapter no longer turns
+absent or null usage counts into zeros: only declared non-negative
+integers are kept, and the input total is reported only when all three
+input parts are declared. Usage without a complete breakdown is charged
+at the full reservation (and its input at the input bound), counted as
+`usage_partial`. Usage above the reservation (input, output or cost) sets
+`overrun`, is recorded once as `reservation_exceeded`, and the next
+reservation stops the episode. The README now calls the ceiling
+conditional on the input bound, the manifest prices and truthful
+reporting. Regressions run individually, all passed: partial usage,
+overrun in the budget, overrun through the entry point (one call sent,
+record present, episode exhausted), plus the earlier budget, entry-point,
+adapter and pilot-manifest tests.

@@ -147,13 +147,13 @@ class Controller:
             # Transport or protocol failure of the model: recorded, the request
             # budget stays charged and the reported usage too, nothing
             # executes, no hidden retry.
-            self.budgets.charge_usage(error.usage)
+            self._charge(error.usage)
             self.ledger.append("model_error", {"turn": self.turns, "message": str(error), "usage": error.usage},
                                file="model-responses")
             self.state.to("READY")
             return
         self.state.to("MODEL_RECEIVED")
-        self.budgets.charge_usage(usage)
+        self._charge(usage)
         self.ledger.append("model_response", {"turn": self.turns, "action": action, "usage": usage},
                            file="model-responses")
         try:
@@ -457,6 +457,16 @@ class Controller:
         }, file="progress")
         self.state.to("TOOL_RUNNING"); self.state.to("RESULT_RECORDED"); self.state.to("VIEW_RECORDED")
         self.state.to("READY"); self.state.to("FINISHED")
+
+    def _charge(self, usage: dict | None) -> None:
+        """Charge reported usage; record once if it exceeded the call's
+        reservation. The next reservation then stops the episode."""
+        before = self.budgets.overrun
+        self.budgets.charge_usage(usage)
+        if before is None and self.budgets.overrun is not None:
+            self.ledger.append("reservation_exceeded", {"turn": self.turns, "message": self.budgets.overrun,
+                                                        "usage": usage, "budgets": self.budgets.snapshot()},
+                               file="progress")
 
     def _exhaust(self, message: str) -> None:
         self.outcome = "budget_exhausted"

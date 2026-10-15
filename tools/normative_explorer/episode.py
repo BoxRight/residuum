@@ -54,6 +54,13 @@ class Budgets:
     cost_usd: float = 0.0
     pending_reservation: float | None = None
     pending_input_bound: int | None = None
+    pending_output_bound: int | None = None
+    # Answers whose usage came without a complete input breakdown; charged
+    # at the reservation.
+    usage_partial: int = 0
+    # Set when reported usage exceeds what was reserved for the call: the
+    # bound did not hold, so no further call is reserved.
+    overrun: str | None = None
 
     def reserve_request(self) -> None:
         if self.model_requests >= self.max_model_requests:
@@ -71,6 +78,8 @@ class Budgets:
         """Reserve the next call's worst case against the ceilings, before
         anything is sent. A missing bound or missing prices stop the episode
         when a ceiling is set: its cost could not be established."""
+        if self.overrun is not None:
+            raise BudgetExhausted(f"reservation exceeded earlier: {self.overrun}")
         if self.max_input_tokens is not None:
             if input_upper is None:
                 raise BudgetExhausted("input ceiling set but the next call's input bound is unavailable")
@@ -85,6 +94,7 @@ class Budgets:
                                       f"${self.max_cost_usd - self.cost_usd:.4f} remain")
             self.pending_reservation = bound
         self.pending_input_bound = input_upper
+        self.pending_output_bound = output_upper
 
     def charge_action(self) -> None:
         if self.actions >= self.max_actions:
@@ -100,8 +110,9 @@ class Budgets:
     def charge_usage(self, usage: dict | None) -> None:
         """Charged on reception, before any judgement of the answer: a
         truncated or unusable answer still cost tokens."""
-        reservation, input_bound = self.pending_reservation, self.pending_input_bound
-        self.pending_reservation = self.pending_input_bound = None
+        reservation, input_bound, output_bound = (self.pending_reservation, self.pending_input_bound,
+                                                  self.pending_output_bound)
+        self.pending_reservation = self.pending_input_bound = self.pending_output_bound = None
         if usage is None or "output_tokens" not in usage:
             self.usage_unknown += 1
             # Unknown consumption is charged at the full reservation.
@@ -110,19 +121,38 @@ class Budgets:
             if input_bound is not None:
                 self.input_tokens += input_bound
             return
-        self.output_tokens += int(usage["output_tokens"])
-        self.input_tokens += int(usage.get("input_tokens", 0))
+        output = int(usage["output_tokens"])
+        self.output_tokens += output
+        overruns = []
+        if output_bound is not None and output > output_bound:
+            overruns.append(f"output {output} > reserved {output_bound}")
+        if "input_tokens" in usage:
+            self.input_tokens += int(usage["input_tokens"])
+            if input_bound is not None and usage["input_tokens"] > input_bound:
+                overruns.append(f"input {usage['input_tokens']} > reserved {input_bound}")
+        else:
+            # A missing input count is unknown, not zero: charge the bound.
+            self.usage_partial += 1
+            if input_bound is not None:
+                self.input_tokens += input_bound
         if self.max_cost_usd is not None:
             p = self.pricing
             known = {"uncached_input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"}
             if known <= set(usage):
-                self.cost_usd += (usage["uncached_input_tokens"] * p["input_per_mtok"]
-                                  + usage["cache_creation_input_tokens"] * p["input_per_mtok"] * p["cache_write_multiplier"]
-                                  + usage["cache_read_input_tokens"] * p["cache_read_per_mtok"]
-                                  + int(usage["output_tokens"]) * p["output_per_mtok"]) / 1e6
+                cost = (usage["uncached_input_tokens"] * p["input_per_mtok"]
+                        + usage["cache_creation_input_tokens"] * p["input_per_mtok"] * p["cache_write_multiplier"]
+                        + usage["cache_read_input_tokens"] * p["cache_read_per_mtok"]
+                        + output * p["output_per_mtok"]) / 1e6
+                if reservation is not None and cost > reservation + 1e-12:
+                    overruns.append(f"cost ${cost:.6f} > reserved ${reservation:.6f}")
+                self.cost_usd += cost
             else:
-                # Without a breakdown, the reservation is charged.
-                self.cost_usd += reservation if reservation is not None else 0.0
+                # Without a complete breakdown, the reservation is charged,
+                # or the actual output cost if that is larger.
+                floor = output * p["output_per_mtok"] / 1e6
+                self.cost_usd += max(reservation or 0.0, floor)
+        if overruns and self.overrun is None:
+            self.overrun = "; ".join(overruns)
 
     def snapshot(self) -> dict:
         return {
@@ -132,6 +162,8 @@ class Budgets:
             "input_tokens": [self.input_tokens, self.max_input_tokens],
             "cost_usd": [round(self.cost_usd, 6), self.max_cost_usd],
             "usage_unknown": self.usage_unknown,
+            "usage_partial": self.usage_partial,
+            "overrun": self.overrun,
         }
 
 

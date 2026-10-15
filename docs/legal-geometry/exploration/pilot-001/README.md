@@ -31,31 +31,50 @@ now made:
 | Model requests and explorer actions | 12 and 10 | Enough for inspect, a few queries, two proposals and their evaluation. |
 | Worker actions | 14 = 10 explorer + 4 technical | One to freeze the vocabulary, three for the idempotence probe. The entry point refuses a manifest without this room. |
 | Output tokens | 60 000 for the episode, at most 16 000 per request | Thinking counts as output. |
-| Cost ceiling | **US$2.50, enforced** (next section) | |
+| Cost ceiling | **US$2.50, conditional** (next section) | Requires explicit acceptance with its assumptions. |
 | Network deadline per request | 120 s, no retries | From the manifest; every failure is charged and recorded. |
 | Exchange deadline under the runner | `--interactive-deadline 1500` | The option exists only for real-provider manifests, up to 1 500 s; local exchanges keep their fixed 15 s. Memory, swap, CPU, growth and compile controls unchanged. Independent of the 120 s per request. |
 
-## Cost: estimate and guaranteed ceiling
+## Cost: estimate and conditional ceiling
 
-These are two different things.
+These are two different things, and neither is an absolute guarantee of
+what will be billed.
 
-**Guaranteed ceiling (US$2.50).** Before every call the controller asks the
-provider for an upper bound of that call and reserves it:
+**Conditional ceiling (US$2.50).** Before every call the controller asks
+the provider adapter for an upper bound of that call and reserves it:
 
 - input tokens at most the UTF-8 bytes of the exact request body plus a
-  4 000-token margin for what the API adds around tool definitions (a token
-  never covers less than one byte);
+  4 000-token margin for what the API adds around tool definitions;
 - output tokens at most the request's `max_tokens`;
 - the whole input bound priced as a cache write (the most expensive input
   rate), the output bound at the output rate.
 
 A call is sent only if what was already spent plus that bound stays within
-US$2.50. After the answer, the actual cost is charged from the reported
-usage breakdown (uncached input, cache writes, cache reads, output). If the
-usage is unknown, for example after a transport error, the full
-reservation is charged. If the bound cannot be computed, nothing is sent.
-The guarantee rests on three stated assumptions: the byte bound above, the
-margin, and the prices written in the manifest being the ones billed.
+US$2.50; if the bound cannot be computed, nothing is sent. After the
+answer:
+
+- with a complete breakdown (uncached input, cache writes, cache reads and
+  output all declared), the actual cost is charged;
+- with usage unknown or only partly declared, the full reservation is
+  charged; an absent or null count is unknown, never zero;
+- if the reported usage exceeds what was reserved (input, output or cost),
+  a `reservation_exceeded` record goes to the ledger and no further call
+  is reserved: the episode ends as budget exhausted.
+
+**The condition.** The ceiling holds only if three assumptions hold, and
+the code does not prove them:
+
+1. the input bound (body bytes plus 4 000 tokens) covers the provider's
+   internal tokenisation and additions; it is a proposed conservative
+   estimate, not a property of the tokenizer;
+2. the prices written in the manifest are the ones billed;
+3. the provider reports usage truthfully.
+
+If (1) fails on some call, that call may cost more than reserved; the
+overrun is detected from the reported usage and stops the episode, so the
+excess is limited to that one call. If (2) or (3) fail, the controller
+cannot detect it. The person authorising the budget accepts the ceiling
+under these conditions.
 
 **Estimate.** Measured offline on this manifest, the first call's bounds
 are 120 296 input and 16 000 output tokens, a reservation of about US$0.46.
@@ -63,7 +82,7 @@ The actual first call should cost much less, since most of its input is a
 cache write of about 30 000 to 40 000 tokens (a rough 3 to 4 characters per
 token on 116 000 characters). Later calls are mostly cache reads. Because
 reservations are conservative and grow with the history, the ceiling may
-stop the episode before its 12 requests; that is the cost of a guarantee.
+stop the episode before its 12 requests.
 
 Prices in the manifest, for Claude Sonnet 5.5: input $2, output $10, cache
 reads $0.10 per million tokens, 5-minute cache writes at 1.25 times input.
@@ -125,5 +144,5 @@ CARGO_BUILD_JOBS=1 CARGO_PROFILE_TEST_DEBUG=0 CARGO_PROFILE_DEV_DEBUG=0 \
 
 Acceptance is technical: the probe passes, the controller ends with a
 recorded outcome, no technical stop by the supervisor, the cost charged in
-the ledger stays within the ceiling and matches the reported usage, and the
-worker exits 0.
+the ledger stays within the ceiling and matches the reported usage, no
+`reservation_exceeded` record, and the worker exits 0.

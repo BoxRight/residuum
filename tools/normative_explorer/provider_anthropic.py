@@ -305,14 +305,28 @@ class AnthropicMessagesProvider:
     @staticmethod
     def extract_usage(data: dict) -> dict | None:
         usage = data.get("usage")
-        if not isinstance(usage, dict) or "output_tokens" not in usage:
+        if not isinstance(usage, dict):
             return None
-        uncached = int(usage.get("input_tokens") or 0)
-        created = int(usage.get("cache_creation_input_tokens") or 0)
-        read = int(usage.get("cache_read_input_tokens") or 0)
-        return {"output_tokens": int(usage["output_tokens"]), "input_tokens": uncached + created + read,
-                "uncached_input_tokens": uncached, "cache_creation_input_tokens": created,
-                "cache_read_input_tokens": read}
+
+        def count(key):
+            # A declared count is a non-negative integer; absent, null or
+            # malformed is unknown, never zero.
+            value = usage.get(key)
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                return value
+            return None
+        output = count("output_tokens")
+        if output is None:
+            return None
+        result = {"output_tokens": output}
+        parts = {"uncached_input_tokens": count("input_tokens"),
+                 "cache_creation_input_tokens": count("cache_creation_input_tokens"),
+                 "cache_read_input_tokens": count("cache_read_input_tokens")}
+        result.update({k: v for k, v in parts.items() if v is not None})
+        # The input total is reported only when every part is declared.
+        if None not in parts.values():
+            result["input_tokens"] = sum(parts.values())
+        return result
 
     @staticmethod
     def parse_response(data: dict) -> tuple[list, str, dict]:

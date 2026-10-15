@@ -768,3 +768,7 @@ the provider without a policy, and checks that the request carries no
 catalogue rule, workspace id or key. Still open: review, an exchange
 deadline option in the runner for real providers (15 s today, 1 500 s
 proposed), and the SDK in a virtual environment.
+
+Pilot 001 model changed to `claude-sonnet-5-5` at the author's request
+(medium effort, adaptive thinking); estimated worst-case cost about US$2.50.
+`test_pilot_manifest` rerun individually.

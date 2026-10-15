@@ -860,7 +860,7 @@
     "condition": "C",
     "model": {
       "provider": "anthropic",
-      "model_id": "claude-opus-5-5",
+      "model_id": "claude-sonnet-5-5",
       "parameters": {
         "output_config": {
           "effort": "medium"

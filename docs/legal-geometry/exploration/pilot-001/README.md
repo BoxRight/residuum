@@ -20,8 +20,8 @@ historical observation already in the repository.
 | Decision | Proposed value | Why |
 |---|---|---|
 | Provider | `anthropic` | The only live connection; OpenAI has an adapter but no client factory, and choosing a provider is not settled by that availability. |
-| Model | `claude-opus-5-5` | Current default Opus. The model is part of the episode identity; a change starts another episode. |
-| Effort and thinking | `effort: medium`, `thinking: adaptive` (reasoning text not returned) | Medium is this model's default, set explicitly; thinking cannot be disabled on it. |
+| Model | `claude-sonnet-5-5` | Half the price of Claude Opus 5.5, capable at multistep tool use, and with the same API constraints, so the adapter applies unchanged. The pilot tests the circuit, so the model should very likely be able to write typed Formal rules; Claude Haiku 5.5 is kept for a later question on whether a small model suffices. The model is part of the episode identity; a change starts another episode. |
+| Effort and thinking | `effort: medium`, `thinking: adaptive` (reasoning text not returned) | This model defaults to `high` with recalibrated levels; `medium` is the documented starting point for multistep tool use, set explicitly. |
 | Refusal fallback | off | A fallback would let another model answer inside the episode. A refusal is recorded as a model error with its category. |
 | Condition | C | Exercises every tool path the circuit offers. A or B would send less. |
 | Requests and actions | 12 model requests, 10 actions | Enough for inspect, a few queries, two proposals and their evaluation. |
@@ -40,15 +40,18 @@ condition C views averaged about 6 700 characters and peaked at about
 per token puts the opening at 30 000 to 40 000 tokens. An exact count
 needs the token-counting endpoint, which is a network call.
 
-At Claude Opus 5.5 rates (input $4, output $20 per million tokens; cache
+At Claude Sonnet 5.5 rates (input $2, output $10 per million tokens; cache
 reads $0.20; 5-minute cache writes at 1.25 times input, as the Anthropic
 prompt-caching documentation states):
 
 | Item | Bound | Worst case |
 |---|---|---|
-| Input | ≤ 600 000 + one request (≈ 100 000) | ≈ $3.50 if every token were a cache write; ≈ $2.80 uncached |
-| Output | ≤ 60 000 + one request (16 000) | ≈ $1.52 |
-| **Total** | | **≈ $5.00** |
+| Input | ≤ 600 000 + one request (≈ 100 000) | ≈ $1.75 if every token were a cache write; ≈ $1.40 uncached |
+| Output | ≤ 60 000 + one request (16 000) | ≈ $0.76 |
+| **Total** | | **≈ $2.50** |
+
+For comparison, the same ceilings cost about $5.00 on Claude Opus 5.5 and
+about $0.15 to $0.65 on Claude Haiku 5.5.
 
 The prefix is append-only with top-level prompt caching, so the expected
 cost is well below the ceiling. The ceiling is enforced from the usage the

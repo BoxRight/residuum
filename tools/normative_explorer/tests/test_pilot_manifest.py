@@ -15,7 +15,7 @@ class PilotManifestTests(unittest.TestCase):
     def test_pilot_manifest_is_valid_and_builds_the_documented_request(self):
         m = manifest.load(PILOT)
         model = m.controller["model"]
-        self.assertEqual((model["provider"], model["model_id"]), ("anthropic", "claude-opus-5-5"))
+        self.assertEqual((model["provider"], model["model_id"]), ("anthropic", "claude-sonnet-5-5"))
         self.assertEqual(model["client"], {"timeout_seconds": 120})
         self.assertEqual(m.controller["max_input_tokens"], 600000)
         self.assertEqual([o["status"] for o in m.controller["observations"]], ["documented"])

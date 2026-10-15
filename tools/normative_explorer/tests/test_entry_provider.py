@@ -218,6 +218,11 @@ class BuildProviderTests(unittest.TestCase):
         self.assertEqual(calls, [45])
         with self.assertRaises(ProviderError):
             run_episode.build_provider(m, None, {})
+        # The real factory without the SDK is a refused selection, not a crash.
+        import importlib.util
+        if importlib.util.find_spec("anthropic") is None:
+            with self.assertRaisesRegex(ProviderError, "SDK is not installed"):
+                run_episode.build_provider(m, None, run_episode.DEFAULT_CLIENT_FACTORIES)
 
 
 if __name__ == "__main__":

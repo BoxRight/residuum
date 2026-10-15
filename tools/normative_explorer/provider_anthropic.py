@@ -70,7 +70,10 @@ def make_client(timeout_seconds: float, workspace_id: str | None = None):
     and never written to the manifest or the ledger. The deadline comes from
     the frozen manifest; retries are always zero, so the SDK never repeats a
     request the controller did not record."""
-    import anthropic  # imported here so the controller runs without the SDK
+    try:
+        import anthropic  # imported here so the controller runs without the SDK
+    except ImportError as error:
+        raise ProviderError(f"the anthropic SDK is not installed: {error}") from error
 
     workspace = workspace_id or os.environ.get("ANTHROPIC_WORKSPACE_ID")
     headers = {"anthropic-workspace-id": workspace} if workspace else None

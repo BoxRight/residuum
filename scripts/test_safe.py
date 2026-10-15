@@ -271,6 +271,24 @@ def classify_supervised_end(exit_order, codes, grace_expired, stop_reason):
     return 'worker_nonzero_exit'
 
 
+def interactive_policy_args(document, policy):
+    """The controller's --policy arguments, from the manifest's provider:
+    required for the simulated provider, refused for a real one, whose
+    model the manifest already names. Raises RuntimeError before anything
+    is compiled or launched."""
+    try:
+        provider = document['controller']['model']['provider']
+    except (KeyError, TypeError):
+        raise RuntimeError('The episode manifest names no controller.model.provider')
+    if provider == 'simulated':
+        if policy is None:
+            raise RuntimeError('The simulated provider needs --interactive-policy')
+        return ['--policy', policy]
+    if policy is not None:
+        raise RuntimeError(f'--interactive-policy is only for the simulated provider, not {provider!r}')
+    return []
+
+
 def normalize_worker_manifest(document, base):
     """The worker resolves imports and workdir against the directory of the
     manifest it receives. Writing the worker section elsewhere would silently
@@ -360,10 +378,12 @@ def main():
                         help='Exact unittest id under tools/, run individually with python3 -I; repeatable')
     parser.add_argument('--interactive-manifest', type=Path,
                         help='Episode manifest (worker and controller sections) for one supervised '
-                             'controller/worker exchange; requires --interactive-ledger and --interactive-policy')
+                             'controller/worker exchange; requires --interactive-ledger, and --interactive-policy '
+                             'exactly when the manifest provider is simulated')
     parser.add_argument('--interactive-ledger', type=Path,
                         help='Empty or absent directory under target/ for the episode ledger')
-    parser.add_argument('--interactive-policy', help='Scripted policy name of the simulated provider')
+    parser.add_argument('--interactive-policy',
+                        help='Scripted policy of the simulated provider; refused for a real provider')
     args = parser.parse_args()
     if (args.steps is not None or args.trace) and not args.cli:
         parser.error('--steps and --trace require --cli')
@@ -397,15 +417,17 @@ def main():
     for name in args.python_test:
         if not name.startswith('tools.') or not all(part.isidentifier() for part in name.split('.')):
             parser.error(f'{name} is not a dotted unittest id under tools.')
-    interactive = (args.interactive_manifest, args.interactive_ledger, args.interactive_policy)
+    interactive = (args.interactive_manifest, args.interactive_ledger)
     if any(interactive) and not all(interactive):
-        parser.error('--interactive-manifest, --interactive-ledger and --interactive-policy go together')
+        parser.error('--interactive-manifest and --interactive-ledger go together')
+    if args.interactive_policy is not None and not all(interactive):
+        parser.error('--interactive-policy belongs to the interactive mode')
     if all(interactive) and (args.fixture or args.test or args.compile_only or args.binary or args.test_target
                              or args.fmt_check or args.format or args.cli or args.steps is not None or args.trace
                              or args.incremental or args.forward or args.library or args.worker_manifest
                              or args.python_test):
-        parser.error('the interactive mode takes only its three options')
-    if all(interactive) and not args.interactive_policy.isidentifier():
+        parser.error('the interactive mode takes only its own options')
+    if args.interactive_policy is not None and not args.interactive_policy.isidentifier():
         parser.error('--interactive-policy must be an identifier')
     if args.test_target is None:
         args.test_target = 'lib'
@@ -467,12 +489,14 @@ def main():
             raise RuntimeError('The episode ledger must live under target/')
         if ledger_dir.exists() and any(ledger_dir.iterdir()):
             raise RuntimeError('The episode ledger directory must be empty or absent; ledgers are never reused')
-        ledger_dir.mkdir(parents=True, exist_ok=True)
         # The worker receives only the worker section, written by the supervisor;
         # the controller validates the whole episode manifest itself.
         document = json.loads(manifest.read_text())
         if not isinstance(document, dict) or 'worker' not in document:
             raise RuntimeError('The episode manifest must contain a worker section')
+        # Decided before anything is written or compiled.
+        policy_args = interactive_policy_args(document, args.interactive_policy)
+        ledger_dir.mkdir(parents=True, exist_ok=True)
         worker_section, changes = normalize_worker_manifest(document, manifest.parent)
         worker_manifest = ledger_dir / 'worker-manifest.json'
         worker_manifest.write_text(json.dumps(worker_section, indent=2, ensure_ascii=False) + '\n')
@@ -486,8 +510,8 @@ def main():
         spec = dict(
             worker=[str(binary), '--manifest', str(worker_manifest)],
             controller=[sys.executable, '-I', '-c', bootstrap, '--manifest', str(manifest), '--ledger',
-                        str(ledger_dir), '--policy', args.interactive_policy, '--to-worker', '{to_worker}',
-                        '--from-worker', '{from_worker}'],
+                        str(ledger_dir)] + policy_args + ['--to-worker', '{to_worker}',
+                                                          '--from-worker', '{from_worker}'],
         )
         # One scope for both processes; 15 s for the whole exchange, like a fixture run.
         run_bounded(report, rows, 'interactive', 'controller+worker', ['supervised'], 15, supervise_spec=spec)

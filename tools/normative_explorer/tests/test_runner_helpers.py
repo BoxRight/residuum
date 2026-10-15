@@ -32,6 +32,22 @@ class NormalizationTests(unittest.TestCase):
         self.assertTrue(all(Path(c["resolved"]).is_absolute() for c in changes))
 
 
+class InteractivePolicyArgsTests(unittest.TestCase):
+    def test_policy_follows_the_manifest_provider(self):
+        args = runner().interactive_policy_args
+
+        def doc(provider):
+            return {"worker": {}, "controller": {"model": {"provider": provider}}}
+        self.assertEqual(args(doc("simulated"), "branching"), ["--policy", "branching"])
+        self.assertEqual(args(doc("anthropic"), None), [])
+        with self.assertRaisesRegex(RuntimeError, "needs --interactive-policy"):
+            args(doc("simulated"), None)
+        with self.assertRaisesRegex(RuntimeError, "only for the simulated provider"):
+            args(doc("anthropic"), "branching")
+        with self.assertRaisesRegex(RuntimeError, "names no controller.model.provider"):
+            args({"worker": {}}, None)
+
+
 class EndClassificationTests(unittest.TestCase):
     def test_normal_end_whatever_the_order_and_technical_ends(self):
         classify = runner().classify_supervised_end

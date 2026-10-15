@@ -130,3 +130,16 @@ completed worker action with the same identifier and content
 answer was identical, whether the worker's reported budget and steps were
 unchanged, and that the controller charged nothing. Running the episode
 twice would show reproducibility, which is a different property.
+
+## Provider selection in the runner
+
+`--interactive-policy` is no longer always required or always forwarded.
+`interactive_policy_args` reads `controller.model.provider` from the episode
+manifest before anything is written or compiled: the simulated provider
+needs the policy; a real provider refuses it, since the manifest already
+names its model. Verified offline: the helper's unit test; a real-provider
+manifest with a policy stopped before compiling and without creating the
+ledger; and a simulated episode under the runner after the change
+(`20261015T184800672689Z-2727894`: both exit 0, worker first, 0.47 s,
+23 MiB, 15 worker calls including the vocabulary fetch). The 15 s exchange
+deadline is unchanged; no real provider has been run under the runner.

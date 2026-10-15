@@ -555,6 +555,8 @@ mod exploration_tests;
 #[cfg(test)]
 mod proposal_tests;
 #[cfg(test)]
+mod serde_probe_tests;
+#[cfg(test)]
 mod step_tests;
 #[cfg(test)]
 mod tests;

@@ -1,0 +1,11 @@
+{"action_id":"a1","artifact":"3ccda46bb4d2514442bbc7b8b3cd238a96ed11f88b5df5831496e0d3284df546","kind":"action.result","seq":5,"status":"complete"}
+{"action_id":"a2","artifact":"45e3c9e9c4f709c9cf269ccaa4904db97aaf89e072c01a5db6bf460aaa71f4c4","kind":"action.result","seq":10,"status":"complete"}
+{"action_id":"a3","artifact":"d6e636bf1b08e8d5c2ece35d47dfdb201034bc8c5b245d0dc85abf07ac710b2d","kind":"action.result","seq":15,"status":"step_limit"}
+{"action_id":"a4","artifact":"9975cc424d3aaa7780e48a3e490dd34e1bddb23906c19a913cb91df066a49c21","kind":"action.result","seq":20,"status":"complete"}
+{"action_id":"a5","artifact":"86213d3642699836d861a8c9f8336ad73b99d7a53d723bc689564dfd50d79a9d","kind":"action.result","seq":25,"status":"complete"}
+{"action_id":"a6","artifact":"30b69a70b4f8afa3ddd44fa55958b10205d8738ba3836cb7a01b5acb3086b075","kind":"action.result","seq":31,"status":"complete"}
+{"action_id":"a7","artifact":"736f7d605a18c43ba62fea0a2d8f1f9a7a6ab9067ada8ffc8f088a978b3e3b54","kind":"action.result","seq":36,"status":"complete"}
+{"action_id":"a8","artifact":"19033517054369b3780947b47c4d495fe56834149e60173089a3d585d340994d","kind":"action.result","seq":42,"status":"complete"}
+{"action_id":"a9","artifact":"067dfed693fceb6d95a3990359df66da9fb9c873c41a1d15cdbbe0654fea8af0","kind":"action.result","seq":48,"status":"complete"}
+{"action_id":"a10","artifact":"4d2301ccba0eb33a30e70609dbe0392fa2226bf3ab14dc2db208a8b0b9defb0f","kind":"action.result","seq":53,"status":"complete"}
+{"checks":{"no_extra_action_charged":true,"no_extra_steps_charged":true,"replay_identical":true,"session_not_advanced_twice":true},"dossier":"historicalRiggs","kind":"idempotence.probe","passed":true,"reason":null,"rounds":{"first_last":2,"fresh_first":3},"seq":58,"steps":[{"action_id":"p1","artifact":"12d765afe254d04a960af034feaf05984eba6dadb5af626c4c29c770521b7c0a","tool":"begin_forward"},{"action_id":"p2","artifact":"03340d231d7a2f7f3428b48c5051f21888671e085b2e3b81a3062496d4ee927e","tool":"advance_session"},{"action_id":"p2","artifact":"03340d231d7a2f7f3428b48c5051f21888671e085b2e3b81a3062496d4ee927e","tool":"replay"},{"action_id":"p3","artifact":"ec0294cd28b068995b2a337d561a0016442b22f340577af0f2d2080561fb187c","tool":"advance_session"}]}

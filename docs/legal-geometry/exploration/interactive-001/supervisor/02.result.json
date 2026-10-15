@@ -1,0 +1,22 @@
+{
+  "name": "controller+worker",
+  "stage": "interactive",
+  "exit_status": 0,
+  "worker_exit_status": 0,
+  "exit_order": [
+    "worker",
+    "controller"
+  ],
+  "elapsed_seconds": 0.4163556430139579,
+  "peak_rss_bytes": 20889600,
+  "cgroup_peak_bytes": 22794240,
+  "memory_events": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0"
+  },
+  "stop_reason": null
+}

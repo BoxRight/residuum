@@ -544,3 +544,65 @@ the resolved history rather than with the model's account.
   scripted provider's fallback exhausted the budget in protocol errors.
   Finishing with no candidate is now accepted (outcome
   `no_verified_candidate`); `compare_partition` still requires candidates.
+
+## Supervised interactive run (single, authorised): provider → controller → live worker
+
+Commit base `e189434`. Episode manifest
+`interactive-001/episode.json` (worker section of the recorded process
+fixture with a fresh work directory and wider budgets; controller section:
+condition C, simulated provider with the `branching` policy, one documented
+observation on `historicalRiggs`). Runner mode `--interactive-manifest …
+--interactive-ledger target/exploration/interactive/ledger
+--interactive-policy branching`, with `CARGO_PROFILE_DEV_DEBUG=0` and the
+usual limits. Report `20261015T170202356659Z-2641678`; copies of the
+supervisor's `result.json`, log and both stderr files, the episode manifest
+and the whole ledger (events, specialised files, artefacts) are archived
+under `interactive-001/`.
+
+| Stage | Exit | Elapsed | RSS | cgroup peak | Stop |
+|---|---|---|---|---|---|
+| compile residuum-worker (warm) | 0 | 1.2 s | 236 MiB | 218 MiB | none |
+| controller+worker, one scope | controller 0, worker 0, order worker then controller | 0.42 s | 20 MiB | 22 MiB | none |
+
+The worker exited first (EOF after the controller closed its channels) and
+the end was classified normal by exit codes, which is exactly the case the
+review required a regression for.
+
+**What the exchange did**, from the ledger (58 events, terminal
+`episode.finished`, not interrupted): a1 inspect; a2 forward on
+`historicalRiggs`; a3 advance 2 → `step_limit`; the policy saw the pending
+result and advanced again (a4, 4 steps) → complete; a5 propose → c1
+admitted; a6 begin evaluation; a7 advance → `evaluated_compatible` with its
+closure; the policy saw the compatible report and, in condition C, asked a8
+`minimal_supports`, attaching a claim on a7 (`compatible = true`, checked
+`match`); a9 forward on `killingWithoutAcquisitionPurpose`, a dossier no
+recording covers; a10 advance → complete in five rounds, 11 events, 5
+justifications; finish → `verified_compatible_candidate`, scoped as
+compatibility with the declared `D`. Progress records `filter.applied`
+once; `candidate.generated` once; views in C carry derivations; the full
+lines are artefacts.
+
+**Independent comparison with Residuum**:
+`interactive_check_tests::interactive_ledger_forward_on_uncovered_dossier_matches_close_program`
+(`20261015T170231125364Z-2642429`, 1 passed) decodes the a10 response
+through the wire DTOs and compares events and justification multiset with
+`close_program` on that dossier: equal.
+
+**Technical acceptance on mutable state** (`idempotence.probe`, passed):
+p1 opened a forward session on `historicalRiggs`; p2 advanced two rounds
+(`step_limit`, worker budget 48 actions / 283 steps remaining); the exact p2
+envelope was resent and answered byte-identically; p3 advanced one round
+and started at round 3, with the worker reporting 47 actions and 282 steps
+remaining, that is, exactly the fresh action and its one step. The session
+did not advance twice and nothing extra was charged.
+
+Budgets at the end: 11 model requests of 40, 10 actions of 30, 14 worker
+calls (10 actions, 3 probe actions, 1 replay). No fault, no protocol error,
+no technical stop in this run; the failure paths remain covered by the
+unit tests. Path normalisation recorded no change (the manifest used
+absolute paths).
+
+This closes the computational circuit: simulated provider → controller →
+live worker, with a later action depending on a freshly computed result and
+a request no recording covered. It is not demonstrated normative learning
+and not an A/B/C comparison of efficacy.

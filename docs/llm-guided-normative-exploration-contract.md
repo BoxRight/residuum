@@ -1050,10 +1050,26 @@ no permite elegir la siguiente petición con el proceso abierto. Su conexión
 interactiva requerirá otro modo acotado, revisado antes de usarse; el
 controlador no lanza el binario.
 
+### 6.10 Circuito computacional cerrado bajo el runner
+
+Modo interactivo del runner (`--interactive-manifest`, diseño en
+[`interactive-supervisor-design.md`](legal-geometry/exploration/interactive-supervisor-design.md)):
+controlador Python con proveedor simulado y trabajador Rust en un mismo
+ámbito de 1 GiB sin swap, canales preparados por el supervisor, 15 s para
+todo el intercambio, clasificación del cierre por códigos de salida. Una
+única ejecución autorizada (registro de verificación, episodio
+`interactive-001` archivado con ledger e informe del supervisor): la
+política ramificada eligió cada acción a partir de la última vista,
+repitió un avance pendiente, evaluó una candidata, pidió soportes al verla
+compatible y cerró un expediente que ninguna grabación cubría, cuyo
+resultado coincide con `close_program` por un test independiente. La sonda
+de idempotencia sobre estado mutable pasó: repetir un avance pendiente
+devuelve la misma respuesta, la sesión no avanza dos veces y el trabajador
+no cobra nada extra. Ambos procesos salieron con 0 en 0,42 s y 22 MiB.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-el modo interactivo acotado, el proveedor real, las valoraciones nuevas y
-los episodios comparativos.
+el proveedor real, las valoraciones nuevas y los episodios comparativos.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1166,7 +1182,11 @@ fijados.
   `94608f9`; modo acotado del runner en `f600bb3` y `744adcc`; comprobación
   del proceso acotado en `0f25aae`. Doce tests de frontera pasados
   individualmente; el binario ejecutado sólo bajo el runner.
-- Controlador Python (6.9): `eb4f8db`, `65be2c1` y el commit siguiente;
-  modo `--python-test` del runner en `f273675`. Quince tests Python pasados
-  individualmente. Sin llamadas al modelo. No se ejecutó la suite ni ningún
-  test antiguo; no se hizo merge ni push.
+- Controlador Python (6.9): `eb4f8db`, `65be2c1`, `cfe6bb4`; modo
+  `--python-test` del runner en `f273675` y `fd17afa`; particiones en
+  `f1ae131`.
+- Circuito interactivo (6.10): canales y política en `7fa15a0`, supervisor
+  en `e57b67f`, correcciones de revisión en `4e8d0b2`, `d7b18b0` y
+  `e189434`; ejecución única archivada en el commit siguiente. Sin llamadas
+  al modelo. No se ejecutó la suite ni ningún test antiguo; no se hizo merge
+  ni push.

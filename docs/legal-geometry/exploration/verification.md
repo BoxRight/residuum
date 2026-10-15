@@ -921,3 +921,17 @@ observation; then `finish_episode`. Outcome
 probe passed, 17.4 s. Internal charge US$0.187356 from fully reported
 usage, recomputed identically; console reconciliation pending. One
 episode and one observation: no claim about exploration or learning.
+
+## Pilot 003, stage I: independent evaluation of the candidate
+
+Offline, worker only. `pilot-003/evaluation/`. The eight worker exchanges
+of pilot 003 reproduced identically (normalisations: `wire_version`
+stripped by the transport, workdir path). Candidate `c1` evaluated on the
+six dossiers against the baseline closure: all twelve closures complete,
+two byte-identical runs, 61 envelopes without fault. The channel holds
+only in `historicalRiggs`, by the candidate's rule; the reference
+vocabulary's closure and justifications (multisets) are unchanged in all
+six. `Cov_D(r0) = {historicalRiggs}`. Runner reports
+`20261015T202300464409Z-2798859`, `20261015T202329841521Z-2799272`,
+`20261015T202330624428Z-2799282`. Test `test_candidate_evaluation`
+(individually, passed). Pilot 003's records unchanged.

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "compile residuum-worker",
+    "stage": "compile",
+    "exit_status": 0,
+    "elapsed_seconds": 0.061487516009947285,
+    "peak_rss_bytes": 28786688,
+    "cgroup_peak_bytes": 25849856,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "residuum-worker",
+    "stage": "worker",
+    "exit_status": 0,
+    "elapsed_seconds": 0.3673177709861193,
+    "peak_rss_bytes": 17281024,
+    "cgroup_peak_bytes": 13615104,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  }
+]

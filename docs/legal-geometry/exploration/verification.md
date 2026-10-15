@@ -633,3 +633,47 @@ and not an A/B/C comparison of efficacy.
 The first real call still requires a decision outside the code: exact
 model, what is sent, and the budget; credentials stay in the client's own
 configuration.
+
+## Adapter corrections before any real call (offline, fake client)
+
+After review of `e803cf2`; no network, no inference.
+
+- **Parameters cannot override the contract.** Manifest parameters
+  colliding with controlled fields (`model`, `instructions`, `input`,
+  `tools`, `tool_choice`, `parallel_tool_calls`, `max_output_tokens`,
+  `stream`, `store`, `previous_response_id`) are refused, and only
+  `temperature`, `top_p`, `seed` and `reasoning` are admitted.
+- **Schemas match the tools end to end.** Distinct `$defs` for bindings
+  (rule or program scope, typed parameter, term or time value) and
+  abducibles (verb, polarity); record terms and nested types added; `claims`
+  nullable in both the schema and the local validator; nullable optional
+  fields mean absent. `SchemaRoundTripTests` validates a sample call for
+  every tool against its strict schema with a subset validator, parses it,
+  validates it locally, dispatches it, and writes the nine worker envelopes;
+  `schema_roundtrip_tests::schema_conforming_envelopes_decode_and_reencode_unchanged`
+  decodes them with the Rust wire DTOs and re-encodes them to the same JSON.
+- **Conversation continuity.** Every output item of each answer is replayed
+  verbatim and in order, including opaque reasoning or continuation items,
+  before the function call output; nothing is interpreted.
+- **Persistence order.** The exact request body is written to the ledger as
+  an artefact before `responses.create`; the raw answer before parsing; a
+  transport failure is recorded too.
+- **Usage on reception.** Output and input tokens are charged when the
+  answer arrives, before it is judged; a rejected answer carries its usage
+  in the error; missing usage counts as unknown.
+- **Vocabulary package.** `inspect_theory` (Rust, `b25b290`) returns the
+  baseline's verb signatures, entities, constants and full rules; the
+  controller fetches it once after preflight, stores it as an artefact
+  (`vocabulary.frozen`) and gives it to the provider with the Formal syntax
+  the proposal path accepts. The initial context is identical across
+  conditions except for condition, tools and episode id. A channel failure
+  while fetching it is a technical abort.
+- **Opt-in fresh check.** The fresh-ledger Rust test does nothing unless
+  `RESIDUUM_CHECK_FRESH_LEDGER=1` is set, since the runner cannot select
+  ignored tests.
+
+Tests, each individually under the runner: seven adapter tests, the Rust
+round-trip decode, the worker scripted episode with the vocabulary package,
+the boundary tests that read the regenerated recording, and twelve Python
+regressions. The archived interactive run predates the vocabulary fetch and
+was not repeated.

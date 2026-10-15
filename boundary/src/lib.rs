@@ -13,6 +13,8 @@ mod interactive_check_tests;
 #[cfg(test)]
 mod process_script_tests;
 #[cfg(test)]
+mod schema_roundtrip_tests;
+#[cfg(test)]
 mod serde_probe_tests;
 #[cfg(test)]
 mod startup_tests;

@@ -1076,9 +1076,16 @@ repetición de cada llamada del modelo por `call_id` y la vista entregada
 como salida, exactamente una llamada de función aceptada; cualquier otro
 resultado es `ProviderError`, que el controlador registra como
 `model_error` sin reintento y con el presupuesto de la petición consumido.
-Probado con un cliente falso; ninguna llamada de red. La primera llamada
-real exige una decisión fuera del código: modelo exacto, información
-enviada y presupuesto.
+Probado con un cliente falso; ninguna llamada de red. Tras revisión:
+parámetros del manifiesto limitados a una lista autorizada y nunca sobre
+campos controlados; esquemas por herramienta comprobados de extremo a
+extremo hasta la decodificación Rust; repetición literal de todos los
+elementos de cada respuesta, incluidos los opacos; cuerpo exacto persistido
+antes de la red y respuesta cruda antes de interpretarla; consumo de tokens
+contabilizado al recibir; paquete público de vocabulario (firmas,
+entidades, constantes, reglas de la teoría base y sintaxis Formal) idéntico
+entre condiciones. La primera llamada real exige una decisión fuera del
+código: modelo exacto, información enviada y presupuesto.
 
 **Conclusión científica actual.** El mecanismo de exploración funciona y
 es verificable de extremo a extremo bajo el runner: proveedor simulado,

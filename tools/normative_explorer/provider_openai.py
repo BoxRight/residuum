@@ -20,9 +20,35 @@ from .schemas import (CLAIM_ATTRIBUTES, CLAIM_KINDS, CLAIM_TEXT_MAX, CLAIMS_MAX,
 
 ADAPTER_VERSION = "provider-openai/0.1"
 
+# Fields the protocol fixes; a manifest parameter may never touch them.
+CONTROLLED = {"model", "instructions", "input", "tools", "tool_choice", "parallel_tool_calls",
+              "max_output_tokens", "stream", "store", "previous_response_id"}
+# Additional parameters a manifest may set, and nothing else.
+ALLOWED_PARAMETERS = {"temperature", "top_p", "seed", "reasoning"}
+
+FORMAL_SYNTAX = """Proposals are Formal rule declarations only (no module, import, verb, const or
+experiment). One rule:
+
+  rule <name>(<param>, ...) =
+      <atom> [& <atom>]...      (or I for an empty body)
+      <= <head atom>
+
+An atom is <verb>(<arg>, ...) @ <time>; a negative seeded atom is ~<verb>(...) @ <time>.
+Arguments are parameters (variables) or declared constants; `none` fills an optional
+position. Times are a parameter, a constant, or `after <param>`. Every parameter used in
+the head must occur in the body. The head verb must be one of the profile's heads; body
+verbs must be in the profile's vocabulary; at most the profile's atoms and binders.
+Rules are evaluated by the worker; proposing one does not make it part of the theory."""
+
 
 class ProviderError(RuntimeError):
-    """The model's output or the transport is not usable; no action executes."""
+    """The model's output or the transport is not usable; no action executes.
+    ``usage`` carries what the provider reported for the attempt, so the
+    cost is charged even when the answer is rejected."""
+
+    def __init__(self, message: str, usage: dict | None = None):
+        super().__init__(message)
+        self.usage = usage
 
 
 # -- strict JSON schemas derived from the tool catalogue ---------------------
@@ -36,6 +62,19 @@ TERM = {"anyOf": [
     {"type": "object", "properties": {"const": _string(IDENT_MAX)}, "required": ["const"], "additionalProperties": False},
     {"type": "string", "enum": ["none"]},
     {"type": "object", "properties": {"after": {"$ref": "#/$defs/term"}}, "required": ["after"], "additionalProperties": False},
+    {"type": "object", "properties": {"record": {"type": "object", "properties": {
+        "entity": _string(IDENT_MAX),
+        "fields": {"type": "array", "items": {"type": "object", "properties": {
+            "field": _string(IDENT_MAX), "value": {"$ref": "#/$defs/term"}},
+            "required": ["field", "value"], "additionalProperties": False}}},
+        "required": ["entity", "fields"], "additionalProperties": False}},
+     "required": ["record"], "additionalProperties": False},
+]}
+TYPE = {"anyOf": [
+    {"type": "object", "properties": {"entity": _string(IDENT_MAX)}, "required": ["entity"], "additionalProperties": False},
+    {"type": "object", "properties": {"set": {"$ref": "#/$defs/type"}}, "required": ["set"], "additionalProperties": False},
+    {"type": "object", "properties": {"optional": {"$ref": "#/$defs/type"}}, "required": ["optional"], "additionalProperties": False},
+    {"type": "string", "enum": ["proposition_time", "derivation_time"]},
 ]}
 TIME = {"anyOf": [
     {"type": "object", "properties": {"at": _string(IDENT_MAX)}, "required": ["at"], "additionalProperties": False},
@@ -55,7 +94,22 @@ EVENT = {
     "required": ["polarity", "verb", "args", "kind", "time", "transition"],
     "additionalProperties": False,
 }
-DEFS = {"term": TERM, "time": TIME, "event": EVENT}
+BINDING = {"type": "object", "properties": {
+    "scope": {"anyOf": [
+        {"type": "object", "properties": {"rule": _string(IDENT_MAX)}, "required": ["rule"], "additionalProperties": False},
+        {"type": "object", "properties": {"program": _string(IDENT_MAX)}, "required": ["program"], "additionalProperties": False},
+    ]},
+    "parameter": _string(IDENT_MAX),
+    "ty": {"$ref": "#/$defs/type"},
+    "value": {"anyOf": [
+        {"type": "object", "properties": {"term": {"$ref": "#/$defs/term"}}, "required": ["term"], "additionalProperties": False},
+        {"type": "object", "properties": {"time": {"$ref": "#/$defs/time"}}, "required": ["time"], "additionalProperties": False},
+    ]},
+}, "required": ["scope", "parameter", "ty", "value"], "additionalProperties": False}
+ABDUCIBLE = {"type": "object", "properties": {
+    "verb": _string(IDENT_MAX), "polarity": {"type": "string", "enum": ["positive", "evidential_not"]}},
+    "required": ["verb", "polarity"], "additionalProperties": False}
+DEFS = {"term": TERM, "time": TIME, "type": TYPE, "event": EVENT, "binding": BINDING, "abducible": ABDUCIBLE}
 
 
 def _schema(tag: str) -> dict:
@@ -80,24 +134,10 @@ def _schema(tag: str) -> dict:
             {"type": "object", "properties": {"program": _string(IDENT_MAX)}, "required": ["program"],
              "additionalProperties": False},
         ]}
-    elif base == "list":
-        schema = {"type": "array", "items": {"type": "object", "properties": {
-            "scope": {"anyOf": [
-                {"type": "object", "properties": {"rule": _string(IDENT_MAX)}, "required": ["rule"], "additionalProperties": False},
-                {"type": "object", "properties": {"program": _string(IDENT_MAX)}, "required": ["program"], "additionalProperties": False},
-            ]},
-            "parameter": _string(IDENT_MAX),
-            "ty": {"anyOf": [
-                {"type": "object", "properties": {"entity": _string(IDENT_MAX)}, "required": ["entity"], "additionalProperties": False},
-                {"type": "string", "enum": ["proposition_time", "derivation_time"]},
-            ]},
-            "value": {"anyOf": [
-                {"type": "object", "properties": {"term": {"$ref": "#/$defs/term"}}, "required": ["term"], "additionalProperties": False},
-                {"type": "object", "properties": {"time": {"$ref": "#/$defs/time"}}, "required": ["time"], "additionalProperties": False},
-            ]},
-        }, "required": ["scope", "parameter", "ty", "value"], "additionalProperties": False}}
-        if base == "list" and tag == "list?":
-            pass
+    elif base == "bindings":
+        schema = {"type": "array", "items": {"$ref": "#/$defs/binding"}}
+    elif base == "abducibles":
+        schema = {"type": "array", "items": {"$ref": "#/$defs/abducible"}}
     elif base == "limits":
         schema = {"type": "object", "properties": {k: {"type": "integer", "minimum": 1} for k in ("max_depth", "max_nodes", "max_branches")},
                   "required": ["max_depth", "max_nodes", "max_branches"], "additionalProperties": False}
@@ -148,12 +188,17 @@ def tool_definitions(condition: str) -> list[dict]:
 
 # -- the adapter ------------------------------------------------------------
 
-def initial_context(manifest: EpisodeManifest) -> str:
-    """What the model is told at the start: the manifest's instructions and
-    the public facts of the episode. No repository documents, no reserved
-    artefacts, no solutions."""
+def initial_context(manifest: EpisodeManifest, vocabulary: dict | None = None) -> str:
+    """What the model is told at the start: the public facts of the episode
+    and, when the controller froze it, the vocabulary package (signatures,
+    entities, constants, rules of the baseline) with the Formal syntax the
+    proposal path accepts. Identical across conditions. No repository
+    documents, no reserved artefacts, no catalogue."""
     c = manifest.controller
     facts = {
+        "vocabulary": vocabulary,
+        "syntax": FORMAL_SYNTAX,
+        "dossier_seeds": manifest.worker["dossiers"],
         "episode_id": manifest.episode_id,
         "condition": manifest.condition,
         "dossiers": manifest.dossiers,
@@ -188,9 +233,20 @@ class OpenAIResponsesProvider:
         self.manifest = manifest
         self.model_id = model["model_id"]
         self.parameters = dict(model.get("parameters") or {})
+        collisions = set(self.parameters) & CONTROLLED
+        unknown = set(self.parameters) - ALLOWED_PARAMETERS
+        if collisions:
+            raise ProviderError(f"manifest parameters would override controlled fields {sorted(collisions)}")
+        if unknown:
+            raise ProviderError(f"manifest parameters not authorised: {sorted(unknown)}")
         self.instructions = manifest.controller["explorer_instructions"]
         self.tools = tool_definitions(manifest.condition)
-        self.emitted: list[tuple[str, str, str]] = []   # (call_id, name, arguments text), one per turn
+        # One entry per turn: every output item the model produced (function
+        # call, reasoning or other continuation items, kept verbatim) and the
+        # call id of its single function call.
+        self.emitted: list[tuple[list, str]] = []
+        self.vocabulary: dict | None = None      # frozen by the controller
+        self.recorder = None                      # set by the controller: (kind, payload) -> None
         self.last_request: dict | None = None
         self.last_response: dict | None = None
 
@@ -200,9 +256,11 @@ class OpenAIResponsesProvider:
         if len(visible_history) != len(self.emitted):
             raise ProviderError(f"conversation desynchronised: {len(visible_history)} results for "
                                 f"{len(self.emitted)} model calls")
-        items = [{"role": "user", "content": initial_context(self.manifest)}]
-        for (call_id, name, arguments), item in zip(self.emitted, visible_history):
-            items.append({"type": "function_call", "call_id": call_id, "name": name, "arguments": arguments})
+        items = [{"role": "user", "content": initial_context(self.manifest, self.vocabulary)}]
+        for (output_items, call_id), item in zip(self.emitted, visible_history):
+            # Every item of that answer is replayed as received, in order, so
+            # that reasoning or continuation items stay attached to their call.
+            items.extend(json.loads(json.dumps(output_items)))
             items.append({"type": "function_call_output", "call_id": call_id,
                           "output": json.dumps(item["view"], ensure_ascii=False, sort_keys=True)})
         body = {
@@ -220,33 +278,54 @@ class OpenAIResponsesProvider:
         return body
 
     @staticmethod
-    def parse_response(response) -> tuple[str, dict, str, dict | None]:
-        """Exactly one function call → (call_id, action, arguments text, usage)."""
+    def extract_usage(data: dict) -> dict | None:
+        """Reception accounting, independent of whether the answer is usable."""
+        usage = data.get("usage")
+        if not isinstance(usage, dict) or "output_tokens" not in usage:
+            return None
+        out = {"output_tokens": int(usage["output_tokens"])}
+        if "input_tokens" in usage:
+            out["input_tokens"] = int(usage["input_tokens"])
+        return out
+
+    @staticmethod
+    def parse_response(response) -> tuple[list, str, dict]:
+        """Exactly one function call → (all output items, call_id, action)."""
         data = _as_dict(response)
+        usage = OpenAIResponsesProvider.extract_usage(data)
         if data.get("status") != "completed":
-            raise ProviderError(f"model_incomplete: status {data.get('status')!r}")
-        calls = [item for item in data.get("output", []) if _as_dict(item).get("type") == "function_call"]
+            raise ProviderError(f"model_incomplete: status {data.get('status')!r}", usage)
+        output = [_as_dict(item) for item in data.get("output", [])]
+        calls = [item for item in output if item.get("type") == "function_call"]
         if len(calls) != 1:
-            raise ProviderError(f"protocol: exactly one tool call is required, got {len(calls)}")
-        call = _as_dict(calls[0])
+            raise ProviderError(f"protocol: exactly one tool call is required, got {len(calls)}", usage)
+        call = calls[0]
         try:
             arguments = json.loads(call["arguments"])
         except (KeyError, TypeError, json.JSONDecodeError) as error:
-            raise ProviderError(f"protocol: tool arguments are not JSON: {error}") from error
+            raise ProviderError(f"protocol: tool arguments are not JSON: {error}", usage) from error
         if not isinstance(arguments, dict):
-            raise ProviderError("protocol: tool arguments must be an object")
-        usage = data.get("usage")
-        usage = {"output_tokens": int(usage["output_tokens"])} if isinstance(usage, dict) and "output_tokens" in usage else None
-        return call["call_id"], {"tool": call["name"], "arguments": arguments}, call["arguments"], usage
+            raise ProviderError("protocol: tool arguments must be an object", usage)
+        return output, call["call_id"], {"tool": call["name"], "arguments": arguments}
+
+    def _record(self, kind: str, payload) -> None:
+        if self.recorder is not None:
+            self.recorder(kind, payload)
 
     def next_action(self, visible_history: list, tools: list[str], output_cap: int):
         body = self.build_request(visible_history, tools, output_cap)
         self.last_request = body
+        # The exact body is persisted before any network; the raw answer
+        # before any interpretation.
+        self._record("model_request_body", body)
         try:
             response = self.client.responses.create(**body)
         except Exception as error:  # transport failures are reported, never retried here
+            self._record("model_transport_error", {"error": f"{type(error).__name__}: {error}"})
             raise ProviderError(f"model_error: {type(error).__name__}: {error}") from error
-        self.last_response = _as_dict(response)
-        call_id, action, arguments_text, usage = self.parse_response(response)
-        self.emitted.append((call_id, action["tool"], arguments_text))
-        return action, usage
+        data = _as_dict(response)
+        self.last_response = data
+        self._record("model_response_raw", data)
+        output, call_id, action = self.parse_response(data)
+        self.emitted.append((output, call_id))
+        return action, self.extract_usage(data)

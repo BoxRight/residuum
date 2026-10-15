@@ -51,6 +51,9 @@ class Controller:
         self.candidates: dict[str, CandidateRecord] = {}
         self.pending_valuations: list[dict] = []
         self.observations = {o["dossier"]: o for o in c["observations"] if o["status"] == "documented"}
+        self.vocabulary: dict | None = None
+        if hasattr(provider, "recorder"):
+            provider.recorder = self._record_model_io
         self.outcome: str | None = None
         self.finish_explanation: str | None = None
         self.turns = 0
@@ -71,6 +74,34 @@ class Controller:
             "observations": list(self.observations),
         })
         self.state.to("READY")
+
+    def _record_model_io(self, kind: str, payload) -> None:
+        """Exact request body before the network, raw response before any
+        interpretation: content-addressed artefacts referenced from the
+        model files. Credentials never enter these bodies."""
+        artifact = self.ledger.store_artifact(_dumps(payload))
+        file = "model-requests" if kind in ("model_request_body",) else "model-responses"
+        self.ledger.append(kind, {"turn": self.turns, "artifact": artifact}, file=file)
+
+    def freeze_vocabulary(self) -> dict:
+        """Fetch the public vocabulary package from the worker once, outside
+        the model loop, record it as an artefact and hand it to the provider.
+        Identical in every condition; the baseline only."""
+        from .schemas import validate_action
+        validated = validate_action({"tool": "inspect_theory", "arguments": {"rationale": "vocabulary package",
+                                                                            "expected_observation": None}}, "C")
+        action_id = self.ledger.next_id("t")
+        line = self.backend.handle(self.dispatcher.envelope(action_id, validated))
+        if "response" not in line or "theory" not in line["response"]["payload"]:
+            raise BackendError("the worker did not return the theory inventory")
+        self.vocabulary = line["response"]["payload"]["theory"]
+        artifact = self.ledger.store_artifact(_dumps(self.vocabulary))
+        self.ledger.append("vocabulary.frozen", {"action_id": action_id, "artifact": artifact,
+                                                 "verbs": len(self.vocabulary.get("verbs", [])),
+                                                 "rules": len(self.vocabulary.get("rule_bodies", []))})
+        if hasattr(self.provider, "vocabulary"):
+            self.provider.vocabulary = self.vocabulary
+        return self.vocabulary
 
     def run(self, max_turns: int = 1000) -> str:
         if self.state.state == "CREATED":
@@ -103,8 +134,11 @@ class Controller:
             action, usage = self.provider.next_action(list(self.history), tools, cap)
         except ProviderError as error:
             # Transport or protocol failure of the model: recorded, the request
-            # budget stays charged, nothing executes, no hidden retry.
-            self.ledger.append("model_error", {"turn": self.turns, "message": str(error)}, file="model-responses")
+            # budget stays charged and the reported usage too, nothing
+            # executes, no hidden retry.
+            self.budgets.charge_usage(error.usage)
+            self.ledger.append("model_error", {"turn": self.turns, "message": str(error), "usage": error.usage},
+                               file="model-responses")
             self.state.to("READY")
             return
         self.state.to("MODEL_RECEIVED")

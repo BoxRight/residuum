@@ -42,6 +42,7 @@ class Budgets:
     model_requests: int = 0
     actions: int = 0
     output_tokens: int = 0
+    input_tokens: int = 0
     usage_unknown: int = 0
 
     def reserve_request(self) -> None:
@@ -61,16 +62,20 @@ class Budgets:
         return remaining
 
     def charge_usage(self, usage: dict | None) -> None:
+        """Charged on reception, before any judgement of the answer: a
+        truncated or unusable answer still cost tokens."""
         if usage is None or "output_tokens" not in usage:
             self.usage_unknown += 1
             return
         self.output_tokens += int(usage["output_tokens"])
+        self.input_tokens += int(usage.get("input_tokens", 0))
 
     def snapshot(self) -> dict:
         return {
             "model_requests": [self.model_requests, self.max_model_requests],
             "actions": [self.actions, self.max_actions],
             "output_tokens": [self.output_tokens, self.max_output_tokens],
+            "input_tokens": self.input_tokens,
             "usage_unknown": self.usage_unknown,
         }
 

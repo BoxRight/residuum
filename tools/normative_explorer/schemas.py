@@ -26,12 +26,12 @@ TOOLS: dict[str, tuple[dict[str, tuple[str, bool]], tuple[str, ...], bool]] = {
     "begin_forward": ({"dossier": ("ident", True), "theory": ("ident?", False)}, ("A", "B", "C"), True),
     "begin_residual": ({
         "dossier": ("ident", True), "theory": ("ident?", False), "goal": ("event", True),
-        "scope": ("scope?", False), "bindings": ("list", False), "allowed": ("list?", False),
+        "scope": ("scope?", False), "bindings": ("bindings", False), "allowed": ("abducibles?", False),
         "limits": ("limits?", False),
     }, ("A", "B", "C"), True),
     "begin_active_residual": ({
         "dossier": ("ident", True), "theory": ("ident?", False), "goal": ("event", True),
-        "scope": ("scope?", False), "bindings": ("list", False), "allowed": ("list?", False),
+        "scope": ("scope?", False), "bindings": ("bindings", False), "allowed": ("abducibles?", False),
         "limits": ("limits?", False),
     }, ("A", "B", "C"), True),
     "advance_session": ({"session": ("ident", True), "max_steps": ("steps", True)}, ("A", "B", "C"), True),
@@ -46,7 +46,7 @@ TOOLS: dict[str, tuple[dict[str, tuple[str, bool]], tuple[str, ...], bool]] = {
     "finish_episode": ({"candidate_ids": ("ident_list", True), "explanation": ("text", True)}, ("A", "B", "C"), False),
 }
 COMMON = {"rationale": ("text", True), "expected_observation": ("text?", True),
-          "claims": ("claims", False), "legal_hypothesis": ("hypothesis?", False)}
+          "claims": ("claims?", False), "legal_hypothesis": ("hypothesis?", False)}
 
 
 class ProtocolError(ValueError):
@@ -106,9 +106,25 @@ def _check(tag: str, value, where: str) -> None:
     elif base == "scope":
         if not isinstance(value, dict) or len(value) != 1 or next(iter(value)) not in ("rules", "program"):
             raise ProtocolError(f"{where}: scope is {{rules: [...]}} or {{program: name}}")
-    elif base == "list":
+    elif base == "bindings":
         if not isinstance(value, list):
-            raise ProtocolError(f"{where}: list")
+            raise ProtocolError(f"{where}: list of typed bindings")
+        for i, b in enumerate(value):
+            if not isinstance(b, dict) or set(b) != {"scope", "parameter", "ty", "value"}:
+                raise ProtocolError(f"{where}[{i}]: binding with scope, parameter, ty, value")
+            if not isinstance(b["scope"], dict) or len(b["scope"]) != 1 or next(iter(b["scope"])) not in ("rule", "program"):
+                raise ProtocolError(f"{where}[{i}]: scope is {{rule: name}} or {{program: name}}")
+            if not is_ident(b["parameter"]):
+                raise ProtocolError(f"{where}[{i}]: parameter")
+            if not isinstance(b["value"], dict) or len(b["value"]) != 1 or next(iter(b["value"])) not in ("term", "time"):
+                raise ProtocolError(f"{where}[{i}]: value is {{term: …}} or {{time: …}}")
+    elif base == "abducibles":
+        if not isinstance(value, list):
+            raise ProtocolError(f"{where}: list of abducibles")
+        for i, a in enumerate(value):
+            if not isinstance(a, dict) or set(a) != {"verb", "polarity"} or not is_ident(a["verb"]) \
+                    or a["polarity"] not in ("positive", "evidential_not"):
+                raise ProtocolError(f"{where}[{i}]: abducible with verb and polarity")
     elif base == "limits":
         if not isinstance(value, dict) or set(value) != {"max_depth", "max_nodes", "max_branches"}:
             raise ProtocolError(f"{where}: limits with max_depth, max_nodes, max_branches")
@@ -163,10 +179,14 @@ def validate_action(action, condition: str) -> ValidatedAction:
             if required:
                 raise ProtocolError(f"missing argument {name}")
             continue
+        # Strict provider schemas send every field; an optional one arrives
+        # as null, which means absent.
+        if arguments[name] is None and not required:
+            continue
         _check(tag, arguments[name], name)
     return ValidatedAction(
         tool=tool,
-        arguments={k: v for k, v in arguments.items() if k in schema},
+        arguments={k: v for k, v in arguments.items() if k in schema and not (v is None and not schema[k][1])},
         rationale=arguments["rationale"],
         expected_observation=arguments.get("expected_observation"),
         claims=arguments.get("claims") or [],

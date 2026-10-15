@@ -18,6 +18,7 @@ from . import controller as controller_mod
 from . import ledger as ledger_mod
 from . import manifest as manifest_mod
 from . import provider_sim
+from .backend import BackendError
 from .channel import ChannelBackend
 from .policies import POLICIES
 
@@ -71,6 +72,14 @@ def main(argv: list[str], stderr=sys.stderr) -> int:
     ctl = controller_mod.Controller(manifest, ledger, backend, PolicyProvider(policy))
     probe = None
     try:
+        # The vocabulary package is fetched once, after preflight and outside
+        # the model loop; a channel failure there is a technical abort.
+        ctl.preflight()
+        if not ctl.state.terminal:
+            try:
+                ctl.freeze_vocabulary()
+            except BackendError as error:
+                ctl._abort(f"vocabulary: {error}")
         outcome = ctl.run()
         # Technical acceptance on mutable state against the same live worker,
         # outside the model loop and after the normative outcome is recorded.

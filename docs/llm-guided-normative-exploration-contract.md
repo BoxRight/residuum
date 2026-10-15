@@ -1067,9 +1067,33 @@ de idempotencia sobre estado mutable pasó: repetir un avance pendiente
 devuelve la misma respuesta, la sesión no avanza dos veces y el trabajador
 no cobra nada extra. Ambos procesos salieron con 0 en 0,42 s y 22 MiB.
 
+### 6.11 Adaptador del proveedor real, sin red
+
+`tools/normative_explorer/provider_openai.py`: cliente inyectado, cuerpo de
+petición fijado por el protocolo, herramientas en modo estricto derivadas
+del catálogo de la condición, conversación gestionada por el cliente con
+repetición de cada llamada del modelo por `call_id` y la vista entregada
+como salida, exactamente una llamada de función aceptada; cualquier otro
+resultado es `ProviderError`, que el controlador registra como
+`model_error` sin reintento y con el presupuesto de la petición consumido.
+Probado con un cliente falso; ninguna llamada de red. La primera llamada
+real exige una decisión fuera del código: modelo exacto, información
+enviada y presupuesto.
+
+**Conclusión científica actual.** El mecanismo de exploración funciona y
+es verificable de extremo a extremo bajo el runner: proveedor simulado,
+controlador, trabajador vivo, con una acción posterior dependiente de un
+resultado recién calculado y comparación independiente con `close_program`.
+La candidata de esa prueba estaba escrita en la política simulada. Lo que
+falta investigar es qué descubre el mecanismo cuando la política
+exploratoria deja de estar guionizada: ésa es la siguiente hipótesis
+experimental, y requiere el modelo real, valoraciones independientes nuevas
+y los episodios comparativos A/B/C.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-el proveedor real, las valoraciones nuevas y los episodios comparativos.
+la primera llamada real, las valoraciones nuevas y los episodios
+comparativos.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 

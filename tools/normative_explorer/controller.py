@@ -16,6 +16,7 @@ from .episode import BudgetExhausted, Budgets, EpisodeState
 from .ledger import Ledger
 from .manifest import EpisodeManifest, ManifestError, recheck
 from .projections import ProjectionError, project
+from .provider_openai import ProviderError
 from .schemas import ProtocolError, catalog, validate_action
 
 OUTCOMES = ("verified_compatible_candidate", "no_verified_candidate", "awaiting_independent_valuation",
@@ -98,7 +99,14 @@ class Controller:
             "turn": self.turns, "history_items": len(self.history), "tools": tools, "output_cap": cap,
         }, file="model-requests")
         self.state.to("MODEL_REQUESTED")
-        action, usage = self.provider.next_action(list(self.history), tools, cap)
+        try:
+            action, usage = self.provider.next_action(list(self.history), tools, cap)
+        except ProviderError as error:
+            # Transport or protocol failure of the model: recorded, the request
+            # budget stays charged, nothing executes, no hidden retry.
+            self.ledger.append("model_error", {"turn": self.turns, "message": str(error)}, file="model-responses")
+            self.state.to("READY")
+            return
         self.state.to("MODEL_RECEIVED")
         self.budgets.charge_usage(usage)
         self.ledger.append("model_response", {"turn": self.turns, "action": action, "usage": usage},

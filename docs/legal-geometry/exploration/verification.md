@@ -606,3 +606,30 @@ This closes the computational circuit: simulated provider → controller →
 live worker, with a later action depending on a freshly computed result and
 a request no recording covered. It is not demonstrated normative learning
 and not an A/B/C comparison of efficacy.
+
+## Reproducibility of the independent check, and the real-provider adapter
+
+- `05464b7`: the regression reads the archived ledger
+  (`interactive-001/ledger`) and passes on a clean checkout
+  (`20261015T171332565122Z-2650365`); the check of a fresh run is a second
+  test selected only by name, which fails explicitly without a run
+  (`20261015T171334735218Z-2650684` passed against the run of this session).
+- Real-provider adapter (`tools/normative_explorer/provider_openai.py`),
+  no network: the client is injected and must expose `responses.create`;
+  the body is exactly the protocol's (model from the manifest,
+  instructions, client-managed input with the initial public facts and the
+  replay of every model call with its `call_id` and the delivered view,
+  strict function tools derived from the catalogue of the condition,
+  `tool_choice="required"`, `parallel_tool_calls=False`, the output cap,
+  `stream=False`, `store=False`, extra parameters from the manifest); the
+  parser accepts exactly one completed function call and reports every
+  other outcome as `ProviderError`; the controller records it as
+  `model_error`, keeps the request charged and never retries. Tests
+  (`20261015T1715…`–`20261015T1716…`, individually): strict schemas for A,
+  B and C; request body and two-turn replay; parsing rejections; a
+  controller run with a transport failure, then a call the controller
+  rejects as a protocol error, then a clean finish.
+
+The first real call still requires a decision outside the code: exact
+model, what is sent, and the budget; credentials stay in the client's own
+configuration.

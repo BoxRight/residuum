@@ -317,3 +317,6 @@ mod dynamic_incremental_contract;
 
 #[path = "program_validation_tests.rs"]
 mod program_validation;
+
+#[path = "exploration_wire_tests.rs"]
+mod exploration_wire;

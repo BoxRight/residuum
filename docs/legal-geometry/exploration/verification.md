@@ -184,3 +184,55 @@ on the same dossier.
 Compile of the lib test target reached 793 MiB of process RSS with the
 cgroup under the 768 MiB stop; the margin is now small and should be
 watched before adding further test modules to the library target.
+
+## Wire DTOs at the worker boundary (`src/experiments/wire.rs`)
+
+Commit base `4101360` (dependency adopted). Same runner and settings.
+
+**Memory regression, recorded before any reorganisation.** Registering
+`wire.rs` and its tests in the library test target stopped the compile:
+
+| Modality | Report | cgroup peak | Result |
+|---|---|---|---|
+| lib test target, incremental cache warm, `wire.rs` + `wire_tests.rs` | `20261015T024743096226Z-2027679` | 806 MiB | stopped (`near_memory_limit`) |
+| lib test target, from scratch (no incremental cache), same content | `20261015T024813797959Z-2028061` | 772 MiB | stopped |
+| lib test target, from scratch, `wire.rs` without `wire_tests.rs` | `20261015T024849494711Z-2028449` | 747 MiB | exit 0 (13.9 s, 771 MiB RSS) |
+
+The module itself fits; its test module does not fit beside the other
+library tests. The wire tests therefore live in the CLI test binary
+(`src/bin/residuum/cli/exploration_wire_tests.rs`), which is where the
+repository already keeps its heavy harness tests. No limit, runner or older
+test was changed. The library target now has about 20 MiB of margin in the
+from-scratch modality; the next addition to it should be measured first.
+
+The first CLI compile in this worktree (`20261015T024946912437Z-2029524`,
+768 MiB) was stopped while it built the plain library rlib and the test
+binary in the same cgroup; a second invocation in a fresh cgroup finished
+the test binary in 2.0 s at 442 MiB (`20261015T025019471898Z-2030400`).
+
+| Step | Report | Result |
+|---|---|---|
+| `cli::tests::exploration_wire::wire_round_trips_every_request_variant_structurally` | `20261015T025039081471Z-2030863` | 1 passed |
+| `cli::tests::exploration_wire::wire_round_trips_worker_responses_with_full_provenance` | `20261015T025039669686Z-2030888` | 1 passed |
+| `cli::tests::exploration_wire::wire_rejects_malformed_oversized_deep_and_unknown_inputs` | `20261015T025041087698Z-2030923` | 1 passed |
+| `serde_probe_round_trips_a_boundary_dto` (rerun) | `20261015T025041604511Z-2030952` | 1 passed |
+| two `worker_tests` (rerun) | `20261015T025042115268Z-2031025`, `…043524952Z-2031113` | 1 passed each |
+| four `proposal_tests` (rerun) | `20261015T025044338140Z-2031129`, `…045447563Z-2031148`, `…046560283Z-2031166`, `…049427365Z-2031204` | 1 passed each |
+| four `exploration_tests` (rerun) | `20261015T025051341054Z-2031223`, `…052302634Z-2031243`, `…053313733Z-2031261`, `…054125149Z-2031278` | 1 passed each |
+| `cargo fmt --check` | after the above | exit 0 |
+
+What the wire tests check: structural round trip of every request variant
+(Var versus Const, nested `after`, `none`, a record literal, both
+substitution values, both scopes and parameter scopes, a negative
+abducible, explicit limits, transition metadata that `Event` equality
+ignores); structural round trip of every response of a real worker episode
+(inventory, forward with all rounds, admitted and rejected candidates,
+evaluation with closure, scoped Horn and active results with proofs and
+hypothetical closure, an unresolved-parameters failure, supports,
+partition, an error), with the justifications accumulated over forward
+rounds compared record by record against `close_program` (ordered
+antecedents, substitutions, `derivedAt`, multiplicity); and rejections:
+oversized and malformed input as transport errors, nesting depth beyond
+the limit before parsing, wrong wire version, unknown fields and variants
+(outer and inner), invalid identifiers, negative counts, unknown stages and
+an inconsistent partition as validation errors.

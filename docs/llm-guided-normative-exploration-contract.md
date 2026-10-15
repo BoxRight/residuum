@@ -923,11 +923,39 @@ Limitaciones del trabajador:
 - Sin DTOs serializados ni transporte: eso, el modo acotado del runner, el
   controlador y el proveedor siguen fuera.
 
+### 6.6 DTOs de frontera versionados (`src/experiments/wire.rs`)
+
+Serialización con `serde_json`, adoptada tras la
+[medición de coste](legal-geometry/exploration/serde-cost-measurement.md),
+y confinada a la frontera del trabajador: espejos explícitos
+(`Wire*`) de `Envelope`, `Request`, `Response`, `Payload` y de las
+estructuras del motor que transportan (eventos, términos, tiempos,
+polaridades, tipos, sustituciones, registros de derivación, cierres,
+reglas, árboles de búsqueda, pruebas, fórmulas de requisito, activaciones,
+cierres hipotéticos, informes, certificados, particiones). Nada en
+`typed`, `residual` ni `derive` deriva `Serialize`/`Deserialize`; `Debug`
+no es representación.
+
+| Criterio | Cómo se cumple |
+|---|---|
+| `Var` frente a `Const`, constructores anidados, `TimeExpr`, polaridades, tipos, orígenes | variantes y campos propios para cada uno (`{"var":…}` / `{"const":…}`, `after` anidado, `at`/`var`/`after` en tiempos, `polarity`, `kind`, `transition`, `WireOrigin`) |
+| antecedentes ordenados y multiplicidad de justificaciones | `WireRecord.antecedents` como lista ordenada; `WireClosure.derivations` como lista con repeticiones, con `derived_at` |
+| rechazo de versiones, variantes y campos desconocidos | `wire_version` obligatorio y comprobado; `deny_unknown_fields` en todas las estructuras; enumeraciones cerradas |
+| identificadores y referencias inválidos | `ident` en acciones, episodios, sesiones, candidatas, expedientes, reglas, verbos, parámetros, constantes, módulos y etapas; partición con núcleo e hipótesis de igual longitud |
+| tamaño antes de deserializar, profundidad antes de despachar | `WireLimits { max_bytes, max_depth }`; bytes contados antes de parsear; profundidad medida sobre los bytes sin construir valor, antes de parsear |
+| errores diferenciados | `WireError::Transport` (tamaño, sintaxis) y `WireError::Validation` (versión, esquema, identificadores, profundidad); la ejecución sigue en `Response` |
+
+Verificación: tres tests individuales en el binario de la CLI, porque el
+objetivo de tests de la biblioteca no tenía margen de memoria para ellos
+bajo el runner (regresión registrada por modalidad en el registro de
+verificación, sin cambiar límites ni mover tests antiguos). La ida y vuelta
+compara valores estructurados con `==` y, para la metadata de transición
+que la igualdad de `Event` ignora, de forma explícita.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-y todo lo que el protocolo de invocación sitúa después del trabajador en
-proceso (serialización y transporte, modo del runner, controlador,
-proveedor).
+y todo lo que el protocolo de invocación sitúa después de los DTOs
+(transporte persistente, modo del runner, controlador, proveedor).
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1028,6 +1056,9 @@ fijados.
 - Trabajador en proceso (6.5): `src/experiments/worker.rs`,
   `src/experiments/worker_tests.rs`; `proposal.rs` añade `with_status`.
   Confirmado como `5676a6c`; límites acotados en `f308464`; salida de
-  auditoría completa en el commit siguiente. Dos tests individuales nuevos y
-  los ocho anteriores vueltos a pasar en cada paso. No se ejecutó la suite ni
-  ningún test antiguo; no se hizo merge ni push.
+  auditoría completa en `3a20ad7`.
+- Serialización: medición en `a972927`; dependencia y prueba mínima en
+  `4101360`; DTOs de frontera (6.6) en el commit siguiente, con sus tests
+  en `src/bin/residuum/cli/exploration_wire_tests.rs`. Once tests de
+  biblioteca y tres de la CLI pasados individualmente. No se ejecutó la
+  suite ni ningún test antiguo; no se hizo merge ni push.

@@ -21,6 +21,7 @@ pub use four::{FourSession, FourStep};
 pub mod exploration;
 mod incremental;
 pub mod proposal;
+pub mod wire;
 pub mod worker;
 
 pub use default_selection::{DefaultExperimentResult, run_default_experiments};

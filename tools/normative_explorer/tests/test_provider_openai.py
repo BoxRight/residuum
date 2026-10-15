@@ -125,9 +125,14 @@ class SchemaRoundTripTests(unittest.TestCase):
                                        tools["begin_residual"]["parameters"]["$defs"])
         # Written for the Rust decoder: boundary test schema_roundtrip_tests.
         ROUNDTRIP.mkdir(parents=True, exist_ok=True)
-        (ROUNDTRIP / "envelopes.jsonl").write_text(
-            "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in envelopes))
+        text = "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in envelopes)
+        (ROUNDTRIP / "envelopes.jsonl").write_text(text)
         self.assertEqual(len(envelopes), 9)
+        # The regenerated file must equal the certified copy the Rust
+        # regression reads; a difference means the archive needs review.
+        archived = ROOT / "docs" / "legal-geometry" / "exploration" / "schema-roundtrip" / "envelopes.jsonl"
+        self.assertEqual([json.loads(l) for l in text.splitlines()],
+                         [json.loads(l) for l in archived.read_text().splitlines()])
 
 
 class AdapterTests(unittest.TestCase):

@@ -154,6 +154,19 @@ pub fn evaluate(
     decision.validate()?;
     super::require_program_acyclic(module)?;
     let closure = crate::close_program(seeds.to_vec(), module, &mut Clock::default())?;
+    let (components, compatible) = read_decision(&closure, decision)?;
+    Ok(Evaluation {
+        components,
+        compatible,
+        closure,
+    })
+}
+
+/// The single reading of `D` over a completed closure, shared by the full
+/// evaluator and the stepwise evaluation session. Returns the component
+/// tuple and `κ`. A misconfigured `D` is an `Err`.
+pub fn read_decision(closure: &Closure, decision: &Decision) -> Result<(Vec<bool>, bool), Error> {
+    decision.validate()?;
     let components: Vec<bool> = decision
         .components
         .iter()
@@ -163,11 +176,7 @@ pub fn evaluate(
         Criterion::Component(i) => components[*i],
         Criterion::Exact(expected) => &components == expected,
     };
-    Ok(Evaluation {
-        components,
-        compatible,
-        closure,
-    })
+    Ok((components, compatible))
 }
 
 /// Conservation certificate of an addition: outside the declared new heads,

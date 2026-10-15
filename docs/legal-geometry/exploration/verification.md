@@ -60,3 +60,36 @@ Source path (`src/experiments/proposal.rs`), after commit `f3091c7`:
 
 The generated private modules of the test live under
 `target/exploration/proposals/Candidate<id>.res` next to their baselines.
+
+## Increment 1: shared proposal stages, AST frontier and stepwise evaluation
+
+Commit base `d17a194`. Same runner and settings. No engine, ontology,
+fixture, limit, `main` or `v1` change.
+
+| Step | Report | Result |
+|---|---|---|
+| Compile lib tests | `20261015T010516035771Z-1945907` (first test run compiled) | exit 0 |
+| `proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation` | `20261015T010516035771Z-1945907` | 1 passed |
+| `proposal_stages_separate_admission_from_evaluation_and_session_matches_full_closure` | `20261015T010518948480Z-1945927` | 1 passed |
+| `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures` | `20261015T010520112045Z-1945964` | 1 passed |
+| `exploration_install_rejects_collisions_and_non_derived_heads` (rerun) | `20261015T010522026559Z-1945981` | 1 passed |
+| `exploration_profile_admits_riggs_catalog_and_reports_bounded_rejections` (rerun) | `20261015T010523044039Z-1946119` | 1 passed |
+| `exploration_frontiers_reproduce_certified_general_and_patrimonial_totals` (rerun) | `20261015T010524053843Z-1946136` | 1 passed |
+| `exploration_riggs_catalog_partition_and_discriminants_match_certificates` (rerun) | `20261015T010524916239Z-1946152` | 1 passed |
+| `cargo fmt --check` | after the above | exit 0 |
+
+Equivalence `ForwardSession::for_module` versus `close_program`
+(`forward-equivalence.tsv`, 414 comparisons, all `equal`): 64 catalogue
+candidates × 6 Riggs dossiers, the reference theory on the 6 dossiers, and
+the 24 seeded experiments of `general`, `patrimonial` and `reference`.
+Compared per completed closure: the set of full events, the multiset of
+justifications (rule, ordered antecedents, canonical substitution) and the
+rule origins; only `derivedAt` is normalised away. Rounds to the fixed point
+range from 1 to 6. No counterexample file was produced; had one appeared it
+would have been kept at `target/exploration/forward-equivalence-counterexamples.tsv`
+and the test would have failed.
+
+One failed run preceded the passing one (`20261015T010447304918Z-1945200`):
+a stale `Candidatedeclares.res` from the previous commit's behaviour made
+`!file.exists()` fail. `admit` now removes a previous private module under
+the same id before deciding, so a rejected proposal leaves no stale file.

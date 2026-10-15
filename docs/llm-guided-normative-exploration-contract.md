@@ -810,8 +810,43 @@ está definido pero no se provocó en el test: con dos cláusulas y el perfil
 `P1`, los ciclos de activación se rechazan antes como `B_CLAUSES`, así que
 sólo lo alcanzarían límites del runner o cierres no terminantes.
 
+### 6.4 Incremento 1 del protocolo de invocación: etapas compartidas
+
+Tras la revisión del [protocolo de invocación](llm-explorer-invocation-protocol.md)
+(apartado 5.1), `proposal.rs` se reorganizó en etapas reutilizables sin
+cambiar el resultado de `process`:
+
+| Función | Etapas | Cierra |
+|---|---|---|
+| `Episode::prepare(ctx)` | valida `D`, resuelve importaciones relativas, elabora la línea base `Baseline.res` | ninguno; `Err` de harness |
+| `admit(proposal, ctx, episode)` | parseo; **frontera sobre el AST**: más importaciones que las del controlador → `S_IMPORT`, cualquier declaración que no sea regla → `S_DECLARATION`, ambas antes de escribir o resolver archivo alguno; elaboración; extracción por origen; `theory_preserved`; `classify_candidate` | ninguno |
+| `Episode::reference(seeds)` | cierre de referencia de la línea base | uno, del verificador |
+| `check_scope(admitted, reference)` | cabezas frente al cierre de referencia | ninguno |
+| `evaluate_admitted(admitted, ctx, reference)` | `close_program` del módulo privado, `read_decision`, `certify_addition` | uno |
+| `EvaluationSession::{begin, step, finish}` | `ForwardSession::for_module` sobre el módulo privado; cada `step` es una ronda síncrona; `finish` sólo lee `D` y certifica si la sesión alcanzó su punto fijo, y en otro caso devuelve `evaluation_pending` con las rondas consumidas | por rondas |
+
+`read_decision` es la única lectura de `D` sobre un cierre y la comparten
+`exploration::evaluate`, `evaluate_admitted` y la sesión. No hay segunda
+definición de `D`. Una propuesta rechazada no deja módulo privado bajo su
+identificador.
+
+**Equivalencia verificada**: `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures`
+compara, para 64 candidatas × 6 expedientes, la referencia en los 6 y los 24
+experimentos sembrados de `general`, `patrimonial` y `reference`, el conjunto
+de eventos completos, el multiconjunto de justificaciones (regla,
+antecedentes ordenados, sustitución canónica) y los orígenes de las reglas,
+normalizando únicamente `derivedAt`. 414 comparaciones, todas iguales
+([`forward-equivalence.tsv`](legal-geometry/exploration/forward-equivalence.tsv)).
+Si hubiera una discrepancia, el test la conservaría como contraejemplo en
+`target/exploration/forward-equivalence-counterexamples.tsv` y fallaría; no
+hay fallback que la presente como equivalencia. Esta equivalencia es finita y
+vale para esas teorías y expedientes; el certificado sigue emitiéndose sólo
+sobre una sesión completada.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
-conservación para cabezas intermedias existentes y el minimax de preguntas.
+conservación para cabezas intermedias existentes, el minimax de preguntas,
+y todo lo que el protocolo de invocación sitúa después del incremento 1
+(trabajador, transporte en el runner, controlador, proveedor).
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -903,6 +938,9 @@ fijados.
 - Camino de fuente (6.3): archivos nuevos `src/experiments/proposal.rs`,
   `src/experiments/proposal_tests.rs`,
   `examples/experiments/legal_geometry/riggs_problem_manifest.res`;
-  `src/experiments.rs` registra el módulo. Un test individual nuevo y los
-  cuatro anteriores vueltos a pasar (registro de verificación). No se
-  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.
+  `src/experiments.rs` registra el módulo. Confirmado como `d17a194`.
+- Incremento 1 (6.4): etapas separadas, frontera sobre el AST,
+  `read_decision` compartida y `EvaluationSession`; tres tests individuales
+  del camino de fuente y los cuatro de exploración vueltos a pasar (registro
+  de verificación). No se ejecutó la suite ni ningún test antiguo; no se
+  hizo merge ni push.

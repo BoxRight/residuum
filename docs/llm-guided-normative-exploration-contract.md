@@ -1097,6 +1097,15 @@ exploratoria deja de estar guionizada: ésa es la siguiente hipótesis
 experimental, y requiere el modelo real, valoraciones independientes nuevas
 y los episodios comparativos A/B/C.
 
+**Adaptador de Anthropic.** `provider_anthropic.py` habla con la Messages
+API mediante el SDK oficial, con cliente inyectado y sin red en los tests:
+historial estrictamente append-only con los bloques de razonamiento
+devueltos sin tocar, `tool_choice` `auto` con una sola llamada,
+esquemas estrictos no recursivos desenrollados a las profundidades de P1,
+parámetros limitados a esfuerzo, razonamiento adaptativo y geografía de
+inferencia, sin reintentos y sin fallback de modelo ante rechazos. El ID
+del workspace va en la configuración local del cliente.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
 la primera llamada real, las valoraciones nuevas y los episodios

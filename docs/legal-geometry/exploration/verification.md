@@ -677,3 +677,48 @@ round-trip decode, the worker scripted episode with the vocabulary package,
 the boundary tests that read the regenerated recording, and twelve Python
 regressions. The archived interactive run predates the vocabulary fetch and
 was not repeated.
+
+## Anthropic Messages adapter (`tools/normative_explorer/provider_anthropic.py`)
+
+Offline, fake client, no network, SDK not installed. The real client is
+`anthropic.Anthropic(max_retries=0, default_headers={"anthropic-workspace-id": …})`,
+built only by `make_client` (parameters confirmed in the SDK source,
+`src/anthropic/_client.py`); the workspace comes from the argument or
+`ANTHROPIC_WORKSPACE_ID` and never enters the manifest or the ledger.
+Neutral pieces shared with the OpenAI adapter moved to `provider_base.py`.
+
+Design forced by the API and the experiment:
+
+- strictly append-only history: each request is the previous one plus the
+  stored assistant content (thinking blocks unchanged, only each block's own
+  null fields dropped) and one `tool_result`; `system`, `tools` and the
+  opening context are frozen for the episode, because current models bind
+  thinking signatures to the conversation prefix;
+- `tool_choice` `auto` with `disable_parallel_tool_use` (forced tool use is
+  rejected by Claude Opus 5.5 and Fable 5.1); an answer without exactly one
+  `tool_use` is a `ProviderError`, not stored, so the next request repeats
+  the same prefix; a protocol error from local validation goes back as a
+  `tool_result` with `is_error`;
+- strict schemas without recursion or numeric and length constraints, which
+  strict tool use rejects: terms, times and types unrolled to the P1 depths
+  (`after` twice, record fields one level), definitions ordered so every
+  reference points backwards;
+- parameters limited to `output_config.effort`, adaptive `thinking` with
+  `display`, and `inference_geo`; `max_tokens` capped at 16000 per
+  non-streaming request; top-level `cache_control` for the append-only
+  prefix;
+- no server-side refusal fallback: it would let another model answer, which
+  the protocol forbids in a measured episode; a refusal is a `ProviderError`
+  with its category and usage.
+
+Six tests, each individually under the runner: acyclic strict schemas with
+no unsupported keyword; one sample call per tool validated against its
+schema, parsed, validated locally and dispatched to the same envelope the
+OpenAI path produces (whose envelopes the Rust round-trip test decodes);
+request body and parameter allow-list; append-only replay over three turns
+with thinking signatures and a null inside a tool input preserved; stop
+reasons (`end_turn` without tool, two tools, `max_tokens`, `refusal`); and a
+controller run with a text-only answer, a transport error and a refusal,
+all charged and recorded, five bodies persisted before their calls, no
+retry. The last test found a defect fixed before the commit: dropping nulls
+for replay also dropped them inside the tool input.

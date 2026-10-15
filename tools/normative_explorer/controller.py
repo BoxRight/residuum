@@ -16,7 +16,7 @@ from .episode import BudgetExhausted, Budgets, EpisodeState
 from .ledger import Ledger
 from .manifest import EpisodeManifest, ManifestError, recheck
 from .projections import ProjectionError, project
-from .provider_openai import ProviderError
+from .provider_base import ProviderError
 from .schemas import ProtocolError, catalog, validate_action
 
 OUTCOMES = ("verified_compatible_candidate", "no_verified_candidate", "awaiting_independent_valuation",

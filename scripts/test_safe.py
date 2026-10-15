@@ -171,7 +171,7 @@ def main():
         return worker(Path(sys.argv[2]), int(sys.argv[3]))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--test', action='append', default=[], help='Exact active test name; repeatable')
-    parser.add_argument('--test-target', choices=('lib', 'cli', 'boundary'), default='lib',
+    parser.add_argument('--test-target', choices=('lib', 'cli', 'boundary'), default=None,
                         help='Compile only the selected test target (default: lib); '
                              'boundary selects the residuum-boundary crate')
     parser.add_argument('--binary', type=Path, help='Use an existing binary without compiling')
@@ -194,7 +194,7 @@ def main():
         parser.error('--steps and --trace require --cli')
     if args.steps is not None and not 1 <= args.steps <= 4096:
         parser.error('--steps must be in 1..4096')
-    if args.test_target != 'lib' and (args.fixture or args.fmt_check or args.format):
+    if args.test_target is not None and (args.fixture or args.fmt_check or args.format):
         parser.error('--test-target is only for test compilation/execution')
     if args.cli and (not args.fixture or args.forward or args.incremental or args.library):
         parser.error('--cli requires --fixture and cannot be combined with other fixture modes')
@@ -208,8 +208,14 @@ def main():
         parser.error('--library requires --fixture and --incremental')
     if bool(args.worker_manifest) != bool(args.worker_requests):
         parser.error('--worker-manifest and --worker-requests go together')
-    if args.worker_manifest and (args.fixture or args.test or args.compile_only or args.binary):
-        parser.error('the worker mode cannot be combined with fixtures or tests')
+    if args.worker_manifest and (args.fixture or args.test or args.compile_only or args.binary
+                                 or args.test_target or args.fmt_check or args.format
+                                 or args.cli or args.steps is not None or args.trace
+                                 or args.incremental or args.forward or args.library):
+        parser.error('the worker mode takes only --worker-manifest and --worker-requests; '
+                     'it cannot be combined with fixtures, tests, formatting or CLI options')
+    if args.test_target is None:
+        args.test_target = 'lib'
     if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
         parser.error('--fixture cannot be combined with test, binary, compile, or format options')
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
@@ -283,10 +289,11 @@ def main():
                 binaries.append(Path(message['executable']))
         if len(binaries) != 1:
             raise RuntimeError('Expected one compiled residuum-worker binary; refusing execution')
-        # One bounded process: requests on stdin, protocol lines to NN.stdout.jsonl,
-        # diagnostics to NN.output.txt, same cgroup, memory growth and timeout controls.
+        # One bounded process in its own scope with the same controls as a fixture
+        # run: requests on stdin, protocol lines to NN.stdout.jsonl, diagnostics to
+        # NN.output.txt, 15 s like fixtures, memory growth and stop controls.
         run_bounded(report, rows, 'worker', 'residuum-worker',
-                    [str(binaries[0]), '--manifest', str(manifest)], 60,
+                    [str(binaries[0]), '--manifest', str(manifest)], 15,
                     stdin=requests, stdout=True)
         print(f'worker protocol output: {report / f"{len(rows):02d}.stdout.jsonl"}', flush=True)
         return 0

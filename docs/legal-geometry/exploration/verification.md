@@ -906,3 +906,18 @@ reach the worker; a configuration error still ends after one call; plus
 the earlier pilot, schema, error and entry-point tests. First-call
 reservation US$0.4608. Proposed conditional ceiling US$2.50, pending a new
 authorisation.
+
+## Pilot 003: single authorised run, technical acceptance met
+
+2026-10-15, one run from `5d8c8c8`, as authorised, no retry. Runner report
+`20261015T195355226467Z-2777791`, archived with the ledger in
+`pilot-003/run/`. Every tool non-strict; the API accepted all four
+requests to `claude-sonnet-5-5`. Three explorer actions, no protocol
+error: a Formal rule proposed and admitted as `c1`, evaluated on
+`historicalRiggs` to completion, deriving `hypotheticalSuccessionImpediment`
+(which no baseline rule concludes) and compatible with the documented
+observation; then `finish_episode`. Outcome
+`verified_compatible_candidate`, both processes exit 0, no stop reason,
+probe passed, 17.4 s. Internal charge US$0.187356 from fully reported
+usage, recomputed identically; console reconciliation pending. One
+episode and one observation: no claim about exploration or learning.

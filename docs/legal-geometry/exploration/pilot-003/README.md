@@ -1,7 +1,8 @@
 # Pilot 003: every tool non-strict, for authorisation
 
-Status: **prepared, not executed.** Requires its own authorisation and
-budget; no earlier authorisation covers any further call.
+Status: **executed once on 2026-10-15 under its own authorisation;
+technical acceptance met** (see *Result of the single run* at the end).
+No second run under this identifier.
 
 ## Purpose
 
@@ -82,3 +83,51 @@ One run, no automatic second run; ledger and runner report archived in
 case: whether the API accepted the request, the number of model requests,
 protocol errors (malformed arguments) and valid actions, the outcome, and
 the internal charge.
+
+## Result of the single run (2026-10-15, 19:53:55 to 19:54:12 UTC)
+
+Run from commit `5d8c8c8`. Records archived in `run/`: the ledger
+(`run/ledger/`), the runner report (`run/runner-report/`) and its standard
+output. No credentials appear in them.
+
+**Integration.** The API accepted all four requests with every tool
+non-strict. This is the first evidence of the circuit working end to end
+with a real model.
+
+**What the model did** (4 requests, 3 explorer actions, 0 protocol
+errors, 0 malformed arguments):
+
+1. `propose_candidate`: one Formal rule, `impediment`, concluding
+   `hypotheticalSuccessionImpediment` from `testamentaryEntitlement` and
+   `purposefulAcquisition` at the same time. It passed every admission
+   stage (parsed, elaborated, extracted, admitted) as candidate `c1`.
+2. `begin_candidate_evaluation` of `c1` on `historicalRiggs`.
+3. `advance_session` to completion: seven derivations; the last, `d7`,
+   derives `hypotheticalSuccessionImpediment` by the candidate's rule. The
+   baseline theory only declares that verb; no rule of it concludes it, so
+   the conclusion comes from the candidate alone. The observation filter
+   recorded `compatible: true` against the documented observation
+   (`riggs_rule_observations.tsv#historicalRiggs`).
+4. `finish_episode` naming `c1`, with one claim (`c1` status compatible)
+   that matches the evaluation.
+
+Outcome `verified_compatible_candidate`; controller and worker exit 0;
+supervisor end normal (no stop reason). Idempotence probe passed before any
+call. Runner: 17.4 s, 83 MiB cgroup peak, no memory events.
+
+**Cost.** Usage was fully reported for every call (`usage_unknown` 0,
+`usage_partial` 0, no overrun). Charged internally from the reported
+breakdown: **US$0.187356**, recomputed identically from the four usage
+records (input 210 461 tokens, of which 63 642 cache writes and 146 809
+cache reads; output 1 355). This is the internal charge from reported
+usage at the manifest's prices; reconciliation with the console is
+pending, as for pilots 001 and 002.
+
+**Limits of what this shows.** The technical objective of pilot 001 is
+met: valid actions, a proposal admitted and evaluated to a certified
+result, the probe passed, a complete ledger. It is one episode, with one
+documented observation, on a case the model may know; the model evaluated
+only `historicalRiggs` and did not test its stated expectation that the
+other dossiers do not derive the impediment. Nothing here measures
+exploration, learning or the quality of candidates beyond compatibility
+with that single observation.

@@ -159,8 +159,9 @@ def main():
         return worker(Path(sys.argv[2]), int(sys.argv[3]))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--test', action='append', default=[], help='Exact active test name; repeatable')
-    parser.add_argument('--test-target', choices=('lib', 'cli'), default='lib',
-                        help='Compile only the selected test target (default: lib)')
+    parser.add_argument('--test-target', choices=('lib', 'cli', 'boundary'), default='lib',
+                        help='Compile only the selected test target (default: lib); '
+                             'boundary selects the residuum-boundary crate')
     parser.add_argument('--binary', type=Path, help='Use an existing binary without compiling')
     parser.add_argument('--compile-only', action='store_true')
     parser.add_argument('--fmt-check', action='store_true')
@@ -244,8 +245,13 @@ def main():
         return 0
     binary = args.binary.resolve() if args.binary else None
     if binary is None:
-        target_args = ['--lib'] if args.test_target == 'lib' else ['--bin', 'residuum']
-        target_kind = 'lib' if args.test_target == 'lib' else 'bin'
+        if args.test_target == 'lib':
+            target_args, target_kind, target_name = ['--lib'], 'lib', 'residuum'
+        elif args.test_target == 'boundary':
+            target_args, target_kind, target_name = (['-p', 'residuum-boundary', '--lib'], 'lib',
+                                                     'residuum_boundary')
+        else:
+            target_args, target_kind, target_name = ['--bin', 'residuum'], 'bin', 'residuum'
         output = run_bounded(report, rows, 'compile', 'compile only',
                              ['cargo', 'test', '--offline', '--locked', '--no-run'] + target_args + [
                               '--jobs', '1', '--message-format=json'], 45)
@@ -257,7 +263,7 @@ def main():
                 continue
             if (message.get('reason') == 'compiler-artifact' and message.get('executable')
                     and message.get('profile', {}).get('test')
-                    and message.get('target', {}).get('name') == 'residuum'
+                    and message.get('target', {}).get('name') == target_name
                     and target_kind in message.get('target', {}).get('kind', [])):
                 binaries.append(Path(message['executable']))
         if len(binaries) != 1:

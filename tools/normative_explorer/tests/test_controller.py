@@ -189,6 +189,32 @@ class RecordedEpisodeTests(unittest.TestCase):
                               and c["assertion"]["ref"] == "a8"), "out_of_view")
 
 
+class IdempotenceProbeTests(unittest.TestCase):
+    def test_resend_reports_identity_and_unchanged_budget(self):
+        worker, requests = recorded()
+        tmp = scratch("resend-")
+        m = write_manifest(tmp, worker, "C")
+        led = ledger.Ledger(Path(tmp) / "ledger", m.episode_hash, clock=lambda: "t")
+        be = backend.RecordedBackend(FIXTURE / "requests.jsonl", FIXTURE / "expected.jsonl")
+        ctl = controller.Controller(m, led, be, provider_sim.ScriptedProvider(recorded_script(requests, "C")))
+        self.assertEqual(ctl.run(), "verified_compatible_candidate")
+        before = ctl.budgets.snapshot()
+        probe = ctl.resend("a4")
+        self.assertTrue(probe["identical"])
+        self.assertTrue(probe["budget_unchanged"])
+        self.assertTrue(probe["controller_budget_unchanged"])
+        self.assertEqual(ctl.budgets.snapshot(), before)
+        self.assertEqual(be.calls[-1]["action_id"], "a4")
+        self.assertEqual(be.calls[-1], ctl.envelopes["a4"])
+        self.assertEqual(led.read_file("evaluator-trace")[-1]["kind"], "action.resent")
+        with self.assertRaises(Exception):
+            ctl.resend("a99")
+        # A worker that answers differently is reported, not hidden.
+        stub = backend.StubBackend([lambda e: stub_response(e["action_id"], "complete", {"error": {"message": "x"}})])
+        ctl.backend = stub
+        self.assertFalse(ctl.resend("a4")["identical"])
+
+
 def partition_payload(hypotheses, kernel):
     return {"partition": {"pool": [], "partition": {"hypotheses": hypotheses, "kernel": kernel},
                           "signatures": [[True] for _ in hypotheses], "discriminants": [0], "covers": []}}

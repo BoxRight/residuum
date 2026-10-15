@@ -87,6 +87,55 @@ class ChannelTests(unittest.TestCase):
             lost.handle(envelope("a9"))
 
 
+class ChannelDeadlineAndFramingTests(unittest.TestCase):
+    def make(self, **kwargs):
+        to_r, to_w = os.pipe()
+        from_r, from_w = os.pipe()
+        be = channel.ChannelBackend(os.fdopen(to_w, "wb", buffering=0), os.fdopen(from_r, "rb", buffering=0),
+                                    request_timeout=kwargs.pop("request_timeout", 1.0), **kwargs)
+        return be, os.fdopen(to_r, "rb", buffering=0), os.fdopen(from_w, "wb", buffering=0)
+
+    def test_one_deadline_covers_a_blocked_write(self):
+        # Nobody reads the pipe: a request larger than its capacity must not
+        # block; the deadline fails the write with the bytes written so far.
+        be, worker_in, worker_out = self.make(request_timeout=0.3)
+        big = dict(envelope("a1"), request={"propose_candidate": {"text": "y" * 300_000}})
+        with self.assertRaisesRegex(channel.ChannelError, "did not accept the request within 0.3 s"):
+            be.handle(big)
+        self.assertEqual(be.calls, 0)
+        # Partial writes resume: a reader that drains later lets a large
+        # request through within the deadline.
+        be2, worker_in2, worker_out2 = self.make(request_timeout=2.0)
+        import threading
+        drained = []
+        def drain():
+            drained.append(worker_in2.readline())
+            worker_out2.write(response_line("a2").encode())
+        t = threading.Thread(target=drain); t.start()
+        line = be2.handle(dict(envelope("a2"), request={"propose_candidate": {"text": "z" * 300_000}}))
+        t.join(2)
+        self.assertEqual(line["response"]["action_id"], "a2")
+        self.assertEqual(len(drained[0]), len(json.dumps(dict(envelope("a2"), request={"propose_candidate": {"text": "z" * 300_000}}), ensure_ascii=False, separators=(",", ":"))) + 1)
+
+    def test_malformed_frames_are_channel_errors(self):
+        be, worker_in, worker_out = self.make(request_timeout=0.5)
+        cases = [
+            (b'{"response": null}\n', "not an object"),
+            (b'\xff\xfe\n', "not UTF-8"),
+            (b'{"response": {"wire_version": "residuum-wire/1"}}\n', "has fields"),
+            (b'{"response": {"wire_version": "residuum-wire/1", "action_id": "a1", "status": "complete", '
+             b'"steps_consumed": 0, "budget": {}, "payload": {"a": 1, "b": 2}}}\n', "single-kind"),
+            (b'{"fault": {"wire_version": "residuum-wire/1", "class": "framing", "action_id": "a9", "message": "m"}}\n',
+             "while 'a1' was in flight"),
+            (b'[1, 2]\n', "neither"),
+        ]
+        for i, (raw, pattern) in enumerate(cases):
+            worker_out.write(raw)
+            with self.assertRaisesRegex(channel.ChannelError, pattern, msg=raw):
+                be.handle(envelope("a1"))
+        self.assertFalse(be._in_flight)
+
+
 def session(sid, kind):
     return {"session_opened": {"session": sid, "kind": kind}}
 

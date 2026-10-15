@@ -133,8 +133,11 @@ class Ledger:
                 if seq < 1 or seq > len(events) or events[seq - 1].get("file") != name:
                     raise LedgerError(f"{name}.jsonl references seq {seq} that is not its event")
         actions: dict[str, dict] = {}
+        terminal = None
         for entry in events:
             kind, payload = entry["kind"], entry["payload"]
+            if kind in ("episode.finished", "episode.budget_exhausted", "episode.aborted"):
+                terminal = kind
             action_id = payload.get("action_id")
             if kind == "action.validated":
                 actions[action_id] = {"seq": entry["seq"], "request": payload["request"], "tool": payload["tool"]}
@@ -143,4 +146,8 @@ class Ledger:
                 actions[action_id]["result_artifact"] = payload["artifact"]
             elif kind == "view.recorded" and action_id in actions:
                 actions[action_id]["view_artifact"] = payload["artifact"]
-        return {"events": len(events), "actions": actions}
+        # An episode without a terminal event was interrupted from outside
+        # (worker lost, supervisor stop, kill): the supervisor's report, not
+        # the ledger, states how it ended.
+        return {"events": len(events), "actions": actions, "terminal": terminal,
+                "interrupted": terminal is None and bool(events)}

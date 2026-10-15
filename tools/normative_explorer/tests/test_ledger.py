@@ -109,6 +109,20 @@ class LedgerTests(unittest.TestCase):
             with self.assertRaises(ledger.LedgerError):
                 ledger.Ledger(Path(tmp), "other")
 
+    def test_reconstruction_recognises_an_interrupted_episode(self):
+        with tempple_dir() as tmp:
+            led = ledger.Ledger(Path(tmp), "h", clock=lambda: "t")
+            self.assertFalse(led.reconstruct()["interrupted"])
+            led.append("episode.started", {})
+            led.append("action.validated", {"action_id": "a1", "tool": "inspect_theory", "request": "inspect_theory"})
+            rebuilt = led.reconstruct()
+            self.assertTrue(rebuilt["interrupted"])
+            self.assertIsNone(rebuilt["terminal"])
+            led.append("episode.aborted", {"message": "worker lost"})
+            rebuilt = led.reconstruct()
+            self.assertFalse(rebuilt["interrupted"])
+            self.assertEqual(rebuilt["terminal"], "episode.aborted")
+
     def test_unknown_file_is_refused(self):
         with tempple_dir() as tmp:
             led = ledger.Ledger(Path(tmp), "h")

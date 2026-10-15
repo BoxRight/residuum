@@ -68,12 +68,20 @@ def main(argv: list[str], stderr=sys.stderr) -> int:
     policy = POLICIES[values["--policy"]](goal)
     backend = ChannelBackend.from_descriptors(values["--to-worker"], values["--from-worker"])
     ctl = controller_mod.Controller(manifest, ledger, backend, PolicyProvider(policy))
+    probe = None
     try:
         outcome = ctl.run()
+        # Idempotence probe against the same live worker: the first completed
+        # worker action is sent again with the same id and content.
+        completed = [a for a, line in ctl.records.items()
+                     if "response" in line and line["response"]["status"] == "complete"]
+        if completed and outcome != "technical_abort":
+            probe = ctl.resend(completed[0])
     finally:
         backend.close()
     summary = {"outcome": outcome, "state": ctl.state.state, "turns": ctl.turns, "worker_calls": backend.calls,
-               "decisions": getattr(policy, "decisions", []), "budgets": ctl.budgets.snapshot()}
+               "decisions": getattr(policy, "decisions", []), "budgets": ctl.budgets.snapshot(),
+               "idempotence_probe": probe}
     print(f"controller: {json.dumps(summary, ensure_ascii=False)}", file=stderr, flush=True)
     return EXIT.get(outcome, 4)
 

@@ -46,6 +46,7 @@ class Controller:
         self.budgets = Budgets(c["max_model_requests"], c["max_actions"], c["max_output_tokens"])
         self.history: list[dict] = []           # what the model sees, in order
         self.records: dict[str, dict] = {}       # action_id → full backend line
+        self.envelopes: dict[str, dict] = {}     # action_id → envelope as sent
         self.candidates: dict[str, CandidateRecord] = {}
         self.pending_valuations: list[dict] = []
         self.observations = {o["dossier"]: o for o in c["observations"] if o["status"] == "documented"}
@@ -131,6 +132,7 @@ class Controller:
             "rationale": validated.rationale, "expected_observation": validated.expected_observation,
             "legal_hypothesis": validated.legal_hypothesis,
         }, file="actions")
+        self.envelopes[action_id] = envelope
         self.state.to("TOOL_RUNNING")
         try:
             line = self.backend.handle(envelope)
@@ -162,6 +164,30 @@ class Controller:
         self.history.append({"action_id": action_id, "tool": validated.tool, "arguments": validated.arguments,
                              "view": view})
         self.state.to("READY")
+
+    def resend(self, action_id: str) -> dict:
+        """Idempotence probe: the same action id and content again, against
+        the same worker. Records whether the answer is identical and whether
+        the worker's reported budget is unchanged; charges nothing here."""
+        if action_id not in self.envelopes:
+            raise ProtocolError(f"{action_id} was never sent")
+        before = self.budgets.snapshot()
+        try:
+            line = self.backend.handle(dict(self.envelopes[action_id]))
+        except BackendError as error:
+            record = {"action_id": action_id, "identical": False, "budget_unchanged": None, "error": str(error)}
+            self.ledger.append("action.resent", record, file="evaluator-trace")
+            return record
+        original = self.records[action_id]
+        identical = line == original
+        budget_unchanged = ("response" in line and "response" in original
+                            and line["response"]["budget"] == original["response"]["budget"]
+                            and line["response"]["steps_consumed"] == original["response"]["steps_consumed"])
+        record = {"action_id": action_id, "identical": identical, "budget_unchanged": budget_unchanged,
+                  "controller_budget_unchanged": self.budgets.snapshot() == before,
+                  "artifact": self.ledger.store_artifact(_dumps(line))}
+        self.ledger.append("action.resent", record, file="evaluator-trace")
+        return record
 
     # -- tracking ---------------------------------------------------------
 

@@ -70,7 +70,7 @@ def worker(report, index):
                     pass
                 while samples and samples[0][0] < now - 1.0:
                     samples.popleft()
-                if (request['stage'] in ('test', 'fixture', 'worker') and rss >= 128 * MIB and samples
+                if (request['stage'] in ('test', 'fixture', 'worker', 'python') and rss >= 128 * MIB and samples
                         and rss - min(sample[1] for sample in samples) >= 64 * MIB):
                     reason = reason or 'abnormal_memory_growth'
                 samples.append((now, rss))
@@ -189,6 +189,8 @@ def main():
                         help='Run residuum-worker once, bounded, with this manifest; requires --worker-requests')
     parser.add_argument('--worker-requests', type=Path,
                         help='Finite file of one request per line fed to residuum-worker on stdin')
+    parser.add_argument('--python-test', action='append', default=[],
+                        help='Exact unittest id under tools/, run individually with python3 -I; repeatable')
     args = parser.parse_args()
     if (args.steps is not None or args.trace) and not args.cli:
         parser.error('--steps and --trace require --cli')
@@ -214,6 +216,14 @@ def main():
                                  or args.incremental or args.forward or args.library):
         parser.error('the worker mode takes only --worker-manifest and --worker-requests; '
                      'it cannot be combined with fixtures, tests, formatting or CLI options')
+    if args.python_test and (args.fixture or args.test or args.compile_only or args.binary
+                             or args.test_target or args.fmt_check or args.format or args.cli
+                             or args.steps is not None or args.trace or args.incremental
+                             or args.forward or args.library or args.worker_manifest):
+        parser.error('--python-test takes only unittest ids; it cannot be combined with other modes')
+    for name in args.python_test:
+        if not name.startswith('tools.') or not all(part.isidentifier() for part in name.split('.')):
+            parser.error(f'{name} is not a dotted unittest id under tools.')
     if args.test_target is None:
         args.test_target = 'lib'
     if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
@@ -264,6 +274,20 @@ def main():
                 emit_output(report / f'{len(rows):02d}.output.txt', sys.stderr)
             raise
         emit_output(output, sys.stdout)
+        return 0
+    if args.python_test:
+        # Python unit tests of the controller, one process per test id, each in
+        # its own scope with the same controls; isolated mode ignores the
+        # environment and user site-packages so only the repository is imported.
+        if len(args.python_test) != len(set(args.python_test)):
+            raise RuntimeError('Duplicate python test selection')
+        for name in args.python_test:
+            # Isolated mode drops the working directory from sys.path; the
+            # repository root is added explicitly and nothing else.
+            bootstrap = (f'import sys, unittest; sys.path.insert(0, {str(ROOT)!r}); '
+                         f'unittest.main(module=None, argv=["unittest", "-v", {name!r}])')
+            run_bounded(report, rows, 'python', name, [sys.executable, '-I', '-c', bootstrap], 30)
+        print(f'{len(args.python_test)} python tests passed individually.', flush=True)
         return 0
     if args.worker_manifest:
         manifest = args.worker_manifest.resolve()

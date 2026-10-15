@@ -139,26 +139,26 @@ def supervise(report, index, request, group):
             print(f'worker pid {processes["worker"].pid}; controller pid {processes["controller"].pid}',
                   file=log, flush=True)
             exits = {}
+            exit_order = []
             grace_until = None   # the surviving process gets a short grace inside the global deadline
-            pending_reason = None
+            grace_expired = False
             while len(exits) < 2:
                 now = time.monotonic()
                 for name, process in processes.items():
                     if name not in exits and process.poll() is not None:
                         exits[name] = process.returncode
+                        exit_order.append(name)
                         print(f'{name} exited {process.returncode} at {now - started:.3f}s', file=log, flush=True)
                 if len(exits) == 1 and grace_until is None:
+                    # Whoever exits first, the other gets a short grace to finish
+                    # on its own: the worker sees EOF on stdin, the controller sees
+                    # EOF or a broken pipe and records its technical abort.
                     grace_until = min(now + 2.0, started + request['timeout'])
-                    if 'worker' in exits:
-                        # The controller sees EOF or a broken pipe and should record its
-                        # technical abort and exit; it is not killed before the grace ends.
-                        pending_reason = 'worker_lost'
-                    else:
-                        # The controller closed its channels; the worker sees EOF on stdin.
-                        pending_reason = 'worker_did_not_exit'
-                    print(f'{pending_reason}: grace until {grace_until - started:.3f}s', file=log, flush=True)
+                    print(f'{exit_order[0]} exited first; grace until {grace_until - started:.3f}s',
+                          file=log, flush=True)
                 if grace_until is not None and now >= grace_until and len(exits) < 2:
-                    reason = reason or pending_reason
+                    grace_expired = True
+                    break
                 peak = int((group / 'memory.peak').read_text())
                 if now - started >= request['timeout']:
                     reason = reason or 'timeout'
@@ -183,9 +183,6 @@ def supervise(report, index, request, group):
                 if reason:
                     break
                 time.sleep(0.02)
-            if len(exits) == 2 and pending_reason == 'worker_lost':
-                # Both ended, but the worker went first: a technical end to record.
-                reason = reason or 'worker_lost'
         finally:
             for name, process in processes.items():
                 kill_process_group(process)
@@ -203,12 +200,11 @@ def supervise(report, index, request, group):
         reason = reason or 'cgroup_oom'
     controller_status = processes['controller'].returncode if 'controller' in processes else None
     worker_status = processes['worker'].returncode if 'worker' in processes else None
-    if controller_status != 0:
-        reason = reason or 'controller_nonzero_exit'
-    if worker_status != 0:
-        reason = reason or 'worker_nonzero_exit'
+    reason = classify_supervised_end(exit_order, {'worker': worker_status, 'controller': controller_status},
+                                     grace_expired, reason)
     row = dict(name=request['name'], stage=request['stage'], exit_status=controller_status,
-               worker_exit_status=worker_status, elapsed_seconds=time.monotonic() - started,
+               worker_exit_status=worker_status, exit_order=exit_order,
+               elapsed_seconds=time.monotonic() - started,
                peak_rss_bytes=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss * 1024,
                cgroup_peak_bytes=peak_group, memory_events=events, stop_reason=reason)
     (report / f'{index:02d}.result.json').write_text(json.dumps(row, indent=2) + '\n')
@@ -250,6 +246,29 @@ def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
         raise RuntimeError(f'{name}: {row["stop_reason"]}; no remaining tests executed. '
                            f'See {report / f"{index:02d}.output.txt"}')
     return report / f'{index:02d}.output.txt'
+
+
+def classify_supervised_end(exit_order, codes, grace_expired, stop_reason):
+    """How a supervised exchange ended. A stop reason from the loop (timeout,
+    memory, growth) wins. Both processes exiting 0 within the deadline is a
+    normal end whatever the order: the worker legitimately sees EOF and
+    exits before the controller prints its summary. The worker leaving first
+    is technical only when the controller then aborts, fails or does not exit
+    within its grace."""
+    if stop_reason:
+        return stop_reason
+    worker, controller = codes.get('worker'), codes.get('controller')
+    if grace_expired:
+        if exit_order and exit_order[0] == 'worker':
+            return 'worker_lost'
+        return 'worker_did_not_exit'
+    if worker == 0 and controller == 0:
+        return None
+    if exit_order and exit_order[0] == 'worker' and controller != 0:
+        return 'worker_lost'
+    if controller != 0:
+        return 'controller_nonzero_exit'
+    return 'worker_nonzero_exit'
 
 
 def normalize_worker_manifest(document, base):

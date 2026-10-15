@@ -215,6 +215,59 @@ class IdempotenceProbeTests(unittest.TestCase):
         self.assertFalse(ctl.resend("a4")["identical"])
 
 
+def forward_rounds(session, rounds, complete, actions_left, steps_left, consumed):
+    return {"response": {"action_id": None, "status": "complete" if complete else "step_limit",
+                         "steps_consumed": consumed,
+                         "budget": {"actions_remaining": actions_left, "steps_remaining": steps_left,
+                                    "sessions_remaining": 5, "candidates_remaining": 5},
+                         "payload": {"forward": {"session": session, "complete": complete, "known": [],
+                                                 "rounds": [{"round": r, "added": [], "derivations": [],
+                                                             "witnesses": 0, "complete": False} for r in rounds]}}}}
+
+
+class MutableStateProbeTests(unittest.TestCase):
+    def probe(self, fresh):
+        worker, _ = recorded()
+        tmp = scratch("probe-")
+        m = write_manifest(tmp, worker, "C")
+        led = ledger.Ledger(Path(tmp) / "ledger", m.episode_hash, clock=lambda: "t")
+        opened = stub_response(None, "complete", {"session_opened": {"session": "s7", "kind": "forward"}})
+        first = forward_rounds("s7", [1, 2], False, 37, 198, 2)
+        lines = [
+            lambda e: dict(opened, response=dict(opened["response"], action_id=e["action_id"])),
+            lambda e: dict(first, response=dict(first["response"], action_id=e["action_id"])),
+            lambda e: dict(first, response=dict(first["response"], action_id=e["action_id"])),   # the replay
+            lambda e: dict(fresh, response=dict(fresh["response"], action_id=e["action_id"])),
+        ]
+        be = backend.StubBackend(lines)
+        ctl = controller.Controller(m, led, be, provider_sim.ScriptedProvider([]))
+        ctl.preflight()
+        record = ctl.idempotence_probe("historicalRiggs")
+        return record, be, led
+
+    def test_probe_passes_when_the_replay_changes_nothing(self):
+        record, be, led = self.probe(forward_rounds("s7", [3], False, 36, 197, 1))
+        self.assertTrue(record["passed"], record)
+        self.assertEqual(record["rounds"], {"first_last": 2, "fresh_first": 3})
+        self.assertEqual([e["action_id"] for e in be.calls], ["p1", "p2", "p2", "p3"])
+        self.assertEqual(be.calls[1], be.calls[2], "the replay is the same envelope")
+        self.assertEqual(led.read_file("evaluator-trace")[-1]["kind"], "idempotence.probe")
+        from tools.normative_explorer import run_episode
+        self.assertEqual(run_episode.exit_code("verified_compatible_candidate", record), 0)
+
+    def test_probe_fails_when_the_session_advanced_twice_or_budget_moved(self):
+        record, _, _ = self.probe(forward_rounds("s7", [4], False, 36, 196, 1))
+        self.assertFalse(record["passed"])
+        self.assertIn("session_not_advanced_twice", record["reason"])
+        self.assertIn("no_extra_steps_charged", record["reason"])
+        record2, _, _ = self.probe(forward_rounds("s7", [3], False, 35, 197, 1))
+        self.assertFalse(record2["passed"])
+        self.assertIn("no_extra_action_charged", record2["reason"])
+        from tools.normative_explorer import run_episode
+        self.assertEqual(run_episode.exit_code("verified_compatible_candidate", record2), 6)
+        self.assertEqual(run_episode.exit_code("technical_abort", None), 4)
+
+
 def partition_payload(hypotheses, kernel):
     return {"partition": {"pool": [], "partition": {"hypotheses": hypotheses, "kernel": kernel},
                           "signatures": [[True] for _ in hypotheses], "discriminants": [0], "covers": []}}

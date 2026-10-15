@@ -189,6 +189,65 @@ class Controller:
         self.ledger.append("action.resent", record, file="evaluator-trace")
         return record
 
+    def idempotence_probe(self, dossier: str) -> dict:
+        """Technical acceptance on mutable state, against the live worker,
+        outside the model loop: open a forward session, advance it two
+        rounds (a pending result), resend that exact envelope, then advance
+        one more round with a fresh action. Passes only if the resend answers
+        identically, the fresh advance starts at the next round (the session
+        did not advance twice), and the worker's reported actions and steps
+        moved by exactly the fresh action. Recorded in evaluator-trace; a
+        failure makes the technical acceptance fail without touching the
+        normative outcome already recorded."""
+        from .schemas import validate_action
+        record = {"dossier": dossier, "steps": [], "passed": False, "reason": None}
+
+        def send(tool, **arguments):
+            arguments.setdefault("rationale", "idempotence probe")
+            arguments.setdefault("expected_observation", None)
+            validated = validate_action({"tool": tool, "arguments": arguments}, "C")
+            action_id = self.ledger.next_id("p")
+            envelope = self.dispatcher.envelope(action_id, validated)
+            line = self.backend.handle(envelope)
+            if "response" in line:
+                self.registry.learn(line["response"])
+            record["steps"].append({"action_id": action_id, "tool": tool,
+                                    "artifact": self.ledger.store_artifact(_dumps(line))})
+            return envelope, line
+        try:
+            _, opened = send("begin_forward", dossier=dossier)
+            session = opened["response"]["payload"]["session_opened"]["session"]
+            first_env, first = send("advance_session", session=session, max_steps=2)
+            if first["response"]["status"] != "step_limit":
+                record["reason"] = f"probe needs a pending session; got {first['response']['status']}"
+                return self._finish_probe(record)
+            replay = self.backend.handle(dict(first_env))
+            record["steps"].append({"action_id": first_env["action_id"], "tool": "replay",
+                                    "artifact": self.ledger.store_artifact(_dumps(replay))})
+            _, fresh = send("advance_session", session=session, max_steps=1)
+            f, r, n = first["response"], replay["response"], fresh["response"]
+            last_round = f["payload"]["forward"]["rounds"][-1]["round"]
+            next_round = n["payload"]["forward"]["rounds"][0]["round"] if n["payload"]["forward"]["rounds"] else None
+            checks = {
+                "replay_identical": replay == first,
+                "session_not_advanced_twice": next_round == last_round + 1,
+                "no_extra_action_charged": n["budget"]["actions_remaining"] == r["budget"]["actions_remaining"] - 1,
+                "no_extra_steps_charged": n["budget"]["steps_remaining"] == r["budget"]["steps_remaining"] - n["steps_consumed"]
+                                          and n["steps_consumed"] == 1,
+            }
+            record["checks"] = checks
+            record["rounds"] = {"first_last": last_round, "fresh_first": next_round}
+            record["passed"] = all(checks.values())
+            if not record["passed"]:
+                record["reason"] = "failed: " + ", ".join(k for k, v in checks.items() if not v)
+        except (BackendError, KeyError, IndexError, TypeError, ProtocolError) as error:
+            record["reason"] = f"probe could not complete: {error}"
+        return self._finish_probe(record)
+
+    def _finish_probe(self, record: dict) -> dict:
+        self.ledger.append("idempotence.probe", record, file="evaluator-trace")
+        return record
+
     # -- tracking ---------------------------------------------------------
 
     def _track(self, validated, action_id: str, response: dict) -> None:

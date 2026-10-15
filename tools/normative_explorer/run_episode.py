@@ -23,6 +23,7 @@ from .policies import POLICIES
 
 EXIT = {"verified_compatible_candidate": 0, "no_verified_candidate": 0, "awaiting_independent_valuation": 0,
         "budget_exhausted": 3, "technical_abort": 4}
+TECHNICAL_ACCEPTANCE_FAILED = 6
 
 
 def parse(argv: list[str]) -> dict:
@@ -71,19 +72,33 @@ def main(argv: list[str], stderr=sys.stderr) -> int:
     probe = None
     try:
         outcome = ctl.run()
-        # Idempotence probe against the same live worker: the first completed
-        # worker action is sent again with the same id and content.
-        completed = [a for a, line in ctl.records.items()
-                     if "response" in line and line["response"]["status"] == "complete"]
-        if completed and outcome != "technical_abort":
-            probe = ctl.resend(completed[0])
+        # Technical acceptance on mutable state against the same live worker,
+        # outside the model loop and after the normative outcome is recorded.
+        if outcome != "technical_abort":
+            probe = ctl.idempotence_probe(probe_dossier(manifest))
     finally:
         backend.close()
     summary = {"outcome": outcome, "state": ctl.state.state, "turns": ctl.turns, "worker_calls": backend.calls,
                "decisions": getattr(policy, "decisions", []), "budgets": ctl.budgets.snapshot(),
                "idempotence_probe": probe}
     print(f"controller: {json.dumps(summary, ensure_ascii=False)}", file=stderr, flush=True)
-    return EXIT.get(outcome, 4)
+    return exit_code(outcome, probe)
+
+
+def probe_dossier(manifest) -> str:
+    """The documented observation's dossier when there is one; the probe
+    needs a forward closure that is still pending after two rounds."""
+    observations = manifest.controller["observations"]
+    return observations[0]["dossier"] if observations else manifest.dossiers[0]
+
+
+def exit_code(outcome: str, probe: dict | None) -> int:
+    """The normative outcome sets the code; a failed technical acceptance
+    overrides a successful one with 6 while the outcome stays recorded."""
+    code = EXIT.get(outcome, 4)
+    if code == 0 and probe is not None and not probe["passed"]:
+        return TECHNICAL_ACCEPTANCE_FAILED
+    return code
 
 
 if __name__ == "__main__":  # pragma: no cover - launched by the supervisor only

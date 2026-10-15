@@ -32,5 +32,21 @@ class NormalizationTests(unittest.TestCase):
         self.assertTrue(all(Path(c["resolved"]).is_absolute() for c in changes))
 
 
+class EndClassificationTests(unittest.TestCase):
+    def test_normal_end_whatever_the_order_and_technical_ends(self):
+        classify = runner().classify_supervised_end
+        self.assertIsNone(classify(["worker", "controller"], {"worker": 0, "controller": 0}, False, None))
+        self.assertIsNone(classify(["controller", "worker"], {"worker": 0, "controller": 0}, False, None))
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 4}, False, None), "worker_lost")
+        self.assertEqual(classify(["worker"], {"worker": 0, "controller": None}, True, None), "worker_lost")
+        self.assertEqual(classify(["controller"], {"worker": None, "controller": 0}, True, None), "worker_did_not_exit")
+        self.assertEqual(classify(["controller", "worker"], {"worker": 5, "controller": 0}, False, None), "worker_nonzero_exit")
+        self.assertEqual(classify(["controller", "worker"], {"worker": 0, "controller": 3}, False, None), "controller_nonzero_exit")
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 6}, False, None), "worker_lost")
+        self.assertEqual(classify([], {"worker": None, "controller": None}, False, "timeout"), "timeout")
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 0}, False, "near_memory_limit"),
+                         "near_memory_limit")
+
+
 if __name__ == "__main__":
     unittest.main()

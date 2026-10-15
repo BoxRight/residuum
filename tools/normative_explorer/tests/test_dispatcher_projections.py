@@ -88,7 +88,7 @@ class DispatcherTests(unittest.TestCase):
         env = self.dispatcher.envelope("a1", schemas.validate_action(action("inspect_theory"), "B"))
         self.assertEqual(env["manifest_hash"], "h-1")
         self.assertEqual(env["episode_id"], "ep-1")
-        self.assertEqual(env["request"], {"inspect_theory": None})
+        self.assertEqual(env["request"], "inspect_theory")
         with self.assertRaises(schemas.ProtocolError):
             self.dispatcher.envelope("a2", schemas.validate_action(action("advance_session", session="s1", max_steps=1), "B"))
         self.registry.learn({"payload": {"session_opened": {"session": "s1", "kind": "forward"}}})

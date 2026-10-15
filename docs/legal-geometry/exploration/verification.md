@@ -469,3 +469,56 @@ After the fully cold run, the three test targets still complete staged:
 lib `20261015T051915662198Z-2144455` (694 MiB), boundary
 `20261015T051928180974Z-2144886` (401 MiB), cli
 `20261015T051932424885Z-2145182` (629 MiB).
+
+## Python controller with simulated provider (`tools/normative_explorer/`)
+
+Commit base `0f25aae`. No model call, no process launch: the controller
+talks to an injectable backend. The interactive bounded mode that would let
+the controller choose the next request while the worker process stays open
+is a later, separate runner change; the controller never launches the
+binary itself. All Python tests run individually through
+`scripts/test_safe.py --python-test` (`f273675`), each in its own scope with
+the runner's controls, `python3 -I` with only the repository root on
+`sys.path`.
+
+| Commit | Content | Tests (reports `20261015T0600…`–`20261015T0609…`) |
+|---|---|---|
+| `eb4f8db` | manifest freezing (worker + controller sections, closed fields, SHA-256 over canonical JSON rechecked every turn), hash-chained append-only ledger with specialised files and content-addressed artefacts, reconstruction, state machine, budgets | 6 |
+| `65be2c1` | tool catalogue per condition, strict action validation with explanation fields, dispatcher with reference checks and frozen identity, A/B/C projections by allow-list, refusal of payloads outside the condition | 5, including projection of the seventeen recorded worker lines with no reserved key emitted in A or B |
+| this commit | injectable backend interface; `RecordedBackend` replaying the Rust-recorded lines by request content; `StubBackend`; claim checker; scripted provider; controller cycle, candidate tracking against resolved observations, verdicts | 4 |
+
+Controller cycle checks (`test_controller`), each individually:
+
+- **Recorded episode, condition C** (`20261015T060925780667Z-2181224`): a
+  scripted provider replays the generator's decodable requests; eleven
+  worker calls in order with the frozen identity; statuses `complete,
+  complete, step_limit, complete, complete, structural_reject, complete,
+  complete, complete, unresolved_parameters, complete`; one protocol error
+  (unknown session) that never reached the backend; `candidate.generated`
+  and `candidate.rejected` recorded separately from `filter.applied` (one,
+  c1 compatible with the documented historical observation) and from
+  `partition.refined` (none); a pending valuation; the legal hypothesis kept
+  with the action, never as a valuation; claims with deterministic verdicts
+  (`match`, `mismatch`, `unreferenced`, `unchecked`); the model saw C views
+  with provenance and every tool; outcome `verified_compatible_candidate`
+  scoped as compatibility with the declared D, not legal approval.
+- **Condition A** (`20261015T060926073764Z-2181237`): same recording;
+  `minimal_supports` is a protocol error and never a worker call; no view
+  carries a reserved key while the full record keeps provenance; a claim on
+  the evaluation closure is `out_of_view`, not a mismatch.
+- **Technical failures** (`20261015T060926314879Z-2181250`): a pending
+  evaluation, a `certificate_failed` report, an `output_limit` fault and an
+  execution error leave the candidate `pending`, produce no `filter.applied`,
+  and the progress file never says incompatible; outcome
+  `awaiting_independent_valuation`.
+- **Contract immutability and budgets** (`20261015T060926535508Z-2181263`):
+  an invented tool, a `condition` argument, a non-admitted theory and a
+  non-object action are protocol errors that consume attempts and reach no
+  backend; the action budget ends the episode as `budget_exhausted`; a
+  manifest changed on disk aborts the next turn as `technical_abort`.
+
+Two defects found by the recorded fixture and fixed before this commit: the
+unit request `inspect_theory` travels as a bare string in the wire encoding,
+not as an object; and the controller section gained `observations`
+(dossier, required, source, status) so that candidates are contrasted with
+the resolved history rather than with the model's account.

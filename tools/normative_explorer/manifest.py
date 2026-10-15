@@ -26,8 +26,10 @@ WORKER_KEYS = {
 }
 CONTROLLER_KEYS = {
     "controller_version", "condition", "model", "max_model_requests", "max_actions",
-    "max_output_tokens", "valuation_source", "explorer_instructions",
+    "max_output_tokens", "valuation_source", "explorer_instructions", "observations",
 }
+OBSERVATION_KEYS = {"dossier", "required", "source", "status"}
+OBSERVATION_STATUS = ("documented", "hypothetical", "pending")
 MODEL_KEYS = {"provider", "model_id", "parameters"}
 
 
@@ -122,6 +124,16 @@ def validate(document: dict, source_path: Path) -> EpisodeManifest:
         raise ManifestError("valuation_source must name the independent source")
     if not isinstance(controller["explorer_instructions"], str):
         raise ManifestError("explorer_instructions must be text")
+    if not isinstance(controller["observations"], list):
+        raise ManifestError("observations must be a list")
+    for i, obs in enumerate(controller["observations"]):
+        _require(obs, OBSERVATION_KEYS, f"observations[{i}]")
+        if obs["dossier"] not in worker["dossiers"]:
+            raise ManifestError(f"observations[{i}]: unknown dossier {obs['dossier']!r}")
+        if not isinstance(obs["required"], bool) or obs["status"] not in OBSERVATION_STATUS:
+            raise ManifestError(f"observations[{i}]: required must be boolean and status documented, hypothetical or pending")
+        if not isinstance(obs["source"], str) or not obs["source"]:
+            raise ManifestError(f"observations[{i}]: source required")
     return EpisodeManifest(
         worker=worker,
         controller=controller,

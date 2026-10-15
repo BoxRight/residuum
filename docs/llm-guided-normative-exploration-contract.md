@@ -1021,9 +1021,39 @@ usa `CARGO_PROFILE_DEV_DEBUG=0`, contraparte en el perfil `dev` de la práctica
 documentada para tests, porque con información de depuración completa la
 compilación en frío excede el tope del runner; los límites no cambian.
 
+### 6.9 Controlador Python con proveedor simulado (`tools/normative_explorer/`)
+
+Tres commits, cada uno con sus tests individuales bajo el runner
+(`--python-test`): estado y registro del episodio (manifiesto congelado con
+secciones `worker` y `controller`, identificadores, presupuestos, ledger
+append-only encadenado por hash y reconstrucción completa); dispatcher y
+vistas A/B/C (catálogo por condición, validación estricta, referencias
+contra lo creado en el episodio, proyecciones por lista de campos); y
+proveedor simulado con ciclo completo (backend inyectable, reproducción de
+las líneas grabadas del trabajador, cotejo de afirmaciones, seguimiento de
+candidatas contra las observaciones resueltas, veredicto).
+
+Criterios del bloque y cómo se cumplen:
+
+| Criterio | Cumplimiento |
+|---|---|
+| el proveedor no puede modificar teoría, `D`, perfil o condición | sólo devuelve acciones; el manifiesto se congela por hash y se vuelve a comprobar cada turno; un cambio en disco aborta; una acción con argumentos ajenos es error de protocolo |
+| las proyecciones no filtran información reservada | listas de campos explícitas por clase de carga y condición; comprobación sobre las diecisiete líneas grabadas de que A y B no emiten ninguna clave reservada; una carga fuera del catálogo se rechaza |
+| candidatas nuevas contrastadas con el historial pertinente | `observations` del manifiesto (expediente, requerido, fuente, estado); sólo las `documented` resuelven; `filter.applied` por evaluación certificada; el veredicto sale de ahí |
+| generación, filtrado y refinamiento registrados por separado | `candidates.jsonl` (`candidate.generated`/`rejected`), `progress.jsonl` (`filter.applied`, `evaluation.technical`), `partitions.jsonl` (`partition.refined`) |
+| ningún fallo técnico se convierte en incompatibilidad | pendiente, `certificate_failed`, faltas y errores dejan la candidata `pending`; incompatible sólo por evaluación certificada contraria a una observación resuelta |
+| camino explícito de las pruebas Python bajo el runner | `--python-test`, una por ámbito, `python3 -I`, mismos controles |
+
+Decisión de integración explícita: el controlador habla con un backend
+inyectable; el modo acotado actual del runner alimenta un archivo finito y
+no permite elegir la siguiente petición con el proceso abierto. Su conexión
+interactiva requerirá otro modo acotado, revisado antes de usarse; el
+controlador no lanza el binario.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-el controlador y el proveedor.
+el modo interactivo acotado, el proveedor real, las valoraciones nuevas y
+los episodios comparativos.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1134,6 +1164,9 @@ fijados.
   biblioteca pasados individualmente.
 - Binario mínimo (6.8) en `e544d4b`; protocolo de invocación incorporado en
   `94608f9`; modo acotado del runner en `f600bb3` y `744adcc`; comprobación
-  del proceso acotado en el commit siguiente. Doce tests de frontera pasados
-  individualmente; el binario ejecutado sólo bajo el runner. No se ejecutó la
-  suite ni ningún test antiguo; no se hizo merge ni push.
+  del proceso acotado en `0f25aae`. Doce tests de frontera pasados
+  individualmente; el binario ejecutado sólo bajo el runner.
+- Controlador Python (6.9): `eb4f8db`, `65be2c1` y el commit siguiente;
+  modo `--python-test` del runner en `f273675`. Quince tests Python pasados
+  individualmente. Sin llamadas al modelo. No se ejecutó la suite ni ningún
+  test antiguo; no se hizo merge ni push.

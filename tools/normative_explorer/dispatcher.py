@@ -65,7 +65,8 @@ class Dispatcher:
         a = action.arguments
         t = action.tool
         if t == "inspect_theory":
-            return {"inspect_theory": None}
+            # Unit variants travel as bare strings in the wire encoding.
+            return "inspect_theory"
         if t == "begin_forward":
             return {"begin_forward": {"dossier": a["dossier"], "theory": a.get("theory")}}
         if t in ("begin_residual", "begin_active_residual"):

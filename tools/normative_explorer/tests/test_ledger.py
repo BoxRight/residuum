@@ -37,6 +37,7 @@ def controller_section(condition="C"):
         "max_output_tokens": 4000,
         "valuation_source": "stipulation:test",
         "explorer_instructions": "test",
+        "observations": [{"dossier": "d1", "required": True, "source": "stipulation:test", "status": "documented"}],
     }
 
 

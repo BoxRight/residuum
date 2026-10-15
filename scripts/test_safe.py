@@ -43,9 +43,15 @@ def worker(report, index):
     samples = collections.deque()
     reason = None
     started = time.monotonic()
+    stdin_file = open(request['stdin'], 'rb') if request.get('stdin') else None
+    stdout_file = (report / f'{index:02d}.stdout.jsonl').open('wb') if request.get('stdout') else None
     with (report / f'{index:02d}.output.txt').open('w') as output:
-        process = subprocess.Popen(request['command'], cwd=ROOT, stdout=output,
-                                   stderr=subprocess.STDOUT, start_new_session=True)
+        # Protocol stdout, when requested, is kept apart from diagnostics.
+        process = subprocess.Popen(request['command'], cwd=ROOT,
+                                   stdin=stdin_file if stdin_file else None,
+                                   stdout=stdout_file if stdout_file else output,
+                                   stderr=output if stdout_file else subprocess.STDOUT,
+                                   start_new_session=True)
         try:
             while process.poll() is None:
                 now = time.monotonic()
@@ -64,7 +70,7 @@ def worker(report, index):
                     pass
                 while samples and samples[0][0] < now - 1.0:
                     samples.popleft()
-                if (request['stage'] in ('test', 'fixture') and rss >= 128 * MIB and samples
+                if (request['stage'] in ('test', 'fixture', 'worker') and rss >= 128 * MIB and samples
                         and rss - min(sample[1] for sample in samples) >= 64 * MIB):
                     reason = reason or 'abnormal_memory_growth'
                 samples.append((now, rss))
@@ -77,6 +83,10 @@ def worker(report, index):
             kill_process_group(process)
             process.wait(timeout=2)
             raise
+        finally:
+            for handle in (stdin_file, stdout_file):
+                if handle:
+                    handle.close()
     events = dict(line.split() for line in (group / 'memory.events').read_text().splitlines())
     peak_group = int((group / 'memory.peak').read_text())
     if peak_group >= STOP_MEMORY:
@@ -97,9 +107,11 @@ def worker(report, index):
     return 0 if reason is None else 1
 
 
-def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None):
+def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
+                stdin=None, stdout=False):
     index = len(rows) + 1
-    request = dict(stage=stage, name=name, command=command, timeout=timeout)
+    request = dict(stage=stage, name=name, command=command, timeout=timeout,
+                   stdin=str(stdin) if stdin else None, stdout=bool(stdout))
     (report / f'{index:02d}.request.json').write_text(json.dumps(request, indent=2) + '\n')
     unit = f'residuum-safe-{os.getpid()}-{index}'
     scope = ['/usr/bin/systemd-run', '--user', '--scope', '--quiet', f'--unit={unit}',
@@ -173,6 +185,10 @@ def main():
     parser.add_argument('--incremental', action='store_true', help='Forward incremental comparison of base/delta seed blocks; requires --fixture')
     parser.add_argument('--forward', action='store_true', help='Module-aware forward closure with active verb programs; requires --fixture')
     parser.add_argument('--library', type=Path, help='Compose one shared declaration fixture; requires --fixture and --incremental')
+    parser.add_argument('--worker-manifest', type=Path,
+                        help='Run residuum-worker once, bounded, with this manifest; requires --worker-requests')
+    parser.add_argument('--worker-requests', type=Path,
+                        help='Finite file of one request per line fed to residuum-worker on stdin')
     args = parser.parse_args()
     if (args.steps is not None or args.trace) and not args.cli:
         parser.error('--steps and --trace require --cli')
@@ -190,6 +206,10 @@ def main():
         parser.error('--forward and --incremental are separate experiment modes')
     if args.library and not (args.fixture and args.incremental):
         parser.error('--library requires --fixture and --incremental')
+    if bool(args.worker_manifest) != bool(args.worker_requests):
+        parser.error('--worker-manifest and --worker-requests go together')
+    if args.worker_manifest and (args.fixture or args.test or args.compile_only or args.binary):
+        parser.error('the worker mode cannot be combined with fixtures or tests')
     if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
         parser.error('--fixture cannot be combined with test, binary, compile, or format options')
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
@@ -238,6 +258,37 @@ def main():
                 emit_output(report / f'{len(rows):02d}.output.txt', sys.stderr)
             raise
         emit_output(output, sys.stdout)
+        return 0
+    if args.worker_manifest:
+        manifest = args.worker_manifest.resolve()
+        requests = args.worker_requests.resolve()
+        if not manifest.is_file() or manifest.stat().st_size > 4 * 1024 * 1024:
+            raise RuntimeError('Expected one regular manifest file of at most 4 MiB')
+        if not requests.is_file() or requests.stat().st_size > 1024 * 1024:
+            raise RuntimeError('Expected one regular requests file of at most 1 MiB')
+        if not requests.read_bytes().endswith(b'\n'):
+            raise RuntimeError('The requests file must end with a newline; a trailing partial line is not executed')
+        output = run_bounded(report, rows, 'compile', 'compile residuum-worker',
+                             ['cargo', 'build', '--offline', '--locked', '-p', 'residuum-boundary',
+                              '--bin', 'residuum-worker', '--jobs', '1', '--message-format=json'], 45)
+        binaries = []
+        for line in output.read_text().splitlines():
+            try:
+                message = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (message.get('reason') == 'compiler-artifact' and message.get('executable')
+                    and message.get('target', {}).get('name') == 'residuum-worker'
+                    and 'bin' in message.get('target', {}).get('kind', [])):
+                binaries.append(Path(message['executable']))
+        if len(binaries) != 1:
+            raise RuntimeError('Expected one compiled residuum-worker binary; refusing execution')
+        # One bounded process: requests on stdin, protocol lines to NN.stdout.jsonl,
+        # diagnostics to NN.output.txt, same cgroup, memory growth and timeout controls.
+        run_bounded(report, rows, 'worker', 'residuum-worker',
+                    [str(binaries[0]), '--manifest', str(manifest)], 60,
+                    stdin=requests, stdout=True)
+        print(f'worker protocol output: {report / f"{len(rows):02d}.stdout.jsonl"}', flush=True)
         return 0
     if args.fmt_check or args.format:
         command = ['cargo', 'fmt', '--all'] + (['--check'] if args.fmt_check else [])

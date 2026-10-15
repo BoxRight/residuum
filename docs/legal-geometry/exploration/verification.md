@@ -388,3 +388,21 @@ code with its diagnostic; manifest DTO round trip field by field; relative
 paths resolved against the manifest's directory; oversized manifest and
 zero budgets rejected before any work; an invented `set_manifest` request
 rejected at the wire.
+
+## Bounded worker mode of the runner (proposed, not executed)
+
+`scripts/test_safe.py --worker-manifest <file> --worker-requests <file>`
+builds `residuum-worker` (`cargo build --offline --locked -p
+residuum-boundary --bin residuum-worker`, one job, 45 s) and runs it once in
+the same cgroup with the requests file on stdin (regular file, at most
+1 MiB, ending in a newline), protocol lines to `NN.stdout.jsonl` and
+diagnostics to `NN.output.txt`, 60 s timeout, the existing abnormal-growth
+control extended to the `worker` stage. Memory and swap limits, CPU quota,
+job and thread counts and the stop policy are unchanged; the mode cannot be
+combined with fixtures or tests. `run_bounded` gained optional `stdin` and
+`stdout` arguments, used only by this mode; existing stages keep their
+behaviour. Only `python3 -m py_compile` and `--help` were run on the script.
+The mode has **not** been executed and the binary has not been built: both
+wait for review, after which the equivalence between direct worker,
+in-memory service and bounded process is to be checked, provenance and
+failure states included.

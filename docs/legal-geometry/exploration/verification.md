@@ -93,3 +93,28 @@ One failed run preceded the passing one (`20261015T010447304918Z-1945200`):
 a stale `Candidatedeclares.res` from the previous commit's behaviour made
 `!file.exists()` fail. `admit` now removes a previous private module under
 the same id before deciding, so a rejected proposal leaves no stale file.
+
+## Certificate as a precondition of acceptance
+
+Review of `411ad1b` found that `conclude` returned `Evaluated` even when the
+conservation certificate was computed but did not hold. Acceptance now
+requires, jointly: completed closure, `certificate.holds()`, and only then
+the reading of `D`. A failed certificate is the technical status
+`certificate_failed` (`ProposalStatus::CertificateFailed(Conservation)`);
+no compatibility is reported. Stages gained `closed` and `certified`.
+
+Regression `proposal_certificate_failure_is_a_technical_status_not_a_verdict`:
+a candidate with head `transferred`, absent from the Riggs reference closure
+and therefore inside the certificate scope, is consumed by LegalGeneral
+(`transferTitle`, `ownershipCapacity`) and produces events outside the
+declared head; both the full-closure path and the stepwise session end in
+`certificate_failed` with `events_preserved = false`.
+
+| Step | Report | Result |
+|---|---|---|
+| `proposal_certificate_failure_is_a_technical_status_not_a_verdict` | `20261015T011521727919Z-1953698` | 1 passed |
+| `proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation` (rerun) | `20261015T011522892348Z-1953846` | 1 passed |
+| `proposal_stages_separate_admission_from_evaluation_and_session_matches_full_closure` (rerun) | `20261015T011525762965Z-1953896` | 1 passed |
+| `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures` (rerun) | `20261015T011526880378Z-1953923` | 1 passed |
+| four `exploration_tests` (rerun) | `20261015T011528800513Z-1953952`, `…529766439Z-1953978`, `…530732694Z-1954007`, `…531497669Z-1954035` | 1 passed each |
+| `cargo fmt --check` | after the above | exit 0 |

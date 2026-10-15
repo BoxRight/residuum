@@ -65,6 +65,11 @@ pub enum ProposalStatus {
     /// The evaluator refused, could not complete, or was stopped by its step
     /// budget. Not a refutation and not a compatibility verdict.
     EvaluationPending(String),
+    /// The closure completed but the addition did not conserve the reference
+    /// outside its declared heads (new events, new justifications or
+    /// undeclared heads). A technical status: `D` is not read, no
+    /// compatibility is reported.
+    CertificateFailed(Conservation),
     /// Evaluated and certified; `compatible` reads `D` through its criterion.
     Evaluated {
         components: Vec<bool>,
@@ -357,12 +362,20 @@ fn conclude(
     heads: &BTreeSet<String>,
     decision: &Decision,
 ) -> ProposalReport {
-    let (components, compatible) = match read_decision(closure, decision) {
-        Ok(read) => read,
-        Err(e) => return report.with(ProposalStatus::EvaluationPending(e.to_string())),
-    };
+    // Acceptance requires, jointly: completed closure, valid certificate,
+    // and only then the reading of D. A failed certificate is a technical
+    // status, never a normative verdict.
     let certificate = match certify_addition(reference, closure, heads) {
         Ok(c) => c,
+        Err(e) => return report.with(ProposalStatus::EvaluationPending(e.to_string())),
+    };
+    report.stages.push("closed");
+    if !certificate.holds() {
+        return report.with(ProposalStatus::CertificateFailed(certificate));
+    }
+    report.stages.push("certified");
+    let (components, compatible) = match read_decision(closure, decision) {
+        Ok(read) => read,
         Err(e) => return report.with(ProposalStatus::EvaluationPending(e.to_string())),
     };
     report.stages.push("evaluated");
@@ -524,6 +537,7 @@ pub fn status_label(status: &ProposalStatus) -> &'static str {
         ProposalStatus::StructuralReject(_) => "structural_reject",
         ProposalStatus::OutOfCertificateScope(_) => "out_of_certificate_scope",
         ProposalStatus::EvaluationPending(_) => "evaluation_pending",
+        ProposalStatus::CertificateFailed(_) => "certificate_failed",
         ProposalStatus::Evaluated {
             compatible: true, ..
         } => "evaluated_compatible",

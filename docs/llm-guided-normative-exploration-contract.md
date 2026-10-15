@@ -531,6 +531,7 @@ Igual número de consultas no implica igual coste; ambas columnas se informan.
 | Discriminación | candidatos supervivientes distintos, clases de cobertura distintas en el dominio acotado, bloques de partición, solicitudes informativas (mayor rama < total) | `partitions.jsonl` |
 | Compatibilidad normativa | fracción de observaciones resueltas satisfechas bajo `D` por candidato; pendientes contadas aparte | `valuations.jsonl` |
 | Casos valorados fuera del diseño | resultado de `D` en expedientes con valoración independiente obtenida fuera del episodio y no accesible durante la búsqueda | reserva externa |
+| Fidelidad explicativa | fracción de afirmaciones referenciadas del explorer (`claims`) que coinciden con el registro completo, por tipo de afirmación y por condición; afirmaciones sin referencia contadas aparte | `claims.jsonl` (propuesta: [campos de explicación](llm-explorer-explanation-claims.md)) |
 
 Ninguna valoración producida por el LLM o por el harness cuenta para la
 métrica normativa. Una valoración hipotética propuesta por el explorer se
@@ -829,6 +830,15 @@ cambiar el resultado de `process`:
 `exploration::evaluate`, `evaluate_admitted` y la sesión. No hay segunda
 definición de `D`. Una propuesta rechazada no deja módulo privado bajo su
 identificador.
+
+**Aceptación conjunta.** Una candidata sólo llega a `evaluated_*` si se
+cumplen, en este orden: cierre completado (`closed`), certificado de
+conservación válido (`certified`) y lectura de `D`. Si el certificado se
+calcula pero no se cumple (eventos o justificaciones nuevos fuera de las
+cabezas declaradas, o cabezas no declaradas), el estado es
+`certificate_failed`, técnico y sin veredicto normativo. El caso regresivo
+usa una cabeza `transferred` que pasa el alcance porque la referencia no la
+produce, pero que `LegalGeneral` consume y propaga a `owns` y `capacity`.
 
 **Equivalencia verificada**: `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures`
 compara, para 64 candidatas × 6 expedientes, la referencia en los 6 y los 24

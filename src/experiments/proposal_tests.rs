@@ -122,6 +122,8 @@ fn proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evalu
             "extracted",
             "admitted",
             "in_certificate_scope",
+            "closed",
+            "certified",
             "evaluated"
         ]
     );
@@ -400,6 +402,70 @@ fn proposal_stages_separate_admission_from_evaluation_and_session_matches_full_c
     let stepped = session.finish();
     assert_eq!(stepped, full);
     assert_eq!(status_label(&stepped.status), "evaluated_compatible");
+}
+
+const TRANSFER: &str =
+    "rule dispositionTransfers(will, testator, beneficiary, object, authority, effective, t) =
+    operativeDisposition(will, testator, beneficiary, object, authority, effective) @ t
+    <= transferred(will, beneficiary, object, testator, authority, effective) @ t
+";
+
+#[test]
+fn proposal_certificate_failure_is_a_technical_status_not_a_verdict() {
+    // `transferred` is absent from the Riggs reference closure, so the
+    // candidate passes the scope check; but LegalGeneral consumes it
+    // (`transferTitle`, `ownershipCapacity`) and produces consequences
+    // outside the declared head. Acceptance must fail on the certificate
+    // without reading D.
+    let base = fixture("riggs_cases");
+    let historical = experiment(&base, "historicalRiggs");
+    let decision = riggs_decision(&base);
+    let imports = [root().join("examples/experiments/legal_geometry/riggs_problem_manifest.res")];
+    let workdir = root().join("target/exploration/proposals-certificate");
+    let profile = profile().with_problem(["transferred"], [], []);
+    let ctx = ProposalContext {
+        imports: &imports,
+        workdir: &workdir,
+        profile: &profile,
+        max_clauses: 2,
+        seeds: &historical.input,
+        decision: &decision,
+    };
+    let episode = Episode::prepare(&ctx).unwrap();
+    let proposal = SourceProposal {
+        id: "transfer".into(),
+        text: TRANSFER.into(),
+    };
+    let admitted = admit(&proposal, &ctx, &episode).unwrap().unwrap();
+    assert_eq!(admitted.heads, BTreeSet::from(["transferred".to_string()]));
+    let reference = episode.reference(&historical.input).unwrap();
+    assert!(!reference.known.iter().any(|e| e.verb == "transferred"));
+    let admitted = check_scope(admitted, &reference).unwrap();
+
+    let full = evaluate_admitted(admitted.clone(), &ctx, &reference);
+    match &full.status {
+        ProposalStatus::CertificateFailed(certificate) => {
+            assert!(!certificate.holds());
+            assert!(!certificate.events_preserved, "{certificate:?}");
+            assert_eq!(
+                certificate.added_heads,
+                BTreeSet::from(["transferred".to_string()])
+            );
+        }
+        other => panic!("{other:?}"),
+    }
+    assert_eq!(status_label(&full.status), "certificate_failed");
+    assert!(full.stages.contains(&"closed"));
+    assert!(!full.stages.contains(&"certified"));
+    assert!(!full.stages.contains(&"evaluated"));
+
+    let mut session = EvaluationSession::begin(admitted, &ctx, reference).unwrap();
+    while !session.is_complete() {
+        session.step();
+    }
+    let stepped = session.finish();
+    assert_eq!(stepped, full);
+    assert_eq!(process(&proposal, &ctx).unwrap(), full);
 }
 
 fn normalized(c: &Closure) -> (BTreeSet<String>, BTreeMap<String, usize>) {

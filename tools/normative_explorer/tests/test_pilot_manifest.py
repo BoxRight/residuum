@@ -17,7 +17,11 @@ class PilotManifestTests(unittest.TestCase):
         model = m.controller["model"]
         self.assertEqual((model["provider"], model["model_id"]), ("anthropic", "claude-sonnet-5-5"))
         self.assertEqual(model["client"], {"timeout_seconds": 120})
-        self.assertEqual(m.controller["max_input_tokens"], 600000)
+        self.assertEqual(m.controller["max_cost_usd"], 2.5)
+        self.assertEqual(m.controller["pricing"], {"input_per_mtok": 2.0, "output_per_mtok": 10.0,
+                                                   "cache_write_multiplier": 1.25, "cache_read_per_mtok": 0.10})
+        self.assertEqual(manifest.instrumentation_problems(m), [])
+        self.assertEqual(m.worker["budgets"]["max_actions"], m.controller["max_actions"] + manifest.TECHNICAL_ACTIONS)
         self.assertEqual([o["status"] for o in m.controller["observations"]], ["documented"])
         built = []
         provider, policy = run_episode.build_provider(m, None, {"anthropic": lambda t: built.append(t) or object()})
@@ -25,6 +29,9 @@ class PilotManifestTests(unittest.TestCase):
         self.assertEqual(built, [120])
         provider.vocabulary = {"verbs": []}
         body = provider.build_request([], schemas.catalog(m.condition), 16000)
+        input_upper, output_upper = provider.request_bounds([], schemas.catalog(m.condition), 16000)
+        self.assertGreater(input_upper, len(json.dumps(body, ensure_ascii=False).encode()))
+        self.assertEqual(output_upper, 16000)
         self.assertEqual(body["output_config"], {"effort": "medium"})
         self.assertEqual(body["thinking"], {"type": "adaptive"})
         self.assertNotIn("fallbacks", body)

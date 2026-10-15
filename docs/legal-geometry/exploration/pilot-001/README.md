@@ -1,9 +1,10 @@
 # Pilot 001: first call to a real model, for review
 
 Status: **prepared, not executed.** No request has been sent to a model
-with this manifest. The manifest is `episode.json` in this directory; it
-validates with `tools/normative_explorer/manifest.py` and its frozen hash
-is printed by the controller at start.
+with this manifest, no dependency has been installed, and the latest review
+does not yet authorise either. The manifest is `episode.json` in this
+directory; it validates with `tools/normative_explorer/manifest.py` and its
+frozen hash is printed by the controller at start.
 
 ## Objective
 
@@ -15,47 +16,62 @@ failure recorded. It is not a measurement of normative learning, not an
 A/B/C comparison, and uses no new valuation: only the documented
 historical observation already in the repository.
 
-## Decisions, each to confirm
+## Decisions
 
-| Decision | Proposed value | Why |
+Reviewed favourably, pending the budget and instrumentation corrections
+now made:
+
+| Decision | Value | Why |
 |---|---|---|
-| Provider | `anthropic` | The only live connection; OpenAI has an adapter but no client factory, and choosing a provider is not settled by that availability. |
-| Model | `claude-sonnet-5-5` | Half the price of Claude Opus 5.5, capable at multistep tool use, and with the same API constraints, so the adapter applies unchanged. The pilot tests the circuit, so the model should very likely be able to write typed Formal rules; Claude Haiku 5.5 is kept for a later question on whether a small model suffices. The model is part of the episode identity; a change starts another episode. |
-| Effort and thinking | `effort: medium`, `thinking: adaptive` (reasoning text not returned) | This model defaults to `high` with recalibrated levels; `medium` is the documented starting point for multistep tool use, set explicitly. |
+| Provider | `anthropic` | The only live connection; OpenAI has an adapter but no client factory, and that availability is not an approved experimental choice. |
+| Model | `claude-sonnet-5-5` | Half the price of Claude Opus 5.5, capable at multistep tool use, same API constraints as the adapter assumes. A change of model starts another episode with its own identity and budget. |
+| Effort and thinking | `effort: medium`, `thinking: adaptive` (reasoning text not returned) | The model defaults to `high` with recalibrated levels; `medium` is the documented starting point for multistep tool use. |
 | Refusal fallback | off | A fallback would let another model answer inside the episode. A refusal is recorded as a model error with its category. |
-| Condition | C | Exercises every tool path the circuit offers. A or B would send less. |
-| Requests and actions | 12 model requests, 10 actions | Enough for inspect, a few queries, two proposals and their evaluation. |
+| Condition | C | Exercises every tool path the circuit offers. |
+| Model requests and explorer actions | 12 and 10 | Enough for inspect, a few queries, two proposals and their evaluation. |
+| Worker actions | 14 = 10 explorer + 4 technical | One to freeze the vocabulary, three for the idempotence probe. The entry point refuses a manifest without this room. |
 | Output tokens | 60 000 for the episode, at most 16 000 per request | Thinking counts as output. |
-| Input tokens | 600 000 ceiling, checked before each request | The overshoot is at most one request's input. |
+| Cost ceiling | **US$2.50, enforced** (next section) | |
 | Network deadline per request | 120 s, no retries | From the manifest; every failure is charged and recorded. |
-| Exchange deadline under the runner | **15 s today; proposed 1 500 s for this pilot only** | 12 requests × 120 s plus local time. Not applied: it needs a runner option, reviewed separately, accepted only for a real-provider manifest. Memory, swap, CPU and compile limits unchanged. |
+| Exchange deadline under the runner | `--interactive-deadline 1500` | The option exists only for real-provider manifests, up to 1 500 s; local exchanges keep their fixed 15 s. Memory, swap, CPU, growth and compile controls unchanged. Independent of the 120 s per request. |
 
-## Estimated cost ceiling
+## Cost: estimate and guaranteed ceiling
 
-Measured offline on this manifest: the opening request is about 116 000
-characters (system 1 760, tools 34 800, opening message 79 500 with the
-vocabulary package and the dossier seeds). In the archived simulated run,
-condition C views averaged about 6 700 characters and peaked at about
-30 000. Characters are not tokens; a rough conversion of 3 to 4 characters
-per token puts the opening at 30 000 to 40 000 tokens. An exact count
-needs the token-counting endpoint, which is a network call.
+These are two different things.
 
-At Claude Sonnet 5.5 rates (input $2, output $10 per million tokens; cache
-reads $0.20; 5-minute cache writes at 1.25 times input, as the Anthropic
-prompt-caching documentation states):
+**Guaranteed ceiling (US$2.50).** Before every call the controller asks the
+provider for an upper bound of that call and reserves it:
 
-| Item | Bound | Worst case |
-|---|---|---|
-| Input | ≤ 600 000 + one request (≈ 100 000) | ≈ $1.75 if every token were a cache write; ≈ $1.40 uncached |
-| Output | ≤ 60 000 + one request (16 000) | ≈ $0.76 |
-| **Total** | | **≈ $2.50** |
+- input tokens at most the UTF-8 bytes of the exact request body plus a
+  4 000-token margin for what the API adds around tool definitions (a token
+  never covers less than one byte);
+- output tokens at most the request's `max_tokens`;
+- the whole input bound priced as a cache write (the most expensive input
+  rate), the output bound at the output rate.
 
-For comparison, the same ceilings cost about $5.00 on Claude Opus 5.5 and
-about $0.15 to $0.65 on Claude Haiku 5.5.
+A call is sent only if what was already spent plus that bound stays within
+US$2.50. After the answer, the actual cost is charged from the reported
+usage breakdown (uncached input, cache writes, cache reads, output). If the
+usage is unknown, for example after a transport error, the full
+reservation is charged. If the bound cannot be computed, nothing is sent.
+The guarantee rests on three stated assumptions: the byte bound above, the
+margin, and the prices written in the manifest being the ones billed.
 
-The prefix is append-only with top-level prompt caching, so the expected
-cost is well below the ceiling. The ceiling is enforced from the usage the
-provider reports, not from this estimate.
+**Estimate.** Measured offline on this manifest, the first call's bounds
+are 120 296 input and 16 000 output tokens, a reservation of about US$0.46.
+The actual first call should cost much less, since most of its input is a
+cache write of about 30 000 to 40 000 tokens (a rough 3 to 4 characters per
+token on 116 000 characters). Later calls are mostly cache reads. Because
+reservations are conservative and grow with the history, the ceiling may
+stop the episode before its 12 requests; that is the cost of a guarantee.
+
+Prices in the manifest, for Claude Sonnet 5.5: input $2, output $10, cache
+reads $0.10 per million tokens, 5-minute cache writes at 1.25 times input.
+For comparison, the same reservations would allow about half as many calls
+on Claude Opus 5.5.
+
+The token-counting endpoint is free, but it returns an estimate rather
+than a contractual count, and it sends the same content to the provider.
 
 ## Content that leaves the machine
 
@@ -78,7 +94,17 @@ Riggs v. Palmer is a famous case; the model may know its outcome. That is
 acceptable for a technical pilot and is a known limit for any learning
 claim (contract §7).
 
-## Planned commands (none executed)
+## Order of the episode
+
+1. Preflight and manifest recheck.
+2. Vocabulary frozen from the worker (one technical action).
+3. Idempotence probe on a pending forward session (three technical
+   actions). If it fails, the episode stops with exit 6 before any model
+   call is paid.
+4. The model loop, under the cost ceiling.
+5. Ledger and supervisor report.
+
+## Planned commands (none executed, none authorised yet)
 
 ```sh
 # 1. SDK in a virtual environment; the runner launches the controller with
@@ -89,24 +115,15 @@ python3 -m venv .venv-pilot
 # 2. Credentials stay in the environment, never in the manifest.
 export ANTHROPIC_WORKSPACE_ID=wrkspc_…      # the key is already exported
 
-# 3. After the deadline option is reviewed and merged:
+# 3. The run.
 CARGO_BUILD_JOBS=1 CARGO_PROFILE_TEST_DEBUG=0 CARGO_PROFILE_DEV_DEBUG=0 \
 .venv-pilot/bin/python scripts/test_safe.py \
     --interactive-manifest docs/legal-geometry/exploration/pilot-001/episode.json \
-    --interactive-ledger target/exploration/pilot-001/ledger
+    --interactive-ledger target/exploration/pilot-001/ledger \
+    --interactive-deadline 1500
 ```
 
-The run produces the ledger (every request body before the network, every
-raw answer before parsing, usage, faults, the idempotence probe) and the
-supervisor's report. Acceptance is technical: both processes exit 0 or the
-controller exits with a recorded outcome, no technical stop, the probe
-passes, and the costs reported match the ledger.
-
-## Still open before running
-
-1. Review of this manifest and of the decisions above.
-2. A runner option for the exchange deadline of a real-provider episode.
-3. Installing the SDK in the pilot's virtual environment.
-4. Optionally, an exact token count of the opening request through the
-   token-counting endpoint. It is a network call sending the same content;
-   whether it is billed has not been verified here.
+Acceptance is technical: the probe passes, the controller ends with a
+recorded outcome, no technical stop by the supervisor, the cost charged in
+the ledger stays within the ceiling and matches the reported usage, and the
+worker exits 0.

@@ -19,10 +19,14 @@ ROOT = Path(__file__).resolve().parents[3]
 ARGS = {"rationale": "r", "expected_observation": None, "claims": None, "legal_hypothesis": None}
 
 
-def episode_manifest(provider="anthropic", client=True):
+def episode_manifest(provider="anthropic", client=True, **controller):
     (ROOT / "target" / "exploration").mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix="entry-", dir=str(ROOT / "target" / "exploration")))
     doc = document("B")
+    # Room for the four technical actions on top of the explorer's ten.
+    doc["controller"]["max_actions"] = 10
+    doc["worker"]["budgets"]["max_actions"] = 14
+    doc["controller"].update(controller)
     doc["controller"]["model"] = {"provider": provider, "model_id": "claude-opus-5-5",
                                   "parameters": {"output_config": {"effort": "medium"}} if provider == "anthropic" else {}}
     if client:
@@ -140,7 +144,8 @@ class EntryPointWithRealProviderTests(unittest.TestCase):
         path, tmp = episode_manifest()
         replies = [
             message([thinking("sig-1"), tool_use("begin_forward", dict(ARGS, dossier="d1", theory=None), "t1")]),
-            message([thinking("sig-2"), tool_use("advance_session", dict(ARGS, session="s1", max_steps=8), "t2")]),
+            # The probe ran first and opened s1; the explorer's session is s2.
+            message([thinking("sig-2"), tool_use("advance_session", dict(ARGS, session="s2", max_steps=8), "t2")]),
             message([tool_use("finish_episode", dict(ARGS, candidate_ids=[], explanation="observed"), "t3")]),
         ]
         code, err, built, worker = run_with_fakes(path, tmp, replies)
@@ -158,9 +163,12 @@ class EntryPointWithRealProviderTests(unittest.TestCase):
         for earlier, later in zip(bodies, bodies[1:]):
             self.assertEqual(later["messages"][:len(earlier["messages"])], earlier["messages"])
         self.assertEqual(bodies[2]["messages"][3]["content"][0]["signature"], "sig-2")
-        # The worker saw: vocabulary, two model actions, then the probe.
+        # The worker saw: vocabulary, the probe (open, advance, replay,
+        # advance), then the two model actions.
         tools_seen = [e["request"] if isinstance(e["request"], str) else next(iter(e["request"])) for e in worker.received]
-        self.assertEqual(tools_seen[:3], ["inspect_theory", "begin_forward", "advance_session"])
+        self.assertEqual(tools_seen, ["inspect_theory", "begin_forward", "advance_session", "advance_session",
+                                      "advance_session", "begin_forward", "advance_session"])
+        self.assertEqual([e["action_id"] for e in worker.received][:5], ["t1", "p1", "p2", "p2", "p3"])
         led = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash)
         rebuilt = led.reconstruct()
         self.assertEqual(rebuilt["terminal"], "episode.finished")
@@ -205,6 +213,61 @@ class EntryPointWithRealProviderTests(unittest.TestCase):
         errors = [r for r in led.read_file("model-responses") if r["kind"] == "model_error"]
         self.assertEqual(len(errors), 3)
         self.assertTrue(all("timed out" in e["message"] for e in errors))
+
+
+class BudgetAndInstrumentationTests(unittest.TestCase):
+    PRICES = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+              "cache_read_per_mtok": 0.10}
+
+    def test_cost_ceiling_stops_before_a_call_that_could_exceed_it(self):
+        # One call's bound is about (body bytes + 4000) * 2.5e-6 + 4000 * 1e-5, well above 0.01 $.
+        path, tmp = episode_manifest(max_cost_usd=0.01, pricing=self.PRICES, max_output_tokens=4000)
+        code, err, built, _ = run_with_fakes(path, tmp, [])
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        self.assertEqual(code, 3)
+        self.assertEqual(summary["outcome"], "budget_exhausted")
+        self.assertEqual(built["client"].messages.bodies, [], "no request was sent")
+        progress = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash).read_file("progress")
+        self.assertIn("cost ceiling", progress[-1]["message"])
+
+    def test_reserved_calls_never_exceed_the_ceiling_and_unknown_usage_is_charged_in_full(self):
+        path, tmp = episode_manifest(max_cost_usd=0.5, pricing=self.PRICES, max_output_tokens=4000)
+        replies = [RuntimeError("timed out")] * 12
+        code, err, built, _ = run_with_fakes(path, tmp, replies)
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        spent, ceiling = summary["budgets"]["cost_usd"]
+        self.assertLessEqual(spent, ceiling)
+        sent = len(built["client"].messages.bodies)
+        self.assertGreater(sent, 0)
+        led = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash)
+        reservations = [r for r in led.read_file("model-requests") if r["kind"] == "cost_reserved"]
+        self.assertEqual(len(reservations), sent)
+        self.assertAlmostEqual(spent, sum(r["reservation_usd"] for r in reservations), places=6)
+        self.assertEqual(summary["outcome"], "budget_exhausted")
+
+    def test_worker_budget_must_leave_room_for_the_technical_actions(self):
+        path, tmp = episode_manifest()
+        doc = json.loads(path.read_text())
+        doc["worker"]["budgets"]["max_actions"] = 13
+        path.write_text(json.dumps(doc))
+        code, err, built, _ = run_with_fakes(path, tmp, [])
+        self.assertEqual(code, 5)
+        self.assertIn("explorer 10 + technical 4", "".join(err.lines))
+        self.assertNotIn("client", built)
+
+    def test_a_failed_probe_stops_the_episode_before_any_model_call(self):
+        path, tmp = episode_manifest()
+        original = FakeWorker.ROUNDS_TO_FIXED_POINT
+        FakeWorker.ROUNDS_TO_FIXED_POINT = 2   # the probe needs a still pending session
+        try:
+            code, err, built, _ = run_with_fakes(path, tmp, [])
+        finally:
+            FakeWorker.ROUNDS_TO_FIXED_POINT = original
+        self.assertEqual(code, 6)
+        self.assertEqual(built["client"].messages.bodies, [])
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        self.assertEqual(summary["outcome"], "technical_abort")
+        self.assertFalse(summary["idempotence_probe"]["passed"])
 
 
 class BuildProviderTests(unittest.TestCase):

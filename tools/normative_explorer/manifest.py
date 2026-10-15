@@ -95,7 +95,28 @@ def _positive(value, what: str) -> int:
     return value
 
 
-OPTIONAL_CONTROLLER_KEYS = {"max_input_tokens"}
+OPTIONAL_CONTROLLER_KEYS = {"max_input_tokens", "max_cost_usd", "pricing"}
+PRICING_KEYS = {"input_per_mtok", "output_per_mtok", "cache_write_multiplier", "cache_read_per_mtok"}
+# Worker actions the instrumented entry point uses besides the explorer's:
+# one to freeze the vocabulary, three for the idempotence probe.
+TECHNICAL_ACTIONS = 4
+TECHNICAL_STEPS = 3
+TECHNICAL_SESSIONS = 1
+
+
+def instrumentation_problems(m) -> list[str]:
+    """Worker budgets must leave room for the technical actions on top of
+    everything the explorer may use, so that a valid exploration never fails
+    for the harness's own needs."""
+    w, c = m.worker["budgets"], m.controller
+    problems = []
+    if w["max_actions"] < c["max_actions"] + TECHNICAL_ACTIONS:
+        problems.append(f"worker max_actions {w['max_actions']} < explorer {c['max_actions']} + technical {TECHNICAL_ACTIONS}")
+    if w["max_steps_total"] < TECHNICAL_STEPS + 1:
+        problems.append("worker max_steps_total leaves no step after the probe")
+    if w["max_sessions"] < TECHNICAL_SESSIONS + 1:
+        problems.append("worker max_sessions leaves no session after the probe")
+    return problems
 
 
 def validate(document: dict, source_path: Path) -> EpisodeManifest:
@@ -107,6 +128,17 @@ def validate(document: dict, source_path: Path) -> EpisodeManifest:
              CONTROLLER_KEYS, "controller")
     if "max_input_tokens" in controller:
         _positive(controller["max_input_tokens"], "controller.max_input_tokens")
+    if "max_cost_usd" in controller:
+        cost = controller["max_cost_usd"]
+        if not isinstance(cost, (int, float)) or isinstance(cost, bool) or cost <= 0:
+            raise ManifestError("controller.max_cost_usd must be a positive number")
+        if "pricing" not in controller:
+            raise ManifestError("a cost ceiling needs controller.pricing to bound each call")
+    if "pricing" in controller:
+        _require(controller["pricing"], PRICING_KEYS, "controller.pricing")
+        for key, value in controller["pricing"].items():
+            if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+                raise ManifestError(f"controller.pricing.{key} must be a positive number")
     if worker["wire_version"] != WIRE_VERSION:
         raise ManifestError(f"worker wire_version must be {WIRE_VERSION}")
     _ident(worker["episode_id"], "episode_id")

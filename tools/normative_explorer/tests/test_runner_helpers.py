@@ -48,6 +48,23 @@ class InteractivePolicyArgsTests(unittest.TestCase):
             args({"worker": {}}, None)
 
 
+class InteractiveDeadlineTests(unittest.TestCase):
+    def test_remote_only_deadline_within_bounds(self):
+        deadline = runner().interactive_deadline
+
+        def doc(provider):
+            return {"controller": {"model": {"provider": provider}}}
+        self.assertEqual(deadline(doc("simulated"), None), 15)
+        self.assertEqual(deadline(doc("anthropic"), 1500), 1500)
+        self.assertEqual(deadline(doc("anthropic"), 1), 1)
+        for provider, value, pattern in [("simulated", 600, "only for a real provider"),
+                                         ("anthropic", None, "needs an explicit"),
+                                         ("anthropic", 1501, "within 1..1500"),
+                                         ("anthropic", 0, "within 1..1500")]:
+            with self.assertRaisesRegex(RuntimeError, pattern):
+                deadline(doc(provider), value)
+
+
 class EndClassificationTests(unittest.TestCase):
     def test_normal_end_whatever_the_order_and_technical_ends(self):
         classify = runner().classify_supervised_end

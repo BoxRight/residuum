@@ -772,3 +772,35 @@ proposed), and the SDK in a virtual environment.
 Pilot 001 model changed to `claude-sonnet-5-5` at the author's request
 (medium effort, adaptive thinking); estimated worst-case cost about US$2.50.
 `test_pilot_manifest` rerun individually.
+
+## Pilot 001: enforceable cost ceiling, technical actions, remote deadline
+
+After review. Offline only; nothing installed, nothing sent.
+
+- Cost: `controller.max_cost_usd` with `controller.pricing`. Before each
+  call the controller reserves its upper bound (request body UTF-8 bytes
+  plus 4 000 tokens of input, priced as cache writes; `max_tokens` of
+  output). A call is sent only if spent plus bound stays within the
+  ceiling; the bound being unavailable stops the episode; unknown usage is
+  charged at the full reservation; known usage at its reported breakdown.
+  Every reservation is a `cost_reserved` ledger record. Pilot: US$2.50,
+  Sonnet 5.5 prices with cache reads at $0.10/M; first-call reservation
+  measured at about US$0.46.
+- Instrumentation: worker actions must cover the explorer's plus four
+  technical ones (vocabulary freeze, three for the probe); the entry point
+  refuses otherwise before building any client (exit 5). Pilot worker
+  budget 14. The idempotence probe now runs before the model loop; a
+  failed probe stops the episode before any paid call (exit 6).
+- Runner: `--interactive-deadline`, 1..1500 s, required for a real-provider
+  manifest and refused for the simulated one, which keeps 15 s. Both
+  refusals happen before compiling. Other controls unchanged.
+
+Tests run individually, all passed: runner deadline and policy helpers;
+budget unit tests; entry-point tests for the cost stop before any call,
+reservations never exceeding the ceiling with unknown usage, the
+instrumentation refusal, the probe-first stop, the full Anthropic path
+offline, provider errors, provider selection; channel entry point;
+adapter charging tests; probe and condition-C controller tests; the pilot
+manifest. Simulated episode under the runner with the probe first: both
+processes exit 0, 0.62 s, 24 MiB peak, probe passed (report
+`20261015T190152665664Z-2738686`).

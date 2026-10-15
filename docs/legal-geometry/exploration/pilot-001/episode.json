@@ -841,7 +841,7 @@
       ]
     },
     "budgets": {
-      "max_actions": 12,
+      "max_actions": 14,
       "max_steps_per_action": 8,
       "max_steps_total": 200,
       "max_sessions": 8,
@@ -876,7 +876,6 @@
     "max_model_requests": 12,
     "max_actions": 10,
     "max_output_tokens": 60000,
-    "max_input_tokens": 600000,
     "valuation_source": "examples/experiments/legal_geometry/riggs_rule_observations.tsv",
     "explorer_instructions": "You are exploring a legal rule theory through tools that run a formal evaluator. You are not the evaluator and you are not the judge.\n\nGoal of this episode: find, by proposing rules, a generalisation that makes the evaluator derive the experimental impediment for the historical dossier, and learn from the evaluator's results what each proposal requires.\n\nHow to work:\n- Every turn is exactly one tool call. Read the result before deciding the next call.\n- Use inspect results, forward sessions and residual queries to understand what the theory derives and why, then propose rules with propose_candidate in the Formal syntax given in the opening message, and evaluate them with begin_candidate_evaluation followed by advance_session until the result is complete.\n- A step limit or a pending result is not a refutation: advance again or try another route.\n- Rejections (syntax, elaboration, profile) explain what the proposal path accepts; fix the proposal rather than repeating it.\n- Put a short reason in rationale and, when you expect something specific, in expected_observation.\n- When you state what happened in Residuum or how candidates differ, use claims with an assertion that names an identifier you received.\n- You may propose a legal hypothesis with its grounds in legal_hypothesis. It is recorded as a hypothesis. Compatibility with a valuation is decided outside you, by documented observations; never present your own judgement as a valuation.\n- Finish with finish_episode, referencing the candidates you consider worth keeping, when you have an evaluated candidate or when further calls would not add information.",
     "observations": [
@@ -886,6 +885,13 @@
         "source": "riggs_rule_observations.tsv#historicalRiggs (Riggs v. Palmer, 115 N.Y. 506, pp. 514-515)",
         "status": "documented"
       }
-    ]
+    ],
+    "max_cost_usd": 2.5,
+    "pricing": {
+      "input_per_mtok": 2.0,
+      "output_per_mtok": 10.0,
+      "cache_write_multiplier": 1.25,
+      "cache_read_per_mtok": 0.1
+    }
   }
 }

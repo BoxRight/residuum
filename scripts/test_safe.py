@@ -271,6 +271,26 @@ def classify_supervised_end(exit_order, codes, grace_expired, stop_reason):
     return 'worker_nonzero_exit'
 
 
+LOCAL_EXCHANGE_SECONDS = 15
+REMOTE_EXCHANGE_MAX_SECONDS = 1500
+
+
+def interactive_deadline(document, value):
+    """Whole-exchange deadline: fixed at 15 s for the simulated provider,
+    whose option is refused; required and within 1..1500 s for a real one.
+    Raises RuntimeError before anything is compiled or launched."""
+    provider = document['controller']['model']['provider']
+    if provider == 'simulated':
+        if value is not None:
+            raise RuntimeError('--interactive-deadline is only for a real provider; local exchanges keep 15 s')
+        return LOCAL_EXCHANGE_SECONDS
+    if value is None:
+        raise RuntimeError(f'a real provider ({provider!r}) needs an explicit --interactive-deadline')
+    if not 1 <= value <= REMOTE_EXCHANGE_MAX_SECONDS:
+        raise RuntimeError(f'--interactive-deadline must be within 1..{REMOTE_EXCHANGE_MAX_SECONDS} s')
+    return value
+
+
 def interactive_policy_args(document, policy):
     """The controller's --policy arguments, from the manifest's provider:
     required for the simulated provider, refused for a real one, whose
@@ -382,6 +402,9 @@ def main():
                              'exactly when the manifest provider is simulated')
     parser.add_argument('--interactive-ledger', type=Path,
                         help='Empty or absent directory under target/ for the episode ledger')
+    parser.add_argument('--interactive-deadline', type=int,
+                        help='Whole-exchange deadline in seconds for a real-provider episode, 1..1500; '
+                             'required for a real provider, refused for the simulated one (fixed at 15 s)')
     parser.add_argument('--interactive-policy',
                         help='Scripted policy of the simulated provider; refused for a real provider')
     args = parser.parse_args()
@@ -422,6 +445,8 @@ def main():
         parser.error('--interactive-manifest and --interactive-ledger go together')
     if args.interactive_policy is not None and not all(interactive):
         parser.error('--interactive-policy belongs to the interactive mode')
+    if args.interactive_deadline is not None and not all(interactive):
+        parser.error('--interactive-deadline belongs to the interactive mode')
     if all(interactive) and (args.fixture or args.test or args.compile_only or args.binary or args.test_target
                              or args.fmt_check or args.format or args.cli or args.steps is not None or args.trace
                              or args.incremental or args.forward or args.library or args.worker_manifest
@@ -496,6 +521,7 @@ def main():
             raise RuntimeError('The episode manifest must contain a worker section')
         # Decided before anything is written or compiled.
         policy_args = interactive_policy_args(document, args.interactive_policy)
+        deadline = interactive_deadline(document, args.interactive_deadline)
         ledger_dir.mkdir(parents=True, exist_ok=True)
         worker_section, changes = normalize_worker_manifest(document, manifest.parent)
         worker_manifest = ledger_dir / 'worker-manifest.json'
@@ -513,8 +539,11 @@ def main():
                         str(ledger_dir)] + policy_args + ['--to-worker', '{to_worker}',
                                                           '--from-worker', '{from_worker}'],
         )
-        # One scope for both processes; 15 s for the whole exchange, like a fixture run.
-        run_bounded(report, rows, 'interactive', 'controller+worker', ['supervised'], 15, supervise_spec=spec)
+        # One scope for both processes. 15 s for a local (simulated) exchange,
+        # like a fixture run; an explicit deadline of at most 1 500 s for a
+        # real provider. Memory, swap, CPU and growth controls are the same.
+        run_bounded(report, rows, 'interactive', 'controller+worker', ['supervised'], deadline,
+                    supervise_spec=spec)
         print(f'episode ledger: {ledger_dir}', flush=True)
         return 0
     if args.python_test:

@@ -112,6 +112,11 @@ def main(argv: list[str], stderr=sys.stderr, client_factories: dict | None = Non
         print(f"controller: manifest rejected: {error}", file=stderr, flush=True)
         close_channels()
         return 5
+    problems = manifest_mod.instrumentation_problems(manifest)
+    if problems:
+        print(f"controller: manifest rejected: {'; '.join(problems)}", file=stderr, flush=True)
+        close_channels()
+        return 5
     try:
         provider, policy = build_provider(manifest, values.get("--policy"),
                                           DEFAULT_CLIENT_FACTORIES if client_factories is None else client_factories)
@@ -132,11 +137,15 @@ def main(argv: list[str], stderr=sys.stderr, client_factories: dict | None = Non
                 ctl.freeze_vocabulary()
             except BackendError as error:
                 ctl._abort(f"vocabulary: {error}")
-        outcome = ctl.run()
         # Technical acceptance on mutable state against the same live worker,
-        # outside the model loop and after the normative outcome is recorded.
-        if outcome != "technical_abort":
+        # before any model call: its actions are taken from the worker budget
+        # first, so the explorer cannot exhaust them, and a failure stops the
+        # episode before anything is paid.
+        if not ctl.state.terminal:
             probe = ctl.idempotence_probe(probe_dossier(manifest))
+            if not probe["passed"]:
+                ctl._abort(f"idempotence probe failed: {probe['reason']}")
+        outcome = ctl.run()
     finally:
         backend.close()
     summary = {"outcome": outcome, "state": ctl.state.state, "turns": ctl.turns, "worker_calls": backend.calls,
@@ -158,10 +167,9 @@ def probe_dossier(manifest) -> str:
 def exit_code(outcome: str, probe: dict | None) -> int:
     """The normative outcome sets the code; a failed technical acceptance
     overrides a successful one with 6 while the outcome stays recorded."""
-    code = EXIT.get(outcome, 4)
-    if code == 0 and probe is not None and not probe["passed"]:
+    if probe is not None and not probe["passed"]:
         return TECHNICAL_ACCEPTANCE_FAILED
-    return code
+    return EXIT.get(outcome, 4)
 
 
 if __name__ == "__main__":  # pragma: no cover - launched by the supervisor only

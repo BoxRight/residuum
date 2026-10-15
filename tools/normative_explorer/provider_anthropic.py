@@ -56,6 +56,10 @@ ALLOWED_PARAMETERS = {
 EFFORTS = {"low", "medium", "high", "xhigh", "max"}
 # Non-streaming requests stay under the SDK's HTTP timeout at this size.
 MAX_TOKENS_PER_REQUEST = 16000
+# Margin for what the API adds to the prompt around tool definitions; the
+# input bound is the serialized body's UTF-8 bytes (a token never covers
+# less than one byte) plus this margin.
+INPUT_BOUND_MARGIN_TOKENS = 4000
 
 INSTRUCTION_SUFFIX = (
     "\n\nAnswer every turn with exactly one tool call and no other tool call. "
@@ -290,15 +294,25 @@ class AnthropicMessagesProvider:
         body.update(json.loads(json.dumps(self.parameters)))
         return body
 
+    def request_bounds(self, visible_history: list, tools: list[str], output_cap: int) -> tuple[int, int]:
+        """Upper bounds for the next request, computed from the request that
+        would be sent: input tokens at most the body's UTF-8 bytes plus a
+        fixed margin; output tokens at most its max_tokens."""
+        body = self.build_request(visible_history, tools, output_cap)
+        size = len(json.dumps(body, ensure_ascii=False).encode("utf-8"))
+        return size + INPUT_BOUND_MARGIN_TOKENS, int(body["max_tokens"])
+
     @staticmethod
     def extract_usage(data: dict) -> dict | None:
         usage = data.get("usage")
         if not isinstance(usage, dict) or "output_tokens" not in usage:
             return None
-        input_tokens = sum(int(usage.get(k) or 0) for k in
-                           ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
-        return {"output_tokens": int(usage["output_tokens"]), "input_tokens": input_tokens,
-                "cache_read_input_tokens": int(usage.get("cache_read_input_tokens") or 0)}
+        uncached = int(usage.get("input_tokens") or 0)
+        created = int(usage.get("cache_creation_input_tokens") or 0)
+        read = int(usage.get("cache_read_input_tokens") or 0)
+        return {"output_tokens": int(usage["output_tokens"]), "input_tokens": uncached + created + read,
+                "uncached_input_tokens": uncached, "cache_creation_input_tokens": created,
+                "cache_read_input_tokens": read}
 
     @staticmethod
     def parse_response(data: dict) -> tuple[list, str, dict]:

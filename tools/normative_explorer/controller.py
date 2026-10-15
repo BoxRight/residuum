@@ -45,7 +45,8 @@ class Controller:
         self.state = EpisodeState()
         c = manifest.controller
         self.budgets = Budgets(c["max_model_requests"], c["max_actions"], c["max_output_tokens"],
-                               max_input_tokens=c.get("max_input_tokens"))
+                               max_input_tokens=c.get("max_input_tokens"),
+                               max_cost_usd=c.get("max_cost_usd"), pricing=c.get("pricing"))
         self.history: list[dict] = []           # what the model sees, in order
         self.records: dict[str, dict] = {}       # action_id → full backend line
         self.envelopes: dict[str, dict] = {}     # action_id → envelope as sent
@@ -120,13 +121,22 @@ class Controller:
         except ManifestError as error:
             self._abort(f"turn {self.turns}: {error}")
             return
+        tools = catalog(self.condition)
         try:
-            self.budgets.reserve_request()
             cap = self.budgets.output_cap()
+            if self.budgets.max_cost_usd is not None or self.budgets.max_input_tokens is not None:
+                bounds = getattr(self.provider, "request_bounds", None)
+                input_upper, output_upper = (bounds(list(self.history), tools, cap) if bounds else (None, None))
+                self.budgets.reserve_call(input_upper, output_upper)
+                self.ledger.append("cost_reserved", {"turn": self.turns, "input_upper": input_upper,
+                                                     "output_upper": output_upper,
+                                                     "reservation_usd": self.budgets.pending_reservation,
+                                                     "spent_usd": self.budgets.cost_usd},
+                                   file="model-requests")
+            self.budgets.reserve_request()
         except BudgetExhausted as error:
             self._exhaust(str(error))
             return
-        tools = catalog(self.condition)
         self.ledger.append("model_request_prepared", {
             "turn": self.turns, "history_items": len(self.history), "tools": tools, "output_cap": cap,
         }, file="model-requests")

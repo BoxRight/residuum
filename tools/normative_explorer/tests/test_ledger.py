@@ -164,6 +164,29 @@ class StateAndBudgetTests(unittest.TestCase):
             capped.reserve_request()
         self.assertEqual(capped.snapshot()["input_tokens"], [1200, 1000])
 
+    def test_cost_ceiling_reserves_each_call_and_charges_unknown_usage_in_full(self):
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        b = episode.Budgets(max_model_requests=99, max_actions=9, max_output_tokens=10**6,
+                            max_cost_usd=1.0, pricing=prices)
+        # Bound of a call: 100 000 input at 2.5 $/M plus 16 000 output at 10 $/M = 0.41 $.
+        self.assertAlmostEqual(b.call_cost_bound(100_000, 16_000), 0.41)
+        b.reserve_call(100_000, 16_000)
+        b.charge_usage({"output_tokens": 1000, "input_tokens": 100_000, "uncached_input_tokens": 1000,
+                        "cache_creation_input_tokens": 9000, "cache_read_input_tokens": 90_000})
+        actual = (1000 * 2 + 9000 * 2.5 + 90_000 * 0.10 + 1000 * 10) / 1e6
+        self.assertAlmostEqual(b.cost_usd, actual)
+        b.reserve_call(100_000, 16_000)
+        b.charge_usage(None)                      # unknown: the whole reservation
+        self.assertAlmostEqual(b.cost_usd, actual + 0.41)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "cost ceiling"):
+            b.reserve_call(1_500_000, 16_000)     # 3.91 $ would exceed what remains
+        with self.assertRaisesRegex(episode.BudgetExhausted, "bound is unavailable"):
+            b.reserve_call(None, None)
+        no_prices = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=9, max_cost_usd=1.0)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "bound is unavailable"):
+            no_prices.reserve_call(10, 10)
+
 
 def tempple_dir():
     return tempfile.TemporaryDirectory()

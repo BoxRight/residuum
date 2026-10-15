@@ -595,7 +595,23 @@ impl Worker {
             (Ok(s), Ok(m)) => (s.clone(), m.clone()),
             (Err(e), _) | (_, Err(e)) => return self.error(id, e),
         };
-        let limits = limits.unwrap_or(self.manifest.budgets.search_limits);
+        // Explicit limits may only tighten the episode's; any excess is a
+        // budget error, never a normative outcome.
+        let cap = self.manifest.budgets.search_limits;
+        let limits = match limits {
+            None => cap,
+            Some(l)
+                if l.max_depth > cap.max_depth
+                    || l.max_nodes > cap.max_nodes
+                    || l.max_branches > cap.max_branches =>
+            {
+                return self.error(
+                    id,
+                    format!("budget: search limits {l:?} exceed the episode's {cap:?}"),
+                );
+            }
+            Some(l) => l,
+        };
         let allowed = allowed.as_deref();
         let built: Result<Session, Error> = if active {
             if let Err(e) = super::require_program_acyclic(&module) {

@@ -473,6 +473,53 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
     ));
     assert_eq!(r.status, Status::BindingError, "{r:?}");
 
+    // Explicit search limits may tighten the episode's, never widen them,
+    // in ordinary and in active queries alike.
+    let cap = crate::SearchLimits::default();
+    let wider = crate::SearchLimits {
+        max_nodes: cap.max_nodes + 1,
+        ..cap
+    };
+    let narrower = crate::SearchLimits {
+        max_depth: 4,
+        max_nodes: 64,
+        max_branches: 64,
+    };
+    let scoped = |limits: Option<crate::SearchLimits>| Request::BeginResidual {
+        dossier: "historicalRiggs".into(),
+        theory: None,
+        goal: attr.clone(),
+        scope: Some(crate::HornQueryScope::Rules(vec![literal.clone()])),
+        bindings: bindings.clone(),
+        allowed: None,
+        limits,
+    };
+    let r = w.handle(env("a15b", scoped(Some(wider))));
+    assert_eq!(r.status, Status::Error, "{r:?}");
+    assert!(message(&r).starts_with("budget: search limits"));
+    let r = w.handle(env(
+        "a15c",
+        Request::BeginActiveResidual {
+            dossier: "historicalRiggs".into(),
+            theory: None,
+            goal: attr.clone(),
+            scope: Some(crate::HornQueryScope::Rules(vec![literal.clone()])),
+            bindings: bindings.clone(),
+            allowed: None,
+            limits: Some(crate::SearchLimits {
+                max_depth: cap.max_depth + 1,
+                ..cap
+            }),
+        },
+    ));
+    assert!(message(&r).starts_with("budget: search limits"));
+    let sessions_before = w.budget().sessions_remaining;
+    opened(
+        &w.handle(env("a15d", scoped(Some(narrower)))),
+        SessionKind::Residual,
+    );
+    assert_eq!(w.budget().sessions_remaining, sessions_before - 1);
+
     // Active residual with the same scope on a dossier lacking the survivor
     // record: the certified requirement names the missing evidence.
     let s5 = opened(

@@ -861,3 +861,14 @@ pilot manifest. Two adapter tests still expected the usage shape before
 `4188ed7` and had not been run then; their expectations were updated.
 Simulated episode under the runner: both exit 0, no stop reason (report
 `20261015T193354372188Z-2762804`).
+
+## Pilot 002 prepared for authorisation (not executed)
+
+`pilot-002/episode.json` is pilot 001's manifest with only the episode id,
+manifest hash and workdir changed (checked by
+`test_pilot_002_differs_from_pilot_001_only_in_identity_and_paths`, which
+also checks the mixed catalogue's conservative totals: 4 strict tools,
+0 optional, 16 unions). The differences from pilot 001 are the code
+corrections of `fabd851`. First-call reservation measured offline:
+US$0.4608. Proposed conditional ceiling US$2.50, pending a new
+authorisation. Pilot 001's records are unchanged.

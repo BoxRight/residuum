@@ -9,6 +9,7 @@ from tools.normative_explorer import manifest, provider_anthropic, run_episode, 
 
 ROOT = Path(__file__).resolve().parents[3]
 PILOT = ROOT / "docs" / "legal-geometry" / "exploration" / "pilot-001" / "episode.json"
+PILOT2 = ROOT / "docs" / "legal-geometry" / "exploration" / "pilot-002" / "episode.json"
 
 
 class PilotManifestTests(unittest.TestCase):
@@ -45,6 +46,21 @@ class PilotManifestTests(unittest.TestCase):
         for value in m.worker["imports"] + [m.worker["workdir"]]:
             self.assertFalse(Path(value).is_absolute())
             self.assertTrue(str((PILOT.parent / value).resolve()).startswith(str(ROOT)))
+
+
+    def test_pilot_002_differs_from_pilot_001_only_in_identity_and_paths(self):
+        first, second = json.loads(PILOT.read_text()), json.loads(PILOT2.read_text())
+        for doc in (first, second):
+            doc["worker"].pop("episode_id"), doc["worker"].pop("manifest_hash"), doc["worker"].pop("workdir")
+        self.assertEqual(first, second)
+        m = manifest.load(PILOT2)
+        self.assertEqual((m.worker["episode_id"], m.worker["manifest_hash"]), ("riggs-pilot-002", "h-pilot-002"))
+        self.assertTrue(m.worker["workdir"].endswith("target/exploration/pilot-002/work"))
+        self.assertEqual(manifest.instrumentation_problems(m), [])
+        # The integration difference: a mixed catalogue within the limits.
+        provider, _ = run_episode.build_provider(m, None, {"anthropic": lambda t: object()})
+        totals = provider_anthropic.check_strict_limits(provider.tools)
+        self.assertEqual(totals, {"strict_tools": 4, "optional_parameters": 0, "union_parameters": 16})
 
 
 if __name__ == "__main__":

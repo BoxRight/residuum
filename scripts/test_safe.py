@@ -40,6 +40,8 @@ def worker(report, index):
     if ((group / 'memory.max').read_text().strip() != str(MEMORY_LIMIT)
             or (group / 'memory.swap.max').read_text().strip() != '0'):
         raise RuntimeError('RAM/swap limits are not enforced; refusing execution')
+    if request.get('supervise'):
+        return supervise(report, index, request, group)
     samples = collections.deque()
     reason = None
     started = time.monotonic()
@@ -107,11 +109,112 @@ def worker(report, index):
     return 0 if reason is None else 1
 
 
+def supervise(report, index, request, group):
+    """Interactive mode: the Rust worker and the Python controller run in this
+    scope, joined by two pipes the supervisor creates. The controller gets
+    the descriptors on its command line and never launches anything. Joint
+    accounting: the cgroup peak covers both; RSS growth is watched on the sum
+    of both processes; one timeout for the whole exchange. Any stop kills
+    both process groups; no child survives."""
+    spec = request['supervise']
+    to_r, to_w = os.pipe()        # controller -> worker stdin
+    from_r, from_w = os.pipe()    # worker stdout -> controller
+    controller_command = [arg.replace('{to_worker}', str(to_w)).replace('{from_worker}', str(from_r))
+                          for arg in spec['controller']]
+    samples = collections.deque()
+    reason = None
+    started = time.monotonic()
+    processes = {}
+    with (report / f'{index:02d}.output.txt').open('w') as log, \
+            (report / f'{index:02d}.worker-stderr.txt').open('w') as worker_err, \
+            (report / f'{index:02d}.controller-stderr.txt').open('w') as controller_err:
+        try:
+            processes['worker'] = subprocess.Popen(spec['worker'], cwd=ROOT, stdin=to_r, stdout=from_w,
+                                                   stderr=worker_err, start_new_session=True)
+            processes['controller'] = subprocess.Popen(controller_command, cwd=ROOT, stdin=subprocess.DEVNULL,
+                                                       stdout=subprocess.DEVNULL, stderr=controller_err,
+                                                       pass_fds=(to_w, from_r), start_new_session=True)
+            for fd in (to_r, to_w, from_r, from_w):
+                os.close(fd)
+            print(f'worker pid {processes["worker"].pid}; controller pid {processes["controller"].pid}',
+                  file=log, flush=True)
+            exits = {}
+            while len(exits) < 2:
+                now = time.monotonic()
+                for name, process in processes.items():
+                    if name not in exits and process.poll() is not None:
+                        exits[name] = process.returncode
+                        print(f'{name} exited {process.returncode} at {now - started:.3f}s', file=log, flush=True)
+                if 'worker' in exits and 'controller' not in exits:
+                    reason = reason or 'worker_lost'
+                peak = int((group / 'memory.peak').read_text())
+                if now - started >= request['timeout']:
+                    reason = reason or 'timeout'
+                elif peak >= STOP_MEMORY:
+                    reason = reason or 'near_memory_limit'
+                rss = 0
+                for name, process in processes.items():
+                    if name in exits:
+                        continue
+                    try:
+                        for line in Path(f'/proc/{process.pid}/status').read_text().splitlines():
+                            if line.startswith('VmRSS:'):
+                                rss += int(line.split()[1]) * 1024
+                                break
+                    except FileNotFoundError:
+                        pass
+                while samples and samples[0][0] < now - 1.0:
+                    samples.popleft()
+                if rss >= 128 * MIB and samples and rss - min(sample[1] for sample in samples) >= 64 * MIB:
+                    reason = reason or 'abnormal_memory_growth'
+                samples.append((now, rss))
+                if reason:
+                    break
+                if 'controller' in exits and 'worker' not in exits:
+                    # The controller closed its channels; the worker sees EOF and
+                    # should exit on its own within a short grace period.
+                    try:
+                        processes['worker'].wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        reason = 'worker_did_not_exit'
+                        break
+                    continue
+                time.sleep(0.02)
+        finally:
+            for name, process in processes.items():
+                kill_process_group(process)
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    pass
+            for name, process in processes.items():
+                print(f'{name} final status {process.returncode}', file=log, flush=True)
+    events = dict(line.split() for line in (group / 'memory.events').read_text().splitlines())
+    peak_group = int((group / 'memory.peak').read_text())
+    if peak_group >= STOP_MEMORY:
+        reason = reason or 'near_memory_limit'
+    if int(events.get('oom', 0)) or int(events.get('oom_kill', 0)):
+        reason = reason or 'cgroup_oom'
+    controller_status = processes['controller'].returncode if 'controller' in processes else None
+    worker_status = processes['worker'].returncode if 'worker' in processes else None
+    if controller_status != 0:
+        reason = reason or 'controller_nonzero_exit'
+    if worker_status != 0:
+        reason = reason or 'worker_nonzero_exit'
+    row = dict(name=request['name'], stage=request['stage'], exit_status=controller_status,
+               worker_exit_status=worker_status, elapsed_seconds=time.monotonic() - started,
+               peak_rss_bytes=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss * 1024,
+               cgroup_peak_bytes=peak_group, memory_events=events, stop_reason=reason)
+    (report / f'{index:02d}.result.json').write_text(json.dumps(row, indent=2) + '\n')
+    return 0 if reason is None else 1
+
+
 def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
-                stdin=None, stdout=False):
+                stdin=None, stdout=False, supervise_spec=None):
     index = len(rows) + 1
     request = dict(stage=stage, name=name, command=command, timeout=timeout,
-                   stdin=str(stdin) if stdin else None, stdout=bool(stdout))
+                   stdin=str(stdin) if stdin else None, stdout=bool(stdout),
+                   supervise=supervise_spec)
     (report / f'{index:02d}.request.json').write_text(json.dumps(request, indent=2) + '\n')
     unit = f'residuum-safe-{os.getpid()}-{index}'
     scope = ['/usr/bin/systemd-run', '--user', '--scope', '--quiet', f'--unit={unit}',
@@ -141,6 +244,26 @@ def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
         raise RuntimeError(f'{name}: {row["stop_reason"]}; no remaining tests executed. '
                            f'See {report / f"{index:02d}.output.txt"}')
     return report / f'{index:02d}.output.txt'
+
+
+def build_worker_binary(report, rows):
+    """Compile residuum-worker with the existing cargo controls (own scope, 45 s)."""
+    output = run_bounded(report, rows, 'compile', 'compile residuum-worker',
+                         ['cargo', 'build', '--offline', '--locked', '-p', 'residuum-boundary',
+                          '--bin', 'residuum-worker', '--jobs', '1', '--message-format=json'], 45)
+    binaries = []
+    for line in output.read_text().splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if (message.get('reason') == 'compiler-artifact' and message.get('executable')
+                and message.get('target', {}).get('name') == 'residuum-worker'
+                and 'bin' in message.get('target', {}).get('kind', [])):
+            binaries.append(Path(message['executable']))
+    if len(binaries) != 1:
+        raise RuntimeError('Expected one compiled residuum-worker binary; refusing execution')
+    return binaries[0]
 
 
 def save_report(report, rows):
@@ -191,6 +314,12 @@ def main():
                         help='Finite file of one request per line fed to residuum-worker on stdin')
     parser.add_argument('--python-test', action='append', default=[],
                         help='Exact unittest id under tools/, run individually with python3 -I; repeatable')
+    parser.add_argument('--interactive-manifest', type=Path,
+                        help='Episode manifest (worker and controller sections) for one supervised '
+                             'controller/worker exchange; requires --interactive-ledger and --interactive-policy')
+    parser.add_argument('--interactive-ledger', type=Path,
+                        help='Empty or absent directory under target/ for the episode ledger')
+    parser.add_argument('--interactive-policy', help='Scripted policy name of the simulated provider')
     args = parser.parse_args()
     if (args.steps is not None or args.trace) and not args.cli:
         parser.error('--steps and --trace require --cli')
@@ -224,6 +353,16 @@ def main():
     for name in args.python_test:
         if not name.startswith('tools.') or not all(part.isidentifier() for part in name.split('.')):
             parser.error(f'{name} is not a dotted unittest id under tools.')
+    interactive = (args.interactive_manifest, args.interactive_ledger, args.interactive_policy)
+    if any(interactive) and not all(interactive):
+        parser.error('--interactive-manifest, --interactive-ledger and --interactive-policy go together')
+    if all(interactive) and (args.fixture or args.test or args.compile_only or args.binary or args.test_target
+                             or args.fmt_check or args.format or args.cli or args.steps is not None or args.trace
+                             or args.incremental or args.forward or args.library or args.worker_manifest
+                             or args.python_test):
+        parser.error('the interactive mode takes only its three options')
+    if all(interactive) and not args.interactive_policy.isidentifier():
+        parser.error('--interactive-policy must be an identifier')
     if args.test_target is None:
         args.test_target = 'lib'
     if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
@@ -275,6 +414,37 @@ def main():
             raise
         emit_output(output, sys.stdout)
         return 0
+    if args.interactive_manifest:
+        manifest = args.interactive_manifest.resolve()
+        ledger_dir = args.interactive_ledger.resolve()
+        if not manifest.is_file() or manifest.stat().st_size > 4 * 1024 * 1024:
+            raise RuntimeError('Expected one regular episode manifest of at most 4 MiB')
+        if not ledger_dir.is_relative_to(ROOT / 'target'):
+            raise RuntimeError('The episode ledger must live under target/')
+        if ledger_dir.exists() and any(ledger_dir.iterdir()):
+            raise RuntimeError('The episode ledger directory must be empty or absent; ledgers are never reused')
+        ledger_dir.mkdir(parents=True, exist_ok=True)
+        # The worker receives only the worker section, written by the supervisor;
+        # the controller validates the whole episode manifest itself.
+        document = json.loads(manifest.read_text())
+        if not isinstance(document, dict) or 'worker' not in document:
+            raise RuntimeError('The episode manifest must contain a worker section')
+        worker_manifest = ledger_dir / 'worker-manifest.json'
+        worker_manifest.write_text(json.dumps(document['worker'], indent=2, ensure_ascii=False) + '\n')
+        binary = build_worker_binary(report, rows)
+        bootstrap = (f'import sys; sys.path.insert(0, {str(ROOT)!r}); '
+                     f'from tools.normative_explorer import run_episode; '
+                     f'sys.exit(run_episode.main(sys.argv[1:]))')
+        spec = dict(
+            worker=[str(binary), '--manifest', str(worker_manifest)],
+            controller=[sys.executable, '-I', '-c', bootstrap, '--manifest', str(manifest), '--ledger',
+                        str(ledger_dir), '--policy', args.interactive_policy, '--to-worker', '{to_worker}',
+                        '--from-worker', '{from_worker}'],
+        )
+        # One scope for both processes; 15 s for the whole exchange, like a fixture run.
+        run_bounded(report, rows, 'interactive', 'controller+worker', ['supervised'], 15, supervise_spec=spec)
+        print(f'episode ledger: {ledger_dir}', flush=True)
+        return 0
     if args.python_test:
         # Python unit tests of the controller, one process per test id, each in
         # its own scope with the same controls; isolated mode ignores the
@@ -310,26 +480,12 @@ def main():
             raise RuntimeError('Expected one regular requests file of at most 1 MiB')
         if not requests.read_bytes().endswith(b'\n'):
             raise RuntimeError('The requests file must end with a newline; a trailing partial line is not executed')
-        output = run_bounded(report, rows, 'compile', 'compile residuum-worker',
-                             ['cargo', 'build', '--offline', '--locked', '-p', 'residuum-boundary',
-                              '--bin', 'residuum-worker', '--jobs', '1', '--message-format=json'], 45)
-        binaries = []
-        for line in output.read_text().splitlines():
-            try:
-                message = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if (message.get('reason') == 'compiler-artifact' and message.get('executable')
-                    and message.get('target', {}).get('name') == 'residuum-worker'
-                    and 'bin' in message.get('target', {}).get('kind', [])):
-                binaries.append(Path(message['executable']))
-        if len(binaries) != 1:
-            raise RuntimeError('Expected one compiled residuum-worker binary; refusing execution')
+        binary = build_worker_binary(report, rows)
         # One bounded process in its own scope with the same controls as a fixture
         # run: requests on stdin, protocol lines to NN.stdout.jsonl, diagnostics to
         # NN.output.txt, 15 s like fixtures, memory growth and stop controls.
         run_bounded(report, rows, 'worker', 'residuum-worker',
-                    [str(binaries[0]), '--manifest', str(manifest)], 15,
+                    [str(binary), '--manifest', str(manifest)], 15,
                     stdin=requests, stdout=True)
         print(f'worker protocol output: {report / f"{len(rows):02d}.stdout.jsonl"}', flush=True)
         return 0

@@ -46,3 +46,17 @@ Oracles reproduced: `goal-frontier-results.json` totals (general 73/284 and
 valuation) and `riggs-rule-learning/questions.tsv` (per-case predictions of
 the retained candidates). `riggs-separation-pool.tsv` records the separation
 pool diagnostics; it is a report, not an oracle.
+
+Source path (`src/experiments/proposal.rs`), after commit `f3091c7`:
+
+| Step | Report | Result |
+|---|---|---|
+| Compile lib tests with the proposal module | `20261015T003114730417Z-1919215` | exit 0, 677 MiB RSS |
+| `proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation` | `20261015T003143485814Z-1920146` | 1 passed |
+| `exploration_install_rejects_collisions_and_non_derived_heads` (rerun) | `20261015T003146349847Z-1920184` | 1 passed |
+| `exploration_profile_admits_riggs_catalog_and_reports_bounded_rejections` (rerun) | `20261015T003147411691Z-1920200` | 1 passed |
+| `exploration_frontiers_reproduce_certified_general_and_patrimonial_totals` (rerun) | `20261015T003148425086Z-1920218` | 1 passed |
+| `exploration_riggs_catalog_partition_and_discriminants_match_certificates` (rerun) | `20261015T003149235496Z-1920235` | 1 passed |
+
+The generated private modules of the test live under
+`target/exploration/proposals/Candidate<id>.res` next to their baselines.

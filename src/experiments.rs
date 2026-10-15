@@ -20,6 +20,7 @@ mod four;
 pub use four::{FourSession, FourStep};
 pub mod exploration;
 mod incremental;
+pub mod proposal;
 
 pub use default_selection::{DefaultExperimentResult, run_default_experiments};
 
@@ -550,6 +551,8 @@ pub fn render_requirement(requirement: &RequirementFormula) -> String {
 
 #[cfg(test)]
 mod exploration_tests;
+#[cfg(test)]
+mod proposal_tests;
 #[cfg(test)]
 mod step_tests;
 #[cfg(test)]

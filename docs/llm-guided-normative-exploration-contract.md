@@ -766,10 +766,52 @@ Lo que esto **no** cambia: el par `(attr = 1, imp = 1)` sigue certificando
 "esta candidata propone el impedimento", no "Elmer queda excluido" (5.3). Es
 una diferencia de objetivo certificado, no un fallo de cálculo.
 
-Qué no está implementado de las partidas 2-4 y 8: el camino de fuente para
-propuestas en texto (`parse_formal` → módulo privado → `S_SYNTAX`,
-`S_ELABORATION`), `P1-program` con `B_RULE_USES`, el certificado de
-conservación para cabezas intermedias existentes, y el minimax de preguntas.
+### 6.3 Camino de fuente para propuestas en texto
+
+Implementado en `src/experiments/proposal.rs` (`SourceProposal`,
+`ProposalContext`, `process`, `ProposalStatus`, `ProposalReport`), con la
+fixture nueva `examples/experiments/legal_geometry/riggs_problem_manifest.res`,
+que sólo importa la referencia y declara la cabeza experimental; ninguna
+fixture original se modificó. Etapas, en orden, cada una registrada en
+`ProposalReport::stages`:
+
+```text
+texto Formal (sólo reglas)
+  → parse_formal del módulo compuesto            S_SYNTAX
+  → módulo privado Candidate<id>.res que importa la teoría
+    y el manifiesto de problema; load_formal_module   S_ELABORATION
+  → extracción por origen (módulo == Candidate<id>) S_DECLARATION si declara algo que no es regla
+  → theory_preserved contra una línea base con las mismas importaciones   S_ORIGIN
+  → classify_candidate con el Profile del episodio  structural_reject (códigos B_*/S_*/P_*)
+  → cabezas del candidato frente al cierre de referencia   out_of_certificate_scope
+  → evaluate + certify_addition                     evaluation_pending | evaluated_{compatible,incompatible}
+```
+
+Lo que distingue el resultado, como pidió la revisión: fuente mal formada;
+referencias, tipos o bindings inválidos; rechazo del perfil; configuración
+admitida pero fuera del alcance de certificación; evaluación pendiente
+(el evaluador no completó: no es refutación); compatibilidad o
+incompatibilidad con la valoración. Una mala configuración del harness
+(identificador inválido, sin importaciones, teoría que no elabora, `D`
+inválido) es un `Err` de `process`, nunca un estado sobre la propuesta. El
+texto original se conserva en el informe en todos los casos y el archivo
+generado queda en el directorio de trabajo del episodio.
+
+Verificado por
+`proposal_tests::proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation`
+(informe `20261015T003143485814Z-1920146`): una regla con `purposefulAcquisition`
+llega a `evaluated_compatible` con certificado y orígenes correctos al
+recargar el archivo; una regla con `~intentionalKilling` llega a
+`evaluated_incompatible` con certificado; `S_SYNTAX` sin etapas; `S_ELABORATION`
+por verbo desconocido y por aridad; `structural_reject` por `B_ATOMS` y por
+`S_DECLARATION`; `out_of_certificate_scope` para una cabeza
+`testamentaryEntitlement`; y tres errores de harness. `evaluation_pending`
+está definido pero no se provocó en el test: con dos cláusulas y el perfil
+`P1`, los ciclos de activación se rechazan antes como `B_CLAUSES`, así que
+sólo lo alcanzarían límites del runner o cierres no terminantes.
+
+Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
+conservación para cabezas intermedias existentes y el minimax de preguntas.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -780,11 +822,11 @@ la equivalencia se comprueba contra sus certificados archivados.
    Hasta que la partida 8 calcule regiones y discriminantes, un episodio Riggs
    sólo puede informar compatibilidad con `κ`, no generalidad ni
    discriminación.
-2. **La admisibilidad está instanciada para candidatos tipados** (`Profile::p1`,
-   `classify`, `classify_candidate`, 6.2), pero no para propuestas en texto:
-   falta el paso `parse_formal` → módulo privado → `S_SYNTAX`/`S_ELABORATION`
-   del apartado 2.6. Un LLM que proponga fuente Formal todavía no tiene camino
-   reproducible hasta `Rule`.
+2. **La admisibilidad está instanciada** para candidatos tipados (6.2) y para
+   propuestas en texto Formal (6.3). Lo que falta es el manifiesto de episodio
+   serializado (partida 1) que fije `Profile`, importaciones, `D` y
+   presupuestos como datos versionados en lugar de valores construidos en
+   código.
 3. **Instalación `P1-add` sólo certificada para una cláusula con cabeza
    nueva**; dos cláusulas con una cabeza intermedia existente (`obligation`,
    `permission`) pueden alimentar reglas de `T` y cambiar otras consecuencias.
@@ -809,12 +851,14 @@ la equivalencia se comprueba contra sus certificados archivados.
 8. **Sin controlador ni política implementados**; no hay métricas calculadas.
 
 El experimento **no está listo**: faltan el manifiesto de episodio (partida
-1), el camino de fuente para propuestas (límite 2), los adaptadores de sesión
-y de geometría con sus proyecciones A/B/C (partidas 5, 6, 8 parcial), el
-registro (7), el oráculo de cobertura (9), el protocolo de valoraciones
-(límite 6) y el controlador (10). Lo que sí está cerrado: `D` para Riggs,
-la admisibilidad sobre candidatos tipados, la instalación por adición con
-certificado de conservación y la geometría parametrizada. Queda delimitado: la matriz de 1.x fija
+1), los adaptadores de sesión y de geometría con sus proyecciones A/B/C
+(partidas 5, 6, 8 parcial), el registro append-only (7), el oráculo de
+cobertura (9), el protocolo de valoraciones (límite 6) y el controlador (10).
+Lo que sí está cerrado: `D` para Riggs, la admisibilidad sobre candidatos
+tipados y sobre texto Formal, la instalación por adición con certificado de
+conservación en su alcance probado, la geometría parametrizada y los
+controles que impiden que un error de herramienta se lea como veredicto.
+Queda delimitado: la matriz de 1.x fija
 qué operaciones existen y por qué camino; el manifiesto `P1` y el de problema
 fijan la gramática sin reutilizar el catálogo Riggs ni fijar `compliance` como
 única cabeza; los contratos de herramientas y registros fijan estados y
@@ -854,5 +898,11 @@ fijados.
   `docs/legal-geometry/exploration/{verification.md,riggs-separation-pool.tsv}`;
   `src/experiments.rs` modificado sólo para registrar el módulo y sus tests.
   Compilación y cuatro tests individuales con `scripts/test_safe.py`
-  (informes en 6.2 y en el registro de verificación). No se ejecutó la suite
-  ni ningún test antiguo; no se hizo commit, merge ni push.
+  (informes en 6.2 y en el registro de verificación). Esa etapa se
+  confirmó en la rama como `f3091c7`.
+- Camino de fuente (6.3): archivos nuevos `src/experiments/proposal.rs`,
+  `src/experiments/proposal_tests.rs`,
+  `examples/experiments/legal_geometry/riggs_problem_manifest.res`;
+  `src/experiments.rs` registra el módulo. Un test individual nuevo y los
+  cuatro anteriores vueltos a pasar (registro de verificación). No se
+  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.

@@ -1,0 +1,30 @@
+experiment twoBeneficiaries_innocentHeir
+  default context: mandatory Horn closure (12 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: blocked
+    default origin: TwoBeneficiariesBlocked (docs/legal-geometry/transformations/fixtures/two_beneficiaries_blocked.res)
+    lambda origin: TwoBeneficiariesBlocked
+    applicability: unconditional
+    blocking evidence: purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime
+      substitution: {act=killingEvidence, authority=private, beneficiary=elmerPalmer, death=palmerDeath, effective=will1880, object=residuaryInterest, t=dossierTime, will=palmerWill}
+  selected default lambdas: 
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, operativeDisposition(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, survivorRecorded(innocentHeir, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}
+  goal: owns(innocentHeir, legacyInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: false
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, operativeDisposition(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, survivorRecorded(innocentHeir, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, acquisitionLinkedToWrong(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime}
+experiment twoBeneficiaries_elmerPalmer
+  default context: mandatory Horn closure (12 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: blocked
+    default origin: TwoBeneficiariesBlocked (docs/legal-geometry/transformations/fixtures/two_beneficiaries_blocked.res)
+    lambda origin: TwoBeneficiariesBlocked
+    applicability: unconditional
+    blocking evidence: purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime
+      substitution: {act=killingEvidence, authority=private, beneficiary=elmerPalmer, death=palmerDeath, effective=will1880, object=residuaryInterest, t=dossierTime, will=palmerWill}
+  selected default lambdas: 
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, operativeDisposition(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, survivorRecorded(innocentHeir, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: false
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, operativeDisposition(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, survivorRecorded(innocentHeir, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, innocentHeir, legacyInterest, private, will1880) @ dossierTime, acquisitionLinkedToWrong(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime}

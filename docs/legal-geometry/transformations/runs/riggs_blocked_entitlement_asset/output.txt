@@ -1,0 +1,95 @@
+experiment historicalRiggs
+  default context: mandatory Horn closure (9 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: blocked
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking evidence: purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime
+      substitution: {act=killingEvidence, authority=private, beneficiary=elmerPalmer, death=palmerDeath, effective=will1880, object=residuaryInterest, t=dossierTime, will=palmerWill}
+  selected default lambdas: 
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: false
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, acquisitionLinkedToWrong(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, purposefulAcquisition(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime}
+experiment noBeneficiaryKilling
+  default context: mandatory Horn closure (5 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: selected
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  compiled rules from selected defaults: entitlementAssetUnit::0::literalEntitlementAsset
+  selected programs: entitlementAssetUnit
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, ~intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: true
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, ~intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, patrimonialAsset(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, capacity(elmerPalmer, use, residuaryInterest, palmerWill, private, will1880) @ dossierTime}
+experiment killingWithoutAcquisitionPurpose
+  default context: mandatory Horn closure (8 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: selected
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  compiled rules from selected defaults: entitlementAssetUnit::0::literalEntitlementAsset
+  selected programs: entitlementAssetUnit
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, ~acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: true
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, ~acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, acquisitionLinkedToWrong(palmerWill, killingEvidence, palmerDeath, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, patrimonialAsset(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, capacity(elmerPalmer, use, residuaryInterest, palmerWill, private, will1880) @ dossierTime}
+experiment killingByThirdParty
+  default context: mandatory Horn closure (7 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: selected
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  compiled rules from selected defaults: entitlementAssetUnit::0::literalEntitlementAsset
+  selected programs: entitlementAssetUnit
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, otherKiller, francisPalmer, judicial, death1882) @ dossierTime, ~intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: true
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, otherKiller, francisPalmer, judicial, death1882) @ dossierTime, ~intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, patrimonialAsset(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, capacity(elmerPalmer, use, residuaryInterest, palmerWill, private, will1880) @ dossierTime}
+experiment causalLinkUnestablished
+  default context: mandatory Horn closure (5 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: selected
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  compiled rules from selected defaults: entitlementAssetUnit::0::literalEntitlementAsset
+  selected programs: entitlementAssetUnit
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: true
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, survivorRecorded(elmerPalmer, francisPalmer) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, testamentaryEntitlement(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, patrimonialAsset(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime, capacity(elmerPalmer, use, residuaryInterest, palmerWill, private, will1880) @ dossierTime}
+experiment survivalUnestablished
+  default context: mandatory Horn closure (5 events)
+  blocking scope: ProgramLambda
+  consistency: NotChecked
+  default LiteralEntitlementAsset -> entitlementAssetUnit: selected
+    default origin: RiggsBlockedEntitlementAsset (docs/legal-geometry/transformations/fixtures/riggs_blocked_entitlement_asset.res)
+    lambda origin: RiggsBlockedEntitlementAsset
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  compiled rules from selected defaults: entitlementAssetUnit::0::literalEntitlementAsset
+  selected programs: entitlementAssetUnit
+  Seeds: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}
+  goal: owns(elmerPalmer, residuaryInterest, palmerWill, private, will1880) @ dossierTime
+  Horn: false
+  Known after close: {operativeDisposition(palmerWill, francisPalmer, elmerPalmer, residuaryInterest, private, will1880) @ dossierTime, deathRecorded(palmerDeath, francisPalmer, judicial, death1882) @ dossierTime, intentionalKilling(killingEvidence, elmerPalmer, francisPalmer, judicial, death1882) @ dossierTime, deathCausedBy(killingEvidence, palmerDeath) @ dossierTime, acquisitionPurposeRecorded(killingEvidence, palmerWill, elmerPalmer) @ dossierTime}

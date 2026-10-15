@@ -428,8 +428,11 @@ pub struct EvaluationSession {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvaluationStep {
     pub round: usize,
-    pub added: usize,
-    pub derivations: usize,
+    /// `T(X) \\ X` of this round.
+    pub added: Vec<Event>,
+    /// Newly stamped justifications of this round, with their records.
+    pub derivations: Vec<crate::typed::DerivedEvent>,
+    pub witnesses: usize,
     pub complete: bool,
 }
 
@@ -480,8 +483,9 @@ impl EvaluationSession {
         self.rounds = step.round;
         EvaluationStep {
             round: step.round,
-            added: step.added.len(),
-            derivations: step.derivations.len(),
+            added: step.added,
+            derivations: step.derivations,
+            witnesses: step.witnesses.len(),
             complete: step.complete,
         }
     }

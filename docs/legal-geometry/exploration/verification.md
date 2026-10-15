@@ -146,3 +146,41 @@ adds the scoped, typed-binding variant that completes) and
 `20261015T013700788053Z-1970892` (typed bindings resolve constants against
 the module graph, so the episode manifest must import the problem constants;
 the script now imports `riggs_cases.res` besides the problem manifest).
+
+## Worker: search-limit cap and complete audit output
+
+Two small commits after review of `5676a6c`.
+
+**Search limits (`f308464`).** Explicit `SearchLimits` in residual and
+active requests may tighten the episode's but never widen `max_depth`,
+`max_nodes` or `max_branches`; an excess is `budget: search limits …` and
+opens no session. Scripted episode extended (`20261015T020239524579Z-1991602`),
+budget test rerun (`20261015T020240939126Z-1991650`).
+
+**Audit output.** `Payload::Forward` now carries every round advanced by the
+action (`ForwardRound`: added events, stamped justifications, witness count)
+and the full `known`; `Payload::Residual` carries every layer with its
+search trees and metrics (`ResidualRound`), the complete structured result
+on completion (`ResidualOutcome::{Horn, Active}`, including proofs and, for
+active queries, the hypothetical closure) and the engine error text when the
+session fails; `Payload::Evaluation` carries the candidate session's rounds
+and, on completion, the closure with its derivations beside the report.
+`EvaluationStep` exposes the round's events and justifications instead of
+counts. The scripted episode now checks that the justifications accumulated
+over the forward rounds of an action sequence equal those of `close_program`
+on the same dossier.
+
+| Step | Report | Result |
+|---|---|---|
+| `worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency` | `20261015T020521036628Z-1993835` | 1 passed |
+| `worker_budgets_are_enforced_as_errors_not_verdicts` | `20261015T020522552364Z-1994005` | 1 passed |
+| `proposal_stages_separate_admission_from_evaluation_and_session_matches_full_closure` (rerun) | `20261015T020523318153Z-1994033` | 1 passed |
+| `proposal_certificate_failure_is_a_technical_status_not_a_verdict` (rerun) | `20261015T020524435710Z-1994060` | 1 passed |
+| `proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation` (rerun) | `20261015T020525603479Z-1994089` | 1 passed |
+| `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures` (rerun) | `20261015T020528575979Z-1994120` | 1 passed |
+| four `exploration_tests` (rerun) | `20261015T020530492541Z-1994147`, `…531458811Z-1994174`, `…532527760Z-1994220`, `…533344195Z-1994251` | 1 passed each |
+| `cargo fmt --check` | after the above | exit 0 |
+
+Compile of the lib test target reached 793 MiB of process RSS with the
+cgroup under the 768 MiB stop; the margin is now small and should be
+watched before adding further test modules to the library target.

@@ -127,6 +127,10 @@ fn env(action: &str, request: Request) -> Envelope {
 fn message(r: &Response) -> &str {
     match &r.payload {
         Payload::Error { message } => message,
+        Payload::Residual {
+            error: Some(message),
+            ..
+        } => message,
         other => panic!("expected an error payload, got {other:?}"),
     }
 }
@@ -197,6 +201,18 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
     ));
     assert_eq!(r.status, Status::StepLimit);
     assert_eq!(r.steps_consumed, 2);
+    let mut audited_derivations = 0;
+    match &r.payload {
+        Payload::Forward {
+            rounds, complete, ..
+        } => {
+            assert_eq!(rounds.len(), 2);
+            assert_eq!(rounds[0].round, 1);
+            assert!(!*complete);
+            audited_derivations += rounds.iter().map(|x| x.derivations.len()).sum::<usize>();
+        }
+        other => panic!("{other:?}"),
+    }
     let advance_all = env(
         "a4",
         Request::AdvanceSession {
@@ -207,23 +223,28 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
     let r = w.handle(advance_all.clone());
     assert_eq!(r.status, Status::Complete);
     assert!(r.steps_consumed <= 8, "per-action cap");
-    let expected_known = crate::close_program(
+    let full = crate::close_program(
         historical.input.clone(),
         &fixture("riggs_cases"),
         &mut CountingClock::default(),
     )
-    .unwrap()
-    .known
-    .len();
+    .unwrap();
     match &r.payload {
         Payload::Forward {
-            known, complete, ..
+            known,
+            complete,
+            rounds,
+            ..
         } => {
             assert!(*complete);
-            assert_eq!(*known, expected_known);
+            assert_eq!(rounds.len(), r.steps_consumed);
+            assert_eq!(known.len(), full.known.len());
+            audited_derivations += rounds.iter().map(|x| x.derivations.len()).sum::<usize>();
         }
         other => panic!("{other:?}"),
     }
+    // The audited rounds carry every justification of the full closure.
+    assert_eq!(audited_derivations, full.derivations.len());
     let budget_after = w.budget();
     let replay = w.handle(advance_all);
     assert_eq!(replay, r, "same action id and content replays the response");
@@ -307,9 +328,23 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
         Payload::Evaluation {
             report: Some(report),
             complete: true,
+            closure: Some(closure),
+            rounds,
             ..
         } => {
             assert_eq!(report_label(report), "evaluated_compatible");
+            assert_eq!(rounds.len(), r.steps_consumed);
+            assert!(
+                closure
+                    .derivations
+                    .iter()
+                    .any(|d| d.record.rule == "purposefulImpediment")
+            );
+            assert!(
+                rounds
+                    .iter()
+                    .any(|x| x.derivations.iter().any(|d| d.event.verb == HEAD))
+            );
             report.clone()
         }
         other => panic!("{other:?}"),
@@ -326,8 +361,13 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
     match &again.payload {
         Payload::Evaluation {
             report: Some(report),
+            closure: Some(_),
+            rounds,
             ..
-        } => assert_eq!(*report, first_report),
+        } => {
+            assert_eq!(*report, first_report);
+            assert!(rounds.is_empty());
+        }
         other => panic!("{other:?}"),
     }
     let s3 = opened(
@@ -445,15 +485,18 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
     match &r.payload {
         Payload::Residual {
             complete,
-            requirement,
-            explanations,
+            result: Some(ResidualOutcome::Horn(query)),
+            rounds,
             kind,
+            error: None,
             ..
         } => {
             assert!(*complete);
             assert_eq!(*kind, SessionKind::Residual);
-            assert!(requirement.is_some(), "{r:?}");
-            assert!(*explanations >= 1);
+            assert_eq!(rounds.len(), r.steps_consumed);
+            assert!(query.required.is_some(), "{query:?}");
+            assert!(!query.explanations.is_empty());
+            assert!(rounds.iter().all(|x| x.round >= 1));
         }
         other => panic!("{other:?}"),
     }
@@ -549,13 +592,21 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
         Payload::Residual {
             kind,
             complete,
-            requirement,
+            result: Some(ResidualOutcome::Active(query)),
+            rounds,
             ..
         } => {
             assert_eq!(*kind, SessionKind::ActiveResidual);
             assert!(*complete);
-            let requirement = requirement.as_deref().unwrap_or("");
+            assert_eq!(rounds.len(), r.steps_consumed);
+            let requirement = query
+                .required
+                .as_ref()
+                .map(crate::experiments::render_requirement)
+                .unwrap_or_default();
             assert!(requirement.contains("survivorRecorded"), "{requirement}");
+            assert!(!query.explanations.is_empty());
+            assert!(!query.explanations[0].hypothetical.known.is_empty());
         }
         other => panic!("{other:?}"),
     }

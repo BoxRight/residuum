@@ -14,8 +14,11 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 use crate::elab::Error;
-use crate::residual::{Abducible, HornQueryScope, QueryBinding, SearchLimits, SearchMetrics};
-use crate::typed::{Closure, Declaration, Event, Module, Rule, VerbKind};
+use crate::residual::{
+    Abducible, ActiveProgramResidualQuery, HornQueryScope, ProgramResidualQuery, QueryBinding,
+    ResidualSearchTree, SearchLimits, SearchMetrics,
+};
+use crate::typed::{Closure, Declaration, DerivedEvent, Event, Module, Rule, VerbKind};
 use crate::{ActiveResidualSession, ForwardSession, ResidualSession};
 
 use super::Clock;
@@ -160,36 +163,38 @@ pub enum Payload {
         session: String,
         kind: SessionKind,
     },
+    /// Every round advanced by this action, in order, with the full
+    /// closure reached. Nothing is summarised away: projections happen later.
     Forward {
         session: String,
-        round: usize,
-        added: Vec<Event>,
-        known: usize,
+        rounds: Vec<ForwardRound>,
+        known: Vec<Event>,
         complete: bool,
     },
+    /// Every residual round advanced by this action with its search trees,
+    /// and the complete structured result once the session completes. An
+    /// engine error ends the session and is carried in `error`.
     Residual {
         session: String,
         kind: SessionKind,
-        round: usize,
-        pending: Vec<Event>,
-        branches: usize,
-        metrics: SearchMetrics,
+        rounds: Vec<ResidualRound>,
         complete: bool,
-        /// Rendered requirement formula once complete; `None` before
-        /// completion or when there is no explanation.
-        requirement: Option<String>,
-        explanations: usize,
+        result: Option<ResidualOutcome>,
+        error: Option<String>,
     },
     Candidate {
         candidate: Option<String>,
         report: ProposalReport,
     },
+    /// Rounds of the candidate's forward session; on completion the closure
+    /// (events and justifications) and the report with its certificate.
     Evaluation {
         session: String,
         candidate: String,
         dossier: String,
-        round: usize,
+        rounds: Vec<ForwardRound>,
         complete: bool,
+        closure: Option<Closure>,
         report: Option<ProposalReport>,
     },
     Supports {
@@ -208,6 +213,33 @@ pub enum Payload {
     Error {
         message: String,
     },
+}
+
+/// One synchronous forward round as `ForwardSession` reports it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ForwardRound {
+    pub round: usize,
+    pub added: Vec<Event>,
+    pub derivations: Vec<DerivedEvent>,
+    pub witnesses: usize,
+    pub complete: bool,
+}
+
+/// One residual layer as the session reports it, including its trees.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResidualRound {
+    pub round: usize,
+    pub pending: Vec<Event>,
+    pub branches: Vec<ResidualSearchTree>,
+    pub metrics: SearchMetrics,
+    pub complete: bool,
+}
+
+/// The complete structured result of a completed residual session.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResidualOutcome {
+    Horn(ProgramResidualQuery),
+    Active(ActiveProgramResidualQuery),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -251,7 +283,7 @@ enum Session {
         candidate: String,
         dossier: String,
         session: Option<EvaluationSession>,
-        round: usize,
+        closure: Option<Closure>,
         report: Option<ProposalReport>,
     },
 }
@@ -843,7 +875,7 @@ impl Worker {
                 candidate: cid.into(),
                 dossier: dossier.into(),
                 session: Some(session),
-                round: 0,
+                closure: None,
                 report: None,
             },
         );
@@ -979,30 +1011,6 @@ struct Advanced {
 
 const TERMINAL: &str = "session failed earlier; errors are terminal";
 
-fn residual_payload(
-    sid: &str,
-    kind: SessionKind,
-    round: usize,
-    pending: Vec<Event>,
-    branches: usize,
-    metrics: SearchMetrics,
-    complete: bool,
-    requirement: Option<String>,
-    explanations: usize,
-) -> Payload {
-    Payload::Residual {
-        session: sid.into(),
-        kind,
-        round,
-        pending,
-        branches,
-        metrics,
-        complete,
-        requirement,
-        explanations,
-    }
-}
-
 fn completion(complete: bool) -> Status {
     if complete {
         Status::Complete
@@ -1011,32 +1019,142 @@ fn completion(complete: bool) -> Status {
     }
 }
 
-/// Advance one session by at most `allowance` transitions. Borrows only the
-/// session, so the worker can account the steps afterwards.
-fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanced {
+fn forward_round(step: crate::ForwardStep) -> ForwardRound {
+    ForwardRound {
+        round: step.round,
+        added: step.added,
+        derivations: step.derivations,
+        witnesses: step.witnesses.len(),
+        complete: step.complete,
+    }
+}
+
+fn residual_round(step: crate::ResidualStep) -> ResidualRound {
+    ResidualRound {
+        round: step.round,
+        pending: step.pending,
+        branches: step.branches,
+        metrics: step.metrics,
+        complete: step.complete,
+    }
+}
+
+struct Driven {
+    rounds: Vec<ResidualRound>,
+    consumed: usize,
+    complete: bool,
+    failure: Option<(Status, String)>,
+}
+
+/// Drive a residual-like session: `step` yields one layer or the engine's
+/// terminal error. Reading the structured result is the caller's job, after
+/// the stepping borrow ends.
+fn drive_residual(
+    failed: &mut Option<Status>,
+    allowance: usize,
+    mut step: impl FnMut() -> Result<crate::ResidualStep, Error>,
+) -> Driven {
+    if let Some(status) = *failed {
+        return Driven {
+            rounds: Vec::new(),
+            consumed: 0,
+            complete: false,
+            failure: Some((status, TERMINAL.into())),
+        };
+    }
+    let mut rounds = Vec::new();
     let mut consumed = 0;
+    let mut complete = false;
+    while consumed < allowance {
+        match step() {
+            Ok(step) => {
+                consumed += 1;
+                complete = step.complete;
+                rounds.push(residual_round(step));
+                if complete {
+                    break;
+                }
+            }
+            Err(e) => {
+                let status = classify_error(&e);
+                *failed = Some(status);
+                return Driven {
+                    rounds,
+                    consumed,
+                    complete: false,
+                    failure: Some((status, e.to_string())),
+                };
+            }
+        }
+    }
+    Driven {
+        rounds,
+        consumed,
+        complete,
+        failure: None,
+    }
+}
+
+fn residual_advanced(
+    sid: &str,
+    kind: SessionKind,
+    driven: Driven,
+    result: Option<ResidualOutcome>,
+) -> Advanced {
+    if let Some((status, message)) = driven.failure {
+        return Advanced {
+            status,
+            payload: Payload::Residual {
+                session: sid.into(),
+                kind,
+                rounds: driven.rounds,
+                complete: false,
+                result: None,
+                error: Some(message),
+            },
+            consumed: driven.consumed,
+        };
+    }
+    let complete = driven.complete || result.is_some();
+    Advanced {
+        status: completion(complete),
+        payload: Payload::Residual {
+            session: sid.into(),
+            kind,
+            rounds: driven.rounds,
+            complete,
+            result,
+            error: None,
+        },
+        consumed: driven.consumed,
+    }
+}
+
+/// Advance one session by at most `allowance` transitions. Borrows only the
+/// session, so the worker can account the steps afterwards. Every round is
+/// returned in full; nothing is reduced to a count.
+fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanced {
     match session {
         Session::Forward {
             forward,
             clock,
             round,
         } => {
-            let mut last_added = Vec::new();
+            let mut rounds = Vec::new();
             let mut complete = forward.is_complete();
-            while !complete && consumed < allowance {
+            while !complete && rounds.len() < allowance {
                 let step = forward.step(clock);
-                consumed += 1;
                 *round = step.round;
-                last_added = step.added;
                 complete = step.complete;
+                rounds.push(forward_round(step));
             }
+            let consumed = rounds.len();
             Advanced {
                 status: completion(complete),
                 payload: Payload::Forward {
                     session: sid.into(),
-                    round: *round,
-                    added: last_added,
-                    known: forward.closure().known.len(),
+                    rounds,
+                    known: forward.closure().known.clone(),
                     complete,
                 },
                 consumed,
@@ -1047,80 +1165,27 @@ fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanc
             round,
             failed,
         } => {
-            if let Some(status) = *failed {
+            if session.result().is_some() && failed.is_none() {
+                // Already complete: no step, the full result again.
                 return Advanced {
-                    status,
-                    payload: Payload::Error {
-                        message: TERMINAL.into(),
+                    status: Status::Complete,
+                    payload: Payload::Residual {
+                        session: sid.into(),
+                        kind: SessionKind::Residual,
+                        rounds: Vec::new(),
+                        complete: true,
+                        result: session.result().cloned().map(ResidualOutcome::Horn),
+                        error: None,
                     },
                     consumed: 0,
                 };
             }
-            if let Some(r) = session.result() {
-                return Advanced {
-                    status: Status::Complete,
-                    payload: residual_payload(
-                        sid,
-                        SessionKind::Residual,
-                        *round,
-                        Vec::new(),
-                        0,
-                        r.metrics.clone(),
-                        true,
-                        r.required.as_ref().map(super::render_requirement),
-                        r.explanations.len(),
-                    ),
-                    consumed: 0,
-                };
+            let driven = drive_residual(failed, allowance, || session.step());
+            if let Some(last) = driven.rounds.last() {
+                *round = last.round;
             }
-            let mut last = None;
-            while consumed < allowance {
-                match session.step() {
-                    Ok(step) => {
-                        consumed += 1;
-                        *round = step.round;
-                        let complete = step.complete;
-                        last = Some(step);
-                        if complete {
-                            break;
-                        }
-                    }
-                    Err(e) => {
-                        let status = classify_error(&e);
-                        *failed = Some(status);
-                        return Advanced {
-                            status,
-                            payload: Payload::Error {
-                                message: e.to_string(),
-                            },
-                            consumed,
-                        };
-                    }
-                }
-            }
-            let step = last.expect("allowance is at least one");
-            let (requirement, explanations) = match session.result() {
-                Some(r) => (
-                    r.required.as_ref().map(super::render_requirement),
-                    r.explanations.len(),
-                ),
-                None => (None, 0),
-            };
-            Advanced {
-                status: completion(step.complete),
-                payload: residual_payload(
-                    sid,
-                    SessionKind::Residual,
-                    step.round,
-                    step.pending,
-                    step.branches.len(),
-                    step.metrics,
-                    step.complete,
-                    requirement,
-                    explanations,
-                ),
-                consumed,
-            }
+            let result = session.result().cloned().map(ResidualOutcome::Horn);
+            residual_advanced(sid, SessionKind::Residual, driven, result)
         }
         Session::Active {
             session,
@@ -1128,86 +1193,32 @@ fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanc
             round,
             failed,
         } => {
-            if let Some(status) = *failed {
+            if session.result().is_some() && failed.is_none() {
                 return Advanced {
-                    status,
-                    payload: Payload::Error {
-                        message: TERMINAL.into(),
+                    status: Status::Complete,
+                    payload: Payload::Residual {
+                        session: sid.into(),
+                        kind: SessionKind::ActiveResidual,
+                        rounds: Vec::new(),
+                        complete: true,
+                        result: session.result().cloned().map(ResidualOutcome::Active),
+                        error: None,
                     },
                     consumed: 0,
                 };
             }
-            if let Some(r) = session.result() {
-                return Advanced {
-                    status: Status::Complete,
-                    payload: residual_payload(
-                        sid,
-                        SessionKind::ActiveResidual,
-                        *round,
-                        Vec::new(),
-                        0,
-                        r.metrics.clone(),
-                        true,
-                        r.required.as_ref().map(super::render_requirement),
-                        r.explanations.len(),
-                    ),
-                    consumed: 0,
-                };
+            let driven = drive_residual(failed, allowance, || session.step(clock));
+            if let Some(last) = driven.rounds.last() {
+                *round = last.round;
             }
-            let mut last = None;
-            while consumed < allowance {
-                match session.step(clock) {
-                    Ok(step) => {
-                        consumed += 1;
-                        *round = step.round;
-                        let complete = step.complete;
-                        last = Some(step);
-                        if complete {
-                            break;
-                        }
-                    }
-                    Err(e) => {
-                        let status = classify_error(&e);
-                        *failed = Some(status);
-                        return Advanced {
-                            status,
-                            payload: Payload::Error {
-                                message: e.to_string(),
-                            },
-                            consumed,
-                        };
-                    }
-                }
-            }
-            let step = last.expect("allowance is at least one");
-            let (requirement, explanations) = match session.result() {
-                Some(r) => (
-                    r.required.as_ref().map(super::render_requirement),
-                    r.explanations.len(),
-                ),
-                None => (None, 0),
-            };
-            Advanced {
-                status: completion(step.complete),
-                payload: residual_payload(
-                    sid,
-                    SessionKind::ActiveResidual,
-                    step.round,
-                    step.pending,
-                    step.branches.len(),
-                    step.metrics,
-                    step.complete,
-                    requirement,
-                    explanations,
-                ),
-                consumed,
-            }
+            let result = session.result().cloned().map(ResidualOutcome::Active);
+            residual_advanced(sid, SessionKind::ActiveResidual, driven, result)
         }
         Session::Evaluation {
             candidate,
             dossier,
             session: slot,
-            round,
+            closure,
             report,
         } => {
             if let Some(report) = report {
@@ -1217,27 +1228,38 @@ fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanc
                         session: sid.into(),
                         candidate: candidate.clone(),
                         dossier: dossier.clone(),
-                        round: *round,
+                        rounds: Vec::new(),
                         complete: true,
+                        closure: closure.clone(),
                         report: Some(report.clone()),
                     },
                     consumed: 0,
                 };
             }
             let open = slot.as_mut().expect("open evaluation session");
+            let mut rounds = Vec::new();
             let mut complete = open.is_complete();
-            while !complete && consumed < allowance {
+            while !complete && rounds.len() < allowance {
                 let step = open.step();
-                consumed += 1;
-                *round = step.round;
                 complete = step.complete;
+                rounds.push(ForwardRound {
+                    round: step.round,
+                    added: step.added,
+                    derivations: step.derivations,
+                    witnesses: step.witnesses,
+                    complete: step.complete,
+                });
             }
-            let finished = if complete {
-                let finished = slot.take().expect("open evaluation session").finish();
+            let consumed = rounds.len();
+            let (finished_closure, finished) = if complete {
+                let session = slot.take().expect("open evaluation session");
+                let c = session.closure().clone();
+                let finished = session.finish();
+                *closure = Some(c.clone());
                 *report = Some(finished.clone());
-                Some(finished)
+                (Some(c), Some(finished))
             } else {
-                None
+                (None, None)
             };
             Advanced {
                 status: completion(complete),
@@ -1245,8 +1267,9 @@ fn advance_session(sid: &str, session: &mut Session, allowance: usize) -> Advanc
                     session: sid.into(),
                     candidate: candidate.clone(),
                     dossier: dossier.clone(),
-                    round: *round,
+                    rounds,
                     complete,
+                    closure: finished_closure,
                     report: finished,
                 },
                 consumed,

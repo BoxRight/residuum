@@ -895,6 +895,21 @@ resuelven constantes contra el grafo de módulos, así que el manifiesto del
 episodio debe importar las constantes del problema (`C_problema`, 2.3),
 además del manifiesto de problema.
 
+Dos controles añadidos tras revisión:
+
+- **Límites de búsqueda acotados por el manifiesto.** Una petición puede
+  estrechar `SearchLimits`, nunca ampliarlos; el exceso es un error de
+  presupuesto y no abre sesión. Vale para consultas ordinarias y activas.
+- **Salida de auditoría completa.** Las respuestas conservan cada ronda
+  avanzada (eventos añadidos y justificaciones con sus registros en forward
+  y evaluación; pendientes, árboles de búsqueda y métricas por capa en
+  residual), el resultado estructurado completo al terminar (pruebas y, en
+  activas, el cierre hipotético), y el cierre con derivaciones de la
+  evaluación de candidata. Nada se reduce a recuentos: las vistas A/B/C son
+  proyecciones posteriores de esta salida, como exige el apartado 4.1. El
+  guion comprueba que las justificaciones acumuladas por rondas igualan las
+  de `close_program`.
+
 Limitaciones del trabajador:
 
 - La clasificación de errores del motor es por texto del mensaje, porque
@@ -1012,5 +1027,7 @@ fijados.
   en `053489c`.
 - Trabajador en proceso (6.5): `src/experiments/worker.rs`,
   `src/experiments/worker_tests.rs`; `proposal.rs` añade `with_status`.
-  Dos tests individuales nuevos y los ocho anteriores vueltos a pasar. No se
-  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.
+  Confirmado como `5676a6c`; límites acotados en `f308464`; salida de
+  auditoría completa en el commit siguiente. Dos tests individuales nuevos y
+  los ocho anteriores vueltos a pasar en cada paso. No se ejecutó la suite ni
+  ningún test antiguo; no se hizo merge ni push.

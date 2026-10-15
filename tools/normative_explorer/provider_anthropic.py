@@ -63,16 +63,18 @@ INSTRUCTION_SUFFIX = (
 )
 
 
-def make_client(workspace_id: str | None = None):
+def make_client(timeout_seconds: float, workspace_id: str | None = None):
     """The real client, for a supervised pilot only; tests never call it.
     The key comes from ANTHROPIC_API_KEY as the SDK resolves it; the
     workspace from the argument or ANTHROPIC_WORKSPACE_ID, sent as a header
-    and never written to the manifest or the ledger. No retries."""
+    and never written to the manifest or the ledger. The deadline comes from
+    the frozen manifest; retries are always zero, so the SDK never repeats a
+    request the controller did not record."""
     import anthropic  # imported here so the controller runs without the SDK
 
     workspace = workspace_id or os.environ.get("ANTHROPIC_WORKSPACE_ID")
     headers = {"anthropic-workspace-id": workspace} if workspace else None
-    return anthropic.Anthropic(max_retries=0, default_headers=headers)
+    return anthropic.Anthropic(max_retries=0, timeout=float(timeout_seconds), default_headers=headers)
 
 
 # -- non-recursive strict schemas ---------------------------------------------

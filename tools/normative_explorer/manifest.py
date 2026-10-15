@@ -31,6 +31,9 @@ CONTROLLER_KEYS = {
 OBSERVATION_KEYS = {"dossier", "required", "source", "status"}
 OBSERVATION_STATUS = ("documented", "hypothetical", "pending")
 MODEL_KEYS = {"provider", "model_id", "parameters"}
+# Real providers need an explicit network deadline; the simulated one has none.
+REAL_PROVIDERS = ("anthropic", "openai")
+CLIENT_KEYS = {"timeout_seconds"}
 
 
 class ManifestError(ValueError):
@@ -115,7 +118,19 @@ def validate(document: dict, source_path: Path) -> EpisodeManifest:
         raise ManifestError(f"controller_version must be {CONTROLLER_VERSION}")
     if controller["condition"] not in CONDITIONS:
         raise ManifestError("condition must be one of A, B, C")
-    _require(controller["model"], MODEL_KEYS, "controller.model")
+    model = controller["model"]
+    if not isinstance(model, dict):
+        raise ManifestError("controller.model must be an object")
+    _require({k: v for k, v in model.items() if k != "client"}, MODEL_KEYS, "controller.model")
+    if model["provider"] in REAL_PROVIDERS:
+        if "client" not in model:
+            raise ManifestError("a real provider needs controller.model.client.timeout_seconds")
+        _require(model["client"], CLIENT_KEYS, "controller.model.client")
+        timeout = model["client"]["timeout_seconds"]
+        if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or timeout <= 0:
+            raise ManifestError("controller.model.client.timeout_seconds must be a positive number")
+    elif "client" in model:
+        raise ManifestError("controller.model.client is only for real providers")
     _ident(controller["model"]["provider"], "model.provider")
     _ident(controller["model"]["model_id"], "model.model_id")
     for key in ("max_model_requests", "max_actions", "max_output_tokens"):

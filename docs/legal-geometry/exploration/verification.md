@@ -722,3 +722,33 @@ controller run with a text-only answer, a transport error and a refusal,
 all charged and recorded, five bodies persisted before their calls, no
 retry. The last test found a defect fixed before the commit: dropping nulls
 for replay also dropped them inside the tool input.
+
+## Provider wired into the entry point; schema fixture archived
+
+- `eca1d81`: the Rust schema regression decodes the certified envelopes
+  archived under `schema-roundtrip/envelopes.jsonl`; decoding a regenerated
+  file is opt-in (`RESIDUUM_CHECK_FRESH_SCHEMA=1`), and the Python generator
+  compares its output with the archive. Both Rust tests and the generator
+  passed individually.
+- Provider selection: `run_episode.build_provider` reads only the frozen
+  manifest. `simulated` needs `--policy`; a real provider refuses it and
+  needs `controller.model.client.timeout_seconds` (positive), which the
+  manifest validator enforces and forbids for the simulated provider. The
+  client is built by an injectable factory (`make_client(timeout_seconds)`,
+  `max_retries=0`); only `anthropic` has a live factory and `openai` is
+  refused for live use. A refused selection exits 2 without building a
+  client and closes the worker channels.
+- Offline full path (`test_entry_provider`, four tests, individually): real
+  pipe descriptors, a stateful fake worker on a thread and a fake Anthropic
+  client from the factory: the vocabulary is frozen before the first call,
+  three bodies persisted and replayed append-only with the thinking
+  signatures kept, the idempotence probe passes, exit 0; a provider raising
+  three transport errors is recorded and charged as unknown usage; the
+  selection rules and the manifest checks hold.
+
+**Open for the pilot, not changed here.** The supervisor's 15 s for the
+whole exchange was sized for a local worker. A real call can take longer
+than that on its own. Running the Anthropic provider under the runner
+therefore needs an explicit, reviewed decision on the network deadline and
+the exchange deadline. It will not be widened silently. The other pilot
+decisions also remain: exact model, authorised content, budget.

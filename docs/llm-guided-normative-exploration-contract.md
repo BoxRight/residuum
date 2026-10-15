@@ -1106,6 +1106,22 @@ parámetros limitados a esfuerzo, razonamiento adaptativo y geografía de
 inferencia, sin reintentos y sin fallback de modelo ante rechazos. El ID
 del workspace va en la configuración local del cliente.
 
+**Conexión al punto de entrada.** El proveedor se elige sólo por el
+manifiesto congelado; un proveedor real exige un plazo de red explícito en
+`controller.model.client.timeout_seconds` y se construye sin reintentos. El
+recorrido completo está probado sin red con descriptores reales, un
+trabajador falso con estado y un cliente falso.
+
+**Decisiones pendientes para el primer piloto**, ninguna tomada en código:
+modelo exacto y esfuerzo; contenido autorizado que se envía (contexto
+inicial, vocabulario, observaciones existentes); presupuesto de tokens y de
+peticiones; plazo de red por petición y plazo del intercambio completo bajo
+el runner, hoy de 15 s y pensado para un trabajador local, que no se
+ampliará sin revisión; activación o no del fallback de modelo. El primer
+piloto tiene un objetivo técnico acotado y usa las observaciones
+existentes; no requiere valoraciones nuevas ni la comparación A/B/C, que
+sirven para evaluar aprendizaje y utilidad, no para habilitar la ejecución.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
 la primera llamada real, las valoraciones nuevas y los episodios

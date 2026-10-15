@@ -2,23 +2,32 @@
 by the runner's supervisor, which hands over the two channel descriptors;
 this module opens nothing else and starts no process.
 
-    python3 -I -c "<bootstrap>" --manifest FILE --ledger DIR --policy NAME \\
+    python3 -I -c "<bootstrap>" --manifest FILE --ledger DIR [--policy NAME] \\
                                 --to-worker FD --from-worker FD
 
+The provider is chosen by the frozen manifest alone
+(``controller.model.provider``): ``simulated`` needs ``--policy``; a real
+provider refuses it and its client is built from the manifest's
+``client.timeout_seconds`` with no retries. Only ``anthropic`` has a live
+client factory; ``openai`` is refused for live use.
+
 Exit codes: 0 finished with a normative outcome (verified, none, awaiting);
-3 budget exhausted; 4 technical abort; 2 usage; 5 manifest rejected.
+3 budget exhausted; 4 technical abort; 2 usage or provider selection;
+5 manifest rejected; 6 technical acceptance failed.
 """
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 from . import controller as controller_mod
 from . import ledger as ledger_mod
 from . import manifest as manifest_mod
-from . import provider_sim
+from . import provider_anthropic
 from .backend import BackendError
+from .provider_base import ProviderError
 from .channel import ChannelBackend
 from .policies import POLICIES
 
@@ -27,19 +36,48 @@ EXIT = {"verified_compatible_candidate": 0, "no_verified_candidate": 0, "awaitin
 TECHNICAL_ACCEPTANCE_FAILED = 6
 
 
+USAGE = "usage: --manifest FILE --ledger DIR [--policy NAME] --to-worker FD --from-worker FD"
+DEFAULT_CLIENT_FACTORIES = {"anthropic": provider_anthropic.make_client}
+
+
 def parse(argv: list[str]) -> dict:
-    expected = {"--manifest", "--ledger", "--policy", "--to-worker", "--from-worker"}
+    required = {"--manifest", "--ledger", "--to-worker", "--from-worker"}
+    if len(argv) % 2:
+        raise SystemExit(USAGE)
     values = dict(zip(argv[0::2], argv[1::2]))
-    if set(values) != expected or len(argv) != 10:
-        raise SystemExit("usage: --manifest FILE --ledger DIR --policy NAME --to-worker FD --from-worker FD")
+    if len(values) * 2 != len(argv) or not required <= set(values) or set(values) - required - {"--policy"}:
+        raise SystemExit(USAGE)
     try:
         values["--to-worker"] = int(values["--to-worker"])
         values["--from-worker"] = int(values["--from-worker"])
     except ValueError as error:
         raise SystemExit(f"descriptors must be integers: {error}") from error
-    if values["--policy"] not in POLICIES:
+    if "--policy" in values and values["--policy"] not in POLICIES:
         raise SystemExit(f"unknown policy {values['--policy']!r}")
     return values
+
+
+def build_provider(manifest, policy_name: str | None, client_factories: dict):
+    """(provider, policy or None) from the manifest's provider. Raises
+    ProviderError on any mismatch; never builds a client it was not asked
+    for."""
+    model = manifest.controller["model"]
+    provider = model["provider"]
+    if provider == "simulated":
+        if policy_name is None:
+            raise ProviderError("the simulated provider needs --policy")
+        goal = dict(manifest.worker["decision"]["components"][-1])
+        policy = POLICIES[policy_name](goal)
+        return PolicyProvider(policy), policy
+    if policy_name is not None:
+        raise ProviderError(f"--policy is only for the simulated provider, not {provider!r}")
+    factory = client_factories.get(provider)
+    if factory is None:
+        raise ProviderError(f"no live client for provider {provider!r}")
+    client = factory(model["client"]["timeout_seconds"])
+    if provider == "anthropic":
+        return provider_anthropic.AnthropicMessagesProvider(client, manifest), None
+    raise ProviderError(f"no adapter wired for provider {provider!r}")
 
 
 class PolicyProvider:
@@ -54,22 +92,36 @@ class PolicyProvider:
         return self.policy.next_action(visible_history, tools, output_cap), {"output_tokens": 20}
 
 
-def main(argv: list[str], stderr=sys.stderr) -> int:
+def main(argv: list[str], stderr=sys.stderr, client_factories: dict | None = None) -> int:
     try:
         values = parse(argv)
     except SystemExit as error:
         print(f"controller: {error}", file=stderr, flush=True)
         return 2
+    def close_channels():
+        # An early exit must not leave the worker's channels open: the worker
+        # then sees EOF instead of waiting until the supervisor's deadline.
+        for fd in (values["--to-worker"], values["--from-worker"]):
+            try:
+                os.close(fd)
+            except OSError:
+                pass
     try:
         manifest = manifest_mod.load(Path(values["--manifest"]))
     except (manifest_mod.ManifestError, OSError) as error:
         print(f"controller: manifest rejected: {error}", file=stderr, flush=True)
+        close_channels()
         return 5
+    try:
+        provider, policy = build_provider(manifest, values.get("--policy"),
+                                          DEFAULT_CLIENT_FACTORIES if client_factories is None else client_factories)
+    except ProviderError as error:
+        print(f"controller: provider rejected: {error}", file=stderr, flush=True)
+        close_channels()
+        return 2
     ledger = ledger_mod.Ledger(Path(values["--ledger"]), manifest.episode_hash)
-    goal = dict(manifest.worker["decision"]["components"][-1])
-    policy = POLICIES[values["--policy"]](goal)
     backend = ChannelBackend.from_descriptors(values["--to-worker"], values["--from-worker"])
-    ctl = controller_mod.Controller(manifest, ledger, backend, PolicyProvider(policy))
+    ctl = controller_mod.Controller(manifest, ledger, backend, provider)
     probe = None
     try:
         # The vocabulary package is fetched once, after preflight and outside
@@ -88,6 +140,8 @@ def main(argv: list[str], stderr=sys.stderr) -> int:
     finally:
         backend.close()
     summary = {"outcome": outcome, "state": ctl.state.state, "turns": ctl.turns, "worker_calls": backend.calls,
+               "provider": manifest.controller["model"]["provider"],
+               "model_id": manifest.controller["model"]["model_id"],
                "decisions": getattr(policy, "decisions", []), "budgets": ctl.budgets.snapshot(),
                "idempotence_probe": probe}
     print(f"controller: {json.dumps(summary, ensure_ascii=False)}", file=stderr, flush=True)

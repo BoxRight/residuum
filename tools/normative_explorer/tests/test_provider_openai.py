@@ -61,7 +61,8 @@ def manifest_on_disk(condition, parameters=None):
     tmp = tempfile.mkdtemp(prefix="openai-", dir=str(ROUNDTRIP.parent))
     doc = document(condition)
     doc["controller"]["model"] = {"provider": "openai", "model_id": "fixed-model-2026-10",
-                                  "parameters": parameters or {}}
+                                  "parameters": parameters or {},
+                                  "client": {"timeout_seconds": 60}}
     path = Path(tmp) / "episode.json"
     path.write_text(json.dumps(doc))
     return manifest.load(path), Path(tmp)

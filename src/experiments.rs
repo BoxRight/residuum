@@ -21,6 +21,7 @@ pub use four::{FourSession, FourStep};
 pub mod exploration;
 mod incremental;
 pub mod proposal;
+pub mod worker;
 
 pub use default_selection::{DefaultExperimentResult, run_default_experiments};
 
@@ -557,6 +558,8 @@ mod proposal_tests;
 mod step_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod worker_tests;
 
 #[cfg(test)]
 mod owns_tests;

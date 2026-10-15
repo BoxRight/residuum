@@ -118,3 +118,31 @@ declared head; both the full-closure path and the stepwise session end in
 | `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures` (rerun) | `20261015T011526880378Z-1953923` | 1 passed |
 | four `exploration_tests` (rerun) | `20261015T011528800513Z-1953952`, `…529766439Z-1953978`, `…530732694Z-1954007`, `…531497669Z-1954035` | 1 passed each |
 | `cargo fmt --check` | after the above | exit 0 |
+
+## In-process worker and DTOs (`src/experiments/worker.rs`)
+
+Commit base `9b464d3`. Same runner and settings. No transport, serialisation,
+controller or provider; no engine, ontology, fixture, limit, `main` or `v1`
+change. Compile of the lib test target peaked at 756 MiB of cgroup memory
+(`20261015T0135…`, before the test runs below), under the 768 MiB stop.
+
+| Step | Report | Result |
+|---|---|---|
+| `worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency` | `20261015T013742732536Z-1972682` | 1 passed |
+| `worker_budgets_are_enforced_as_errors_not_verdicts` | `20261015T013744153803Z-1972711` | 1 passed |
+| `proposal_certificate_failure_is_a_technical_status_not_a_verdict` (rerun) | `20261015T013756839701Z-1972895` | 1 passed |
+| `proposal_source_path_distinguishes_syntax_elaboration_profile_scope_and_evaluation` (rerun) | `20261015T013758152026Z-1972914` | 1 passed |
+| `proposal_stages_separate_admission_from_evaluation_and_session_matches_full_closure` (rerun) | `20261015T013801018711Z-1972939` | 1 passed |
+| `forward_session_matches_close_program_on_riggs_candidates_and_geometry_fixtures` (rerun) | `20261015T013802230796Z-1972975` | 1 passed |
+| four `exploration_tests` (rerun) | `20261015T013804193923Z-1972991`, `…805153601Z-1973008`, `…806164450Z-1973025`, `…806977695Z-1973041` | 1 passed each |
+| `cargo fmt --check` | after the above | exit 0 |
+
+Two earlier failing runs of the scripted episode were the script's fault,
+not the worker's, and are kept as findings: `20261015T013545100485Z-1969603`
+(an unscoped residual query over `literalTestamentaryEntitlement` ends in the
+engine's documented `unresolved query parameters` error, which the worker
+mapped to `unresolved_parameters`; the script now asserts exactly that and
+adds the scoped, typed-binding variant that completes) and
+`20261015T013700788053Z-1970892` (typed bindings resolve constants against
+the module graph, so the episode manifest must import the problem constants;
+the script now imports `riggs_cases.res` besides the problem manifest).

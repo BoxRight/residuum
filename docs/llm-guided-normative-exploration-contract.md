@@ -853,10 +853,66 @@ hay fallback que la presente como equivalencia. Esta equivalencia es finita y
 vale para esas teorías y expedientes; el certificado sigue emitiéndose sólo
 sobre una sesión completada.
 
+### 6.5 Trabajador en proceso y DTOs
+
+`src/experiments/worker.rs` realiza el trabajador del protocolo de
+invocación (apartados 5, 8 y 9) **sin transporte ni serialización**: las
+peticiones y respuestas son tipos Rust (`Envelope`, `Request`, `Response`,
+`Payload`, `Status`). Es dueño de las sesiones de un episodio y sólo llama a
+APIs existentes; no implementa matching, sustitución, cierre, búsqueda ni
+fronteras.
+
+| Elemento | Contenido |
+|---|---|
+| `Manifest` | episodio, hash opaco, importaciones, directorio de trabajo, `Profile`, `Decision`, expedientes por identificador, `Budgets` (acciones, pasos por acción y totales, sesiones, candidatas, cláusulas, `SearchLimits`) |
+| `Envelope` | versión de protocolo, episodio, `action_id`, hash del manifiesto, `Request` |
+| `Request` | `InspectTheory`, `BeginForward`, `BeginResidual`, `BeginActiveResidual` (scope, bindings tipados, abducibles, límites), `AdvanceSession`, `ProposeCandidate`, `BeginCandidateEvaluation`, `MinimalSupports`, `ComparePartition` |
+| `Status` | la tabla del apartado 3: `complete`, `step_limit`, `search_limit`, `cyclic`, `unresolved_parameters`, `binding_error`, `structural_reject`, `error`; `runner_limit` pertenece al supervisor del proceso |
+| Controles | versión, episodio y hash comprobados antes de todo; `action_id` repetido con el mismo contenido devuelve la respuesta registrada y no cobra; con otro contenido es error; presupuestos de acciones, pasos (por acción y totales), sesiones y candidatas como errores explícitos; los identificadores de sesión y candidata los asigna el trabajador |
+| Reutilización | `ForwardSession::for_module`, `ResidualSession`, `begin_residual_query_with_bindings`, `ActiveResidualSession`, `begin_active_residual_query_{in_scope_,}with_bindings`, `Episode`/`admit`/`check_scope`/`EvaluationSession`, `joint_universe`/`frontiers`/`region_pool`/`Partition`/`discriminants`/`covers` |
+
+Semántica que el trabajador fija y el controlador debe respetar:
+
+- Los errores de una sesión residual o activa son terminales: nuevos avances
+  devuelven el mismo estado sin consumir pasos.
+- Una sesión de evaluación se cierra una sola vez; avances posteriores
+  devuelven el mismo informe con cero pasos.
+- El cierre de referencia se calcula una vez por expediente y se reutiliza.
+- `MinimalSupports` y `ComparePartition` trabajan sobre el universo conjunto
+  de la línea base más **todas** las candidatas admitidas, con `Σ` igual a la
+  unión de los seeds de los expedientes del manifiesto y hojas Seeded; la
+  partición lleva los identificadores de candidata en el orden pedido.
+
+Verificado por un episodio guionizado
+(`worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency`) y
+un test de presupuestos; registro de verificación con informes. Dos
+hallazgos del guion que afectan al contrato de herramientas: (1) una
+consulta residual sin bindings sobre una regla cuyos parámetros no determina
+el objetivo termina en `unresolved_parameters`, comportamiento documentado
+del motor; el explorer debe recibir `scope` y bindings tipados como parte
+normal de `residual_query`, no como opción avanzada; (2) los bindings tipados
+resuelven constantes contra el grafo de módulos, así que el manifiesto del
+episodio debe importar las constantes del problema (`C_problema`, 2.3),
+además del manifiesto de problema.
+
+Limitaciones del trabajador:
+
+- La clasificación de errores del motor es por texto del mensaje, porque
+  `Error` no lleva tipo; está centralizada en una función y documentada.
+- `ProposeCandidate` no comprueba el alcance del certificado; lo hace
+  `BeginCandidateEvaluation`, por expediente, que es donde existe el cierre
+  de referencia.
+- El universo conjunto exige nombres de regla distintos entre candidatas;
+  una colisión es `error`, no un veredicto.
+- La geometría se recalcula en cada petición; no hay caché de fronteras.
+- Sin DTOs serializados ni transporte: eso, el modo acotado del runner, el
+  controlador y el proveedor siguen fuera.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-y todo lo que el protocolo de invocación sitúa después del incremento 1
-(trabajador, transporte en el runner, controlador, proveedor).
+y todo lo que el protocolo de invocación sitúa después del trabajador en
+proceso (serialización y transporte, modo del runner, controlador,
+proveedor).
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -952,5 +1008,9 @@ fijados.
 - Incremento 1 (6.4): etapas separadas, frontera sobre el AST,
   `read_decision` compartida y `EvaluationSession`; tres tests individuales
   del camino de fuente y los cuatro de exploración vueltos a pasar (registro
-  de verificación). No se ejecutó la suite ni ningún test antiguo; no se
-  hizo merge ni push.
+  de verificación). Confirmado como `411ad1b`; certificado como precondición
+  en `053489c`.
+- Trabajador en proceso (6.5): `src/experiments/worker.rs`,
+  `src/experiments/worker_tests.rs`; `proposal.rs` añade `with_status`.
+  Dos tests individuales nuevos y los ocho anteriores vueltos a pasar. No se
+  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.

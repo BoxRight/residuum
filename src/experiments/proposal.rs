@@ -99,6 +99,10 @@ impl ProposalReport {
         self.status = status;
         self
     }
+    /// Replace the status, keeping text, stages and rules.
+    pub fn with_status(self, status: ProposalStatus) -> Self {
+        self.with(status)
+    }
 }
 
 fn module_name(id: &str) -> Result<String, Error> {

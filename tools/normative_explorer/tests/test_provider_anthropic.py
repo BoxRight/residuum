@@ -103,11 +103,60 @@ class SchemaTests(unittest.TestCase):
             tools = provider_anthropic.tool_definitions(condition)
             self.assertEqual([t["name"] for t in tools], schemas.catalog(condition))
             for t in tools:
-                self.assertTrue(t["strict"])
                 s = t["input_schema"]
                 self.assertFalse(s["additionalProperties"])
                 self.assertEqual(set(s["required"]), set(s["properties"]))
                 self.assertFalse(keys(s, set()) & {"minimum", "maximum", "maxLength", "minLength", "maxItems"})
+
+    def test_strict_tools_fit_the_documented_limits_and_the_search_space_is_kept(self):
+        pa = provider_anthropic
+        self.assertEqual(pa.STRICT_LIMITS, {"strict_tools": 20, "optional_parameters": 24, "union_parameters": 16})
+        for condition in "ABC":
+            tools = pa.tool_definitions(condition)
+            totals = pa.strict_totals(tools)
+            for key, limit in pa.STRICT_LIMITS.items():
+                self.assertLessEqual(totals[key], limit, (condition, key))
+            self.assertEqual(pa.check_strict_limits(tools), totals)
+            self.assertTrue(any(t["strict"] for t in tools))
+            # Strict or not, every tool offers every argument of the contract
+            # with the full unrolled types: nothing is removed to fit.
+            for t in tools:
+                arguments, _, _ = pa.TOOLS[t["name"]]
+                self.assertEqual(set(t["input_schema"]["properties"]), set(arguments) | set(pa.COMMON))
+                self.assertEqual(t["input_schema"]["$defs"], pa._reachable(t["input_schema"]["properties"], pa.DEFS))
+        c = {t["name"]: t for t in pa.tool_definitions("C")}
+        self.assertFalse(c["begin_residual"]["strict"])
+        self.assertIn("binding", c["begin_residual"]["input_schema"]["$defs"])
+        # Pilot 001 sent all eleven strict; the API counted 57 union
+        # parameters (req_011Cg4ZrXD8r1oHUiqfC8XsW). The conservative count
+        # must not be below the provider's, and the preflight rejects it.
+        all_strict = [dict(t, strict=True) for t in pa.tool_definitions("C")]
+        self.assertGreaterEqual(pa.strict_totals(all_strict)["union_parameters"], 57)
+        with self.assertRaises(ProviderError) as caught:
+            pa.check_strict_limits(all_strict)
+        self.assertTrue(caught.exception.fatal)
+
+    def test_provider_errors_carry_structured_details_and_configuration_errors_are_final(self):
+        pa = provider_anthropic
+
+        class APIError(Exception):
+            def __init__(self, status, body, request_id):
+                super().__init__("rejected")
+                self.status_code, self.body, self.request_id = status, body, request_id
+        bad = APIError(400, {"type": "error", "error": {"type": "invalid_request_error", "message": "too many unions"},
+                             "request_id": "req_body"}, "req_attr")
+        details = pa.error_details(bad)
+        self.assertEqual(details, {"exception": "APIError", "status_code": 400, "error_type": "invalid_request_error",
+                                   "error_message": "too many unions", "request_id": "req_attr"})
+        self.assertTrue(pa.is_non_recoverable(details))
+        bad.request_id = None
+        self.assertEqual(pa.error_details(bad)["request_id"], "req_body")
+        overloaded = APIError(529, {"type": "error", "error": {"type": "overloaded_error", "message": "busy"}}, "r")
+        self.assertFalse(pa.is_non_recoverable(pa.error_details(overloaded)))
+        timeout = RuntimeError("timed out")
+        self.assertEqual(pa.error_details(timeout)["status_code"], None)
+        self.assertFalse(pa.is_non_recoverable(pa.error_details(timeout)))
+        self.assertTrue(pa.is_non_recoverable(pa.error_details(APIError(401, None, None))))
 
     def test_conforming_calls_dispatch_to_the_same_envelopes_as_the_other_adapter(self):
         m, _ = manifest_on_disk("C")
@@ -166,7 +215,8 @@ class AdapterTests(unittest.TestCase):
         self.assertIn("exactly one tool call", body["system"])
         self.assertNotIn("anthropic-workspace-id", json.dumps(body))
         self.assertNotIn("fallbacks", body)
-        self.assertEqual(usage, {"output_tokens": 30, "input_tokens": 1000, "cache_read_input_tokens": 0})
+        self.assertEqual(usage, {"output_tokens": 30, "input_tokens": 1000, "uncached_input_tokens": 1000,
+                                 "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0})
         with self.assertRaises(ProviderError):
             provider_anthropic.AnthropicMessagesProvider(FakeClient([]), _openai_manifest("B")[0])
 
@@ -217,7 +267,8 @@ class AdapterTests(unittest.TestCase):
                           stop_details={"category": "bio"}))
         except ProviderError as error:
             self.assertIn("'bio'", str(error))
-            self.assertEqual(error.usage, {"output_tokens": 4, "input_tokens": 60, "cache_read_input_tokens": 10})
+            self.assertEqual(error.usage, {"output_tokens": 4, "input_tokens": 60, "uncached_input_tokens": 50,
+                                       "cache_creation_input_tokens": 0, "cache_read_input_tokens": 10})
 
     def test_controller_records_and_charges_rejected_answers_without_retry(self):
         m, tmp = manifest_on_disk("A")

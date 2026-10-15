@@ -70,12 +70,25 @@ class EndClassificationTests(unittest.TestCase):
         classify = runner().classify_supervised_end
         self.assertIsNone(classify(["worker", "controller"], {"worker": 0, "controller": 0}, False, None))
         self.assertIsNone(classify(["controller", "worker"], {"worker": 0, "controller": 0}, False, None))
-        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 4}, False, None), "worker_lost")
-        self.assertEqual(classify(["worker"], {"worker": 0, "controller": None}, True, None), "worker_lost")
-        self.assertEqual(classify(["controller"], {"worker": None, "controller": 0}, True, None), "worker_did_not_exit")
+        # Pilot 001: worker 0 first, controller 3 with budget exhausted
+        # recorded. A controlled end, not a lost worker.
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 3}, False, None),
+                         "controller_budget_exhausted")
+        self.assertEqual(classify(["controller", "worker"], {"worker": 0, "controller": 3}, False, None),
+                         "controller_budget_exhausted")
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 4}, False, None),
+                         "controller_technical_abort")
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 6}, False, None),
+                         "controller_acceptance_failed")
+        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 2}, False, None),
+                         "controller_nonzero_exit")
+        # The worker is lost only when it fails, or dies, before the controller.
+        self.assertEqual(classify(["worker", "controller"], {"worker": 1, "controller": 4}, False, None), "worker_lost")
+        self.assertEqual(classify(["worker", "controller"], {"worker": -9, "controller": 4}, False, None), "worker_lost")
         self.assertEqual(classify(["controller", "worker"], {"worker": 5, "controller": 0}, False, None), "worker_nonzero_exit")
-        self.assertEqual(classify(["controller", "worker"], {"worker": 0, "controller": 3}, False, None), "controller_nonzero_exit")
-        self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 6}, False, None), "worker_lost")
+        self.assertEqual(classify(["worker"], {"worker": -9, "controller": None}, True, None), "worker_lost")
+        self.assertEqual(classify(["worker"], {"worker": 0, "controller": None}, True, None), "controller_did_not_exit")
+        self.assertEqual(classify(["controller"], {"worker": None, "controller": 0}, True, None), "worker_did_not_exit")
         self.assertEqual(classify([], {"worker": None, "controller": None}, False, "timeout"), "timeout")
         self.assertEqual(classify(["worker", "controller"], {"worker": 0, "controller": 0}, False, "near_memory_limit"),
                          "near_memory_limit")

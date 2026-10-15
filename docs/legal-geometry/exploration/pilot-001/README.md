@@ -1,8 +1,10 @@
 # Pilot 001: first call to a real model, for review
 
-Status: **executed once on 2026-10-15, technical failure before inference**
-(see *Result of the single run* at the end). Authorised by the person
-responsible, with the conditional US$2.50 ceiling accepted. No second run. The manifest is `episode.json` in this
+Status: **closed as an integration failure.** Executed once on 2026-10-15
+under authorisation; every request was rejected by the API before
+inference (see *Result of the single run* at the end). It shows nothing
+about exploration, learning or candidate quality. No second run under this
+identifier; a new run uses another identifier and its own authorisation. The manifest is `episode.json` in this
 directory; it validates with `tools/normative_explorer/manifest.py` and its
 frozen hash is printed by the controller at start.
 
@@ -170,15 +172,16 @@ credentials appear in them.
   full reservation (US$0.4607 each, `usage_unknown` 5). After five,
   US$2.3037 was charged and the sixth reservation did not fit the ceiling:
   outcome `budget_exhausted`, controller exit 3. No `usage_partial`, no
-  `reservation_exceeded`. A request rejected as invalid is expected not to
-  be billed, so the real cost should be about zero; this is to be checked
-  in the console, not assumed.
+  `reservation_exceeded`. US$2.3037 is the conservative internal charge,
+  not a confirmed billed amount; the billed amount is not known and is not
+  assumed. It stays recorded as charged until reconciled with the console
+  (see *Reconciliation*).
 - Runner: 3.26 s, 82 MiB cgroup peak, no memory events. The worker closed
   on EOF with exit 0 before the controller, and the supervisor classified
-  the end as `worker_lost`; given the worker's clean exit and the
-  controller's recorded outcome, this is the normal close order of a
-  controller that stopped, not a worker failure, but the classification is
-  recorded as it was.
+  the end as `worker_lost`. The exit order did not show that: the worker
+  exited 0 and the controller recorded budget exhaustion. The archived
+  report keeps that label as produced; the corrected runner names this end
+  `controller_budget_exhausted`.
 
 ### What the run shows
 
@@ -196,9 +199,31 @@ credentials appear in them.
    answer, the probe ran before paying, the ceiling stopped the episode
    and every request and error is in the ledger.
 
-No correction was made. Proposals for review, before any second
-authorisation: reduce the union-typed parameters below the provider's
-limit (or send the large tools non-strict with validation kept on the
-controller side) with an offline test of that limit; stop the episode on a
-provider `invalid_request_error`, which is deterministic; and recheck the
-supervisor's classification when the worker exits cleanly first.
+The review also missed it: the fake-client tests checked internal
+correspondence, not the provider's acceptance of the whole catalogue.
+
+### Corrections after the run (offline, not exercised against the API)
+
+1. Strict tools within the documented per-request limits (20 strict
+   tools, 24 optional parameters, 16 union parameters). A conservative
+   count, labelled as such, expands each `$ref` at every use; the cheapest
+   tools are strict while the totals fit (`inspect_theory`,
+   `advance_session`, `begin_candidate_evaluation`, `request_valuation`:
+   16 unions), the other seven go non-strict with the same full schema.
+   No term, binding or legal configuration is removed; local and Rust
+   validation are unchanged. The preflight checks the whole catalogue when
+   the provider is built. The API's internal complexity limit cannot be
+   checked offline.
+2. A non-recoverable provider error (`invalid_request_error`,
+   authentication, permission, not found, too large) ends the episode as a
+   technical abort after that one request, with HTTP status, error type,
+   message and request id kept as structured fields.
+3. The runner separates the controller's outcome from the worker's health:
+   a worker that exits 0 is never `worker_lost`; a nonzero controller is
+   named by its recorded outcome.
+
+## Reconciliation
+
+Pending: the billed amount for the five request ids above, from the
+console, to be added here next to the internal charge, which stays as
+recorded.

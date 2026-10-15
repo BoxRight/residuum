@@ -248,27 +248,34 @@ def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
     return report / f'{index:02d}.output.txt'
 
 
+# Controller exit codes for outcomes it recorded itself (run_episode.EXIT and
+# the acceptance code): a controlled end, not a lost process.
+CONTROLLER_OUTCOMES = {3: 'controller_budget_exhausted', 4: 'controller_technical_abort',
+                       6: 'controller_acceptance_failed'}
+
+
 def classify_supervised_end(exit_order, codes, grace_expired, stop_reason):
     """How a supervised exchange ended. A stop reason from the loop (timeout,
     memory, growth) wins. Both processes exiting 0 within the deadline is a
     normal end whatever the order: the worker legitimately sees EOF and
-    exits before the controller prints its summary. The worker leaving first
-    is technical only when the controller then aborts, fails or does not exit
-    within its grace."""
+    exits before the controller prints its summary. Exit order alone never
+    shows a lost worker: a worker that exits 0 saw the controller close its
+    channel. The worker is lost only when it exits nonzero, or by a signal,
+    before the controller. A nonzero controller with a healthy worker is
+    named by the outcome its code records."""
     if stop_reason:
         return stop_reason
     worker, controller = codes.get('worker'), codes.get('controller')
+    worker_first = bool(exit_order) and exit_order[0] == 'worker'
     if grace_expired:
-        if exit_order and exit_order[0] == 'worker':
-            return 'worker_lost'
+        if worker_first:
+            return 'worker_lost' if worker != 0 else 'controller_did_not_exit'
         return 'worker_did_not_exit'
     if worker == 0 and controller == 0:
         return None
-    if exit_order and exit_order[0] == 'worker' and controller != 0:
-        return 'worker_lost'
-    if controller != 0:
-        return 'controller_nonzero_exit'
-    return 'worker_nonzero_exit'
+    if worker != 0:
+        return 'worker_lost' if worker_first else 'worker_nonzero_exit'
+    return CONTROLLER_OUTCOMES.get(controller, 'controller_nonzero_exit')
 
 
 LOCAL_EXCHANGE_SECONDS = 15

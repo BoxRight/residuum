@@ -21,6 +21,16 @@ Choices forced by the API and by the experiment:
   the instructions say to answer with one tool call. An answer without
   exactly one ``tool_use`` is a ``ProviderError``; it is not stored, so the
   next request repeats the same prefix.
+- **Strict only within the documented limits.** Across all strict schemas
+  of one request the API accepts at most 20 strict tools, 24 optional
+  parameters and 16 parameters with unions (``anyOf`` or type arrays).
+  Pilot 001 was rejected for exceeding the last. Each tool's cost is a
+  conservative count (every ``$ref`` expanded at each use, every union node
+  and every non-required property counted); the cheapest tools are strict
+  while the totals fit, the others are sent non-strict with the same full
+  schema, so no term, binding or legal configuration is removed. Local and
+  Rust validation run on every action either way. The API also has an
+  internal complexity limit that cannot be checked offline.
 - **Non-recursive strict schemas.** Strict tool use does not accept
   recursive schemas or numeric and length constraints, so terms, times and
   types are unrolled to the depths the P1 profile allows (``after`` nested at
@@ -190,10 +200,64 @@ def _reachable(schema, defs: dict) -> dict:
     return {name: definition for name, definition in defs.items() if name in seen}
 
 
+# Documented limits across all strict schemas of one request.
+STRICT_LIMITS = {"strict_tools": 20, "optional_parameters": 24, "union_parameters": 16}
+
+
+def strict_cost(schema: dict) -> dict:
+    """Conservative count of what a schema adds to the strict limits: each
+    ``$ref`` is expanded at every use, every node with ``anyOf`` or a type
+    array counts as a union parameter, every property missing from its
+    object's ``required`` counts as optional. An upper bound on the API's
+    own count, not that count."""
+    defs = schema.get("$defs", {})
+    unions = optional = 0
+    pending = [schema]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, list):
+            pending.extend(node)
+            continue
+        if not isinstance(node, dict):
+            continue
+        ref = node.get("$ref")
+        if ref:
+            pending.append(defs[ref.split("/")[-1]])
+        if "anyOf" in node or isinstance(node.get("type"), list):
+            unions += 1
+        if isinstance(node.get("properties"), dict):
+            optional += len(set(node["properties"]) - set(node.get("required", [])))
+        pending.extend(v for k, v in node.items() if k != "$defs")
+    return {"union_parameters": unions, "optional_parameters": optional}
+
+
+def strict_totals(tools: list[dict]) -> dict:
+    totals = {"strict_tools": 0, "optional_parameters": 0, "union_parameters": 0}
+    for tool in tools:
+        if tool.get("strict"):
+            totals["strict_tools"] += 1
+            for key, value in strict_cost(tool["input_schema"]).items():
+                totals[key] += value
+    return totals
+
+
+def check_strict_limits(tools: list[dict]) -> dict:
+    """Preflight of the whole catalogue against the documented limits, by
+    the conservative count. Raises a non-recoverable ProviderError."""
+    totals = strict_totals(tools)
+    over = {k: (v, STRICT_LIMITS[k]) for k, v in totals.items() if v > STRICT_LIMITS[k]}
+    if over:
+        raise ProviderError(f"strict tool schemas exceed the documented limits (conservative count): {over}",
+                            fatal=True)
+    return totals
+
+
 def tool_definitions(condition: str) -> list[dict]:
-    """Strict tools for the condition's catalogue, in catalogue order. Every
-    property is required, optional ones nullable; each tool carries only the
-    definitions it reaches."""
+    """The condition's catalogue, in catalogue order. Every property is
+    required, optional ones nullable; each tool carries only the definitions
+    it reaches. Tools are made strict from the cheapest (ties in catalogue
+    order) while the conservative totals fit the documented limits; the
+    rest are sent non-strict with the same schema."""
     definitions = []
     for name in catalog(condition):
         arguments, _, _ = TOOLS[name]
@@ -203,11 +267,47 @@ def tool_definitions(condition: str) -> list[dict]:
         definitions.append({
             "name": name,
             "description": f"{name} under the episode contract; arguments are validated locally before anything runs.",
-            "strict": True,
+            "strict": False,
             "input_schema": {"type": "object", "properties": properties, "required": list(properties),
                              "additionalProperties": False, "$defs": _reachable(properties, DEFS)},
         })
+    totals = {key: 0 for key in STRICT_LIMITS}
+    order = sorted(range(len(definitions)),
+                   key=lambda i: (sum(strict_cost(definitions[i]["input_schema"]).values()), i))
+    for i in order:
+        cost = dict(strict_cost(definitions[i]["input_schema"]), strict_tools=1)
+        if all(totals[k] + cost[k] <= STRICT_LIMITS[k] for k in STRICT_LIMITS):
+            definitions[i]["strict"] = True
+            for k in STRICT_LIMITS:
+                totals[k] += cost[k]
+    check_strict_limits(definitions)
     return definitions
+
+
+# Error types (and, without a type, HTTP statuses) that the same request
+# cannot recover from.
+NON_RECOVERABLE_TYPES = {"invalid_request_error", "authentication_error", "permission_error",
+                         "not_found_error", "request_too_large"}
+NON_RECOVERABLE_STATUSES = {400, 401, 403, 404, 413}
+
+
+def error_details(error: Exception) -> dict:
+    """Structured facts of an SDK error, read by attribute so that any
+    client exposing them works: HTTP status, error type and message,
+    request id."""
+    body = getattr(error, "body", None)
+    inner = body.get("error") if isinstance(body, dict) and isinstance(body.get("error"), dict) else {}
+    request_id = getattr(error, "request_id", None)
+    if request_id is None and isinstance(body, dict):
+        request_id = body.get("request_id")
+    return {"exception": type(error).__name__, "status_code": getattr(error, "status_code", None),
+            "error_type": inner.get("type"), "error_message": inner.get("message"), "request_id": request_id}
+
+
+def is_non_recoverable(details: dict) -> bool:
+    if details["error_type"] is not None:
+        return details["error_type"] in NON_RECOVERABLE_TYPES
+    return details["status_code"] in NON_RECOVERABLE_STATUSES
 
 
 # -- the adapter --------------------------------------------------------------
@@ -359,8 +459,10 @@ class AnthropicMessagesProvider:
         try:
             response = self.client.messages.create(**body)
         except Exception as error:  # every failure is recorded; no retry here
-            self._record("model_transport_error", {"error": f"{type(error).__name__}: {error}"})
-            raise ProviderError(f"model_error: {type(error).__name__}: {error}") from error
+            details = error_details(error)
+            self._record("model_transport_error", {"error": f"{type(error).__name__}: {error}", "details": details})
+            raise ProviderError(f"model_error: {type(error).__name__}: {error}", details=details,
+                                fatal=is_non_recoverable(details)) from error
         raw = _dump(response)
         self.last_response = raw
         self._record("model_response_raw", raw)

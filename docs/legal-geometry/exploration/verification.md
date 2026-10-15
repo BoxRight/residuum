@@ -831,6 +831,33 @@ provider's limit of 16 union-typed parameters (57 by the API's count).
 Each was charged at its reservation (US$0.4607, usage unknown); after
 US$2.3037 the sixth reservation did not fit and the episode ended
 `budget_exhausted` (controller exit 3, worker exit 0, supervisor
-`worker_lost`). No model answer, no action, no proposal. Real billed cost
-expected about zero, unverified. Details and proposals in
+`worker_lost`). No model answer, no action, no proposal. US$2.3037 is the
+conservative internal charge, not a billed amount; reconciliation with
+the console pending. Details and proposals in
 `pilot-001/README.md`.
+
+## After pilot 001: provider limits, final errors, end classification
+
+Pilot 001 closed as an integration failure. Offline corrections, none
+exercised against the API:
+
+- Strict tools fit the documented per-request limits (20 / 24 optional /
+  16 unions) by a conservative count (refs expanded at each use): four
+  tools strict with 16 unions, seven non-strict with unchanged schemas. On
+  the catalogue sent in pilot 001, all strict, the conservative count is
+  125 unions against the API's 57, and the preflight rejects it.
+- `invalid_request_error` and other configuration errors end the episode
+  after one request (technical abort, exit 4) with status, type, message
+  and request id in the ledger.
+- Supervisor: a worker exiting 0 is never `worker_lost`; controller codes
+  3, 4, 6 are named `controller_budget_exhausted`,
+  `controller_technical_abort`, `controller_acceptance_failed`.
+
+Tests run individually, all passed: strict limits and search space kept;
+structured errors; one call on a non-recoverable error through the entry
+point; end classification; schema, dispatch, request body, history,
+stop-reason and charging tests of the adapter; entry-point tests; the
+pilot manifest. Two adapter tests still expected the usage shape before
+`4188ed7` and had not been run then; their expectations were updated.
+Simulated episode under the runner: both exit 0, no stop reason (report
+`20261015T193354372188Z-2762804`).

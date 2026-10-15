@@ -30,9 +30,16 @@ class ProviderError(RuntimeError):
     ``usage`` carries what the provider reported for the attempt, so the
     cost is charged even when the answer is rejected."""
 
-    def __init__(self, message: str, usage: dict | None = None):
+    def __init__(self, message: str, usage: dict | None = None, details: dict | None = None,
+                 fatal: bool = False):
         super().__init__(message)
         self.usage = usage
+        # Structured facts of a provider rejection (HTTP status, error type,
+        # request id) when the transport gives them.
+        self.details = details
+        # A configuration error the same request cannot recover from: the
+        # controller ends the episode instead of sending it again.
+        self.fatal = fatal
 
 
 def initial_context(manifest: EpisodeManifest, vocabulary: dict | None = None) -> str:

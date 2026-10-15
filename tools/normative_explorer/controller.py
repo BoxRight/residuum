@@ -148,8 +148,13 @@ class Controller:
             # budget stays charged and the reported usage too, nothing
             # executes, no hidden retry.
             self._charge(error.usage)
-            self.ledger.append("model_error", {"turn": self.turns, "message": str(error), "usage": error.usage},
+            self.ledger.append("model_error", {"turn": self.turns, "message": str(error), "usage": error.usage,
+                                               "details": error.details, "non_recoverable": error.fatal},
                                file="model-responses")
+            if error.fatal:
+                # The same request would be rejected again: no further call.
+                self._abort(f"non-recoverable provider error on turn {self.turns}: {error.details or error}")
+                return
             self.state.to("READY")
             return
         self.state.to("MODEL_RECEIVED")

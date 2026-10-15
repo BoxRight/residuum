@@ -262,6 +262,34 @@ class BudgetAndInstrumentationTests(unittest.TestCase):
                          ["reservation_exceeded"])
         self.assertIn("reservation exceeded", progress[-1]["message"])
 
+    def test_a_non_recoverable_provider_error_ends_the_episode_after_one_call(self):
+        class APIError(Exception):
+            def __init__(self):
+                super().__init__("Error code: 400 - schemas too complex")
+                self.status_code = 400
+                self.body = {"type": "error", "error": {"type": "invalid_request_error",
+                                                        "message": "too many union parameters"}}
+                self.request_id = "req_test_1"
+        path, tmp = episode_manifest(max_cost_usd=2.5, pricing=self.PRICES, max_output_tokens=4000)
+        unused = message([thinking("sig-1"), tool_use("inspect_theory", {}, "t1")])
+        code, err, built, _ = run_with_fakes(path, tmp, [APIError(), unused, unused])
+        summary = json.loads(err.lines[-1].split("controller: ", 1)[1])
+        self.assertEqual(len(built["client"].messages.bodies), 1, "the same request is not sent again")
+        self.assertEqual((code, summary["outcome"]), (4, "technical_abort"))
+        led = ledger.Ledger(tmp / "ledger", manifest.load(path).episode_hash)
+        errors = [r for r in led.read_file("model-responses") if r["kind"] == "model_error"]
+        self.assertEqual(len(errors), 1)
+        self.assertTrue(errors[0]["non_recoverable"])
+        self.assertEqual(errors[0]["details"], {"exception": "APIError", "status_code": 400,
+                                                "error_type": "invalid_request_error",
+                                                "error_message": "too many union parameters",
+                                                "request_id": "req_test_1"})
+        progress = led.read_file("progress")
+        self.assertEqual(progress[-1]["kind"], "episode.aborted")
+        self.assertIn("non-recoverable provider error on turn 1", progress[-1]["message"])
+        # The conservative charge stays: unknown usage at the reservation.
+        self.assertEqual(summary["budgets"]["usage_unknown"], 1)
+
     def test_worker_budget_must_leave_room_for_the_technical_actions(self):
         path, tmp = episode_manifest()
         doc = json.loads(path.read_text())

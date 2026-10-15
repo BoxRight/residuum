@@ -320,3 +320,6 @@ mod program_validation;
 
 #[path = "exploration_wire_tests.rs"]
 mod exploration_wire;
+
+#[path = "exploration_transport_tests.rs"]
+mod exploration_transport;

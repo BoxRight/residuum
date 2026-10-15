@@ -952,10 +952,36 @@ verificación, sin cambiar límites ni mover tests antiguos). La ida y vuelta
 compara valores estructurados con `==` y, para la metadata de transición
 que la igualdad de `Event` ignora, de forma explícita.
 
+### 6.7 Transporte por líneas (`src/experiments/transport.rs`)
+
+`serve(reader, writer, worker, limits)`: función de servicio sobre entrada
+y salida inyectables, sin proceso ni socket. Una petición por línea, una
+línea de salida por línea de entrada, en orden estricto: leer, decodificar,
+validar, ejecutar, escribir, vaciar, siguiente. Toda salida es `Line`:
+`response` (el `WireResponse`) o `fault` con clase `framing`, `transport`,
+`validation` u `output_limit`. La ejecución nunca es una falta: sus errores
+viajan dentro de `Response`.
+
+| Criterio | Cómo se cumple |
+|---|---|
+| lectura acotada antes de acumular | `read_frame` consume el búfer por trozos; nunca guarda más de `max_line_bytes`; el exceso se descarta hasta el salto de línea y se cuenta |
+| decodificar y validar antes de `Worker::handle` | `decode_envelope` con `WireLimits`; una falta no consume acción |
+| idempotencia | la misma línea repetida produce la misma respuesta byte a byte |
+| sin truncar provenance | una respuesta mayor que `max_output_bytes` no se envía ni se recorta: falta `output_limit` con acción y tamaño; la acción ya ejecutó y se recupera por repetición |
+| EOF, líneas incompletas, malformadas, errores de escritura | EOF limpio termina; bytes finales sin `\n` son falta `framing` y paran el servicio (`IncompleteLine`); línea vacía es falta; un error de escritura para el servicio tras haber ejecutado la petición, y se devuelve al llamador |
+| sin diagnósticos en el canal | `serve` sólo escribe líneas de protocolo; los recuentos y la razón de parada vuelven en `Served` |
+
+Verificación: cuatro tests en el binario de la CLI (registro de
+verificación). **Regresión de memoria abierta**: con `transport.rs` el
+objetivo de tests de la biblioteca ya no compila bajo el runner en una sola
+invocación (770 MiB desde cero), y el objetivo CLI sólo completa en
+invocaciones sucesivas. Está registrado por modalidad; este incremento no
+movió tests ni cambió límites, como se acordó, y la decisión queda abierta.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-y todo lo que el protocolo de invocación sitúa después de los DTOs
-(transporte persistente, modo del runner, controlador, proveedor).
+el trabajador persistente, el modo acotado del runner, el controlador y el
+proveedor.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1058,7 +1084,10 @@ fijados.
   Confirmado como `5676a6c`; límites acotados en `f308464`; salida de
   auditoría completa en `3a20ad7`.
 - Serialización: medición en `a972927`; dependencia y prueba mínima en
-  `4101360`; DTOs de frontera (6.6) en el commit siguiente, con sus tests
-  en `src/bin/residuum/cli/exploration_wire_tests.rs`. Once tests de
-  biblioteca y tres de la CLI pasados individualmente. No se ejecutó la
+  `4101360`; DTOs de frontera (6.6) en `199aadf`, con sus tests en
+  `src/bin/residuum/cli/exploration_wire_tests.rs`.
+- Transporte (6.7) en el commit siguiente, con sus tests en
+  `src/bin/residuum/cli/exploration_transport_tests.rs`. Siete tests de la
+  CLI pasados individualmente; los once de biblioteca no pudieron
+  recompilarse bajo el runner por la regresión registrada. No se ejecutó la
   suite ni ningún test antiguo; no se hizo merge ni push.

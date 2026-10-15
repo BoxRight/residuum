@@ -236,3 +236,65 @@ oversized and malformed input as transport errors, nesting depth beyond
 the limit before parsing, wrong wire version, unknown fields and variants
 (outer and inner), invalid identifiers, negative counts, unknown stages and
 an inconsistent partition as validation errors.
+
+## Line transport (`src/experiments/transport.rs`)
+
+Commit base `199aadf`. Same runner and settings. Service function over
+injectable `BufRead`/`Write`, tested in memory; no process, socket, runner
+change, controller or provider.
+
+**Memory regression, recorded before any reorganisation and left as is.**
+Adding `transport.rs` to the library pushed the library test target over
+the runner's stop in every modality, and the CLI target over it when the
+plain rlib and the test crate build in one cgroup:
+
+| Modality | Report | cgroup peak | Result |
+|---|---|---|---|
+| lib test target, incremental, `transport.rs` added | `20261015T041643454603Z-2092002` | 772 MiB | stopped |
+| lib test target, from scratch | `20261015T041731873377Z-2093036` | 770 MiB | stopped |
+| cli target, rlib + test crate in one cgroup | `20261015T041649657712Z-2092025` | 770 MiB | stopped |
+| stage 1, `--fixture … --cli run` (rlib + bin) | `20261015T041828368238Z-2093979` | 772 MiB | stopped |
+| stage 2, `--compile-only --test-target cli` after stage 1 | `20261015T041842189529Z-2094367` | 768 MiB | stopped |
+| per-test compile in the following invocations | `20261015T041859620291Z-2095071` and later | ≤ 452 MiB | completed |
+
+Consequences, stated plainly: the library test target no longer compiles
+under the runner in a single invocation, so the eleven library tests of
+this branch (`exploration_tests`, `proposal_tests`, `worker_tests`,
+`serde_probe_tests`) cannot be re-run until the regression is resolved;
+their last passing reports predate `transport.rs`. The CLI target only
+completes across invocations, each resuming where the previous stop left
+the artefacts, which does not satisfy the open obligation of a reproducible
+cold preparation within the limits. The decision (relocating this branch's
+own tests to the CLI binary, gating the serialisation modules, or another
+arrangement) is left open on purpose: this increment moved no further tests
+and changed no limits.
+
+Transport tests (CLI target), all individually:
+
+| Step | Report | Result |
+|---|---|---|
+| `transport_serves_scripted_lines_in_order_matching_direct_worker` | `20261015T041944854892Z-2096162` | 1 passed |
+| `transport_faults_are_framed_and_do_not_execute` | `20261015T041902944203Z-2095503` | 1 passed |
+| `transport_output_limit_reports_instead_of_truncating` | `20261015T041903761221Z-2095531` | 1 passed |
+| `transport_write_errors_stop_the_service_after_execution` | `20261015T041904626629Z-2095561` | 1 passed |
+| three `exploration_wire` tests (rerun) | `20261015T041905492156Z-2095588`, `…906058276Z-2095615`, `…907328752Z-2095642` | 1 passed each |
+| `cargo fmt` | `20261015T0419…` | exit 0 |
+
+One failing run of the ordering test (`20261015T041859620291Z-2095071`) was
+the script's: two workers with different work directories produce reports
+whose `file` differs. They now share the directory.
+
+What the transport tests check: a ten-line script served in order yields
+one output line per input line, each response structurally equal to the
+direct worker's for the same envelope, idempotent replay byte-identical,
+reused identifier and unknown session as execution errors inside responses;
+forward provenance through framing equals `close_program`; empty,
+whitespace, malformed, unknown-field, over-long (with kept and discarded
+counts), too-deep lines produce framing, transport or validation faults
+without executing and without consuming actions; an unterminated final line
+is a framing fault, not executed, stopping the service; an over-long
+unterminated line is never accumulated beyond the limit; a response above
+the output limit is reported as an `output_limit` fault naming the action,
+nothing truncated or sent, the action having executed, with the same fault
+on replay and the full response under a wider limit; a write error stops the
+service after the request executed, and the answer is recoverable by replay.

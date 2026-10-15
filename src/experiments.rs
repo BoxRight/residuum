@@ -21,6 +21,7 @@ pub use four::{FourSession, FourStep};
 pub mod exploration;
 mod incremental;
 pub mod proposal;
+pub mod transport;
 pub mod wire;
 pub mod worker;
 

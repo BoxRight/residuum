@@ -980,10 +980,40 @@ en crate: la preparación fría por etapas (`lib`, `boundary`, `cli`) completa
 en una invocación por etapa, desde frío de proyecto y desde frío total, con
 los informes en el registro de verificación.
 
+### 6.8 Binario mínimo del trabajador (`boundary/src/bin/residuum-worker.rs`)
+
+`residuum-worker --manifest <archivo>`: carga el manifiesto, lo valida como
+DTO de frontera (`manifest::WireManifest`, versión, campos cerrados,
+identificadores, presupuestos no nulos, `D` válida, rutas resueltas respecto
+del directorio del manifiesto), construye el `Worker` una sola vez y llama a
+`serve(stdin, stdout)`. "Persistente" significa sólo que las sesiones viven
+entre líneas del mismo proceso: sin demonio, socket, recuperación tras
+reinicio ni controlador. Ninguna petición puede modificar el manifiesto: el
+trabajador posee el valor convertido y el protocolo no tiene petición que lo
+toque. `stdout` lleva únicamente líneas de protocolo; los diagnósticos van a
+`stderr` con prefijo `worker:`.
+
+| Código de salida | Razón |
+|---:|---|
+| 0 | EOF limpio |
+| 2 | línea de órdenes no entendida |
+| 3 | manifiesto ilegible, excesivo, malformado o inválido |
+| 4 | el trabajador no arranca (las importaciones no elaboran) |
+| 5 | la entrada terminó dentro de una línea; esa línea no se ejecutó |
+| 6 | error de lectura o escritura del canal |
+
+Toda la lógica está en `startup::run` sobre flujos inyectables y se prueba
+sin proceso: equivalencia con el trabajador directo petición a petición,
+cada código de salida con su diagnóstico, ida y vuelta del DTO de
+manifiesto campo a campo. El binario no se ha compilado ni ejecutado: su
+lanzamiento requiere el modo acotado del runner, propuesto en un commit
+separado que debe revisarse antes de ejecutarlo. Después queda la
+comprobación de equivalencia entre trabajador directo, servicio en memoria y
+proceso acotado, incluida provenance y estados de fallo.
+
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-el trabajador persistente, el modo acotado del runner, el controlador y el
-proveedor.
+la ejecución del proceso bajo el runner, el controlador y el proveedor.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1089,7 +1119,9 @@ fijados.
   `4101360`; DTOs de frontera (6.6) en `199aadf`, con sus tests en
   `src/bin/residuum/cli/exploration_wire_tests.rs`.
 - Transporte (6.7) en `4a3cf7c`. Separación del crate `residuum-boundary`
-  y selección `--test-target boundary` del runner en los dos commits
-  siguientes; preparación fría por etapas verificada; ocho tests de frontera
-  y diez de biblioteca pasados individualmente. No se ejecutó la suite ni
-  ningún test antiguo; no se hizo merge ni push.
+  en `7befa44` y selección `--test-target boundary` del runner en `a843126`;
+  preparación fría por etapas verificada; ocho tests de frontera y diez de
+  biblioteca pasados individualmente.
+- Binario mínimo (6.8) en el commit siguiente; once tests de frontera
+  pasados individualmente; el binario no se compiló ni ejecutó. No se
+  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.

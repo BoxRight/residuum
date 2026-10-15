@@ -357,3 +357,34 @@ The output-limit fault is now described as the review asked: the action
 executed and its result exists in the worker, but it is not deliverable
 under the episode's output budget; replaying the identifier yields the
 same fault, and the limit is not raised during an episode.
+
+## Minimal worker binary (`boundary/src/bin/residuum-worker.rs`)
+
+Commit base `a843126`. Start-up logic in `residuum_boundary::startup::run`
+over injectable streams; the binary only wires stdin, stdout and stderr and
+exits with the returned code. Manifest DTO (`manifest::WireManifest`)
+validated at the boundary and converted once to the worker's `Manifest`;
+no request can modify it. The binary itself was **not** compiled or
+executed: that waits for the runner's bounded worker mode to be reviewed.
+
+Boundary test target compile with the new modules: `20261015T0439…`,
+cgroup 444 MiB. Tests, individually (`--test-target boundary`):
+
+| Test | Report | Result |
+|---|---|---|
+| `startup_tests::startup_serves_injected_streams_matching_the_direct_worker` | `20261015T043938711494Z-2113930` | 1 passed |
+| `startup_tests::startup_exit_codes_and_diagnostics_are_documented_and_distinct` | `20261015T043940230420Z-2113957` | 1 passed |
+| `startup_tests::manifest_dto_round_trips_resolves_paths_and_is_immutable_to_requests` | `20261015T043941397448Z-2114124` | 1 passed |
+| eight earlier boundary tests (rerun) | `20261015T043942063790Z-2114153` … `20261015T043948482274Z-2114355` | 1 passed each |
+| `cargo fmt --check` | after the above | exit 0 |
+
+Exit codes: 0 clean EOF; 2 usage; 3 manifest unreadable, oversized,
+malformed or invalid; 4 worker cannot start (imports do not elaborate);
+5 input ended inside a line, that line not executed; 6 stream error. Every
+diagnostic is one stderr line prefixed `worker:`; stdout carries protocol
+lines only, checked by the tests. Tested: a six-request script served
+through `run` equals the direct worker response by response; every exit
+code with its diagnostic; manifest DTO round trip field by field; relative
+paths resolved against the manifest's directory; oversized manifest and
+zero budgets rejected before any work; an invented `set_manifest` request
+rejected at the wire.

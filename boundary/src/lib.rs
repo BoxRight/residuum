@@ -3,11 +3,15 @@
 //! semantic environment. This crate depends on `residuum`; `residuum` never
 //! depends on it. Serialisation lives only here.
 
+pub mod manifest;
+pub mod startup;
 pub mod transport;
 pub mod wire;
 
 #[cfg(test)]
 mod serde_probe_tests;
+#[cfg(test)]
+mod startup_tests;
 #[cfg(test)]
 mod transport_tests;
 #[cfg(test)]

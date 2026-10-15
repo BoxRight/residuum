@@ -177,6 +177,25 @@ fn worker_runs_a_scripted_episode_with_statuses_budgets_and_idempotency() {
             }));
             assert!(t.derived_verbs.iter().any(|v| v == HEAD));
             assert_eq!(t.dossiers.len(), 6);
+            // The public vocabulary package: signatures, entities, constants
+            // and the full rules of the baseline, nothing from a catalogue.
+            let head = t.verbs.iter().find(|v| v.name == HEAD).unwrap();
+            assert_eq!(head.kind, VerbKind::Derived);
+            assert_eq!(head.args.len(), 6);
+            assert_eq!(head.args[1].name, "testator");
+            assert!(t.entities.iter().any(|e| e.name == "Person"));
+            assert!(t.constants.iter().any(|c| c.name == "elmerPalmer"));
+            assert_eq!(t.rule_bodies.len(), t.rules.len());
+            assert!(
+                t.rule_bodies
+                    .iter()
+                    .any(|r| r.name == "literalTestamentaryEntitlement")
+            );
+            assert!(
+                !t.rule_bodies
+                    .iter()
+                    .any(|r| r.name.starts_with("candidateImpediment"))
+            );
         }
         other => panic!("{other:?}"),
     }

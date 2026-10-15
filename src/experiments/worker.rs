@@ -18,7 +18,9 @@ use crate::residual::{
     Abducible, ActiveProgramResidualQuery, HornQueryScope, ProgramResidualQuery, QueryBinding,
     ResidualSearchTree, SearchLimits, SearchMetrics,
 };
-use crate::typed::{Closure, Declaration, DerivedEvent, Event, Module, Rule, VerbKind};
+use crate::typed::{
+    Arg, Closure, Constant, Declaration, DerivedEvent, Entity, Event, Module, Rule, VerbKind,
+};
 use crate::{ActiveResidualSession, ForwardSession, ResidualSession};
 
 use super::Clock;
@@ -141,11 +143,26 @@ pub enum Status {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TheoryInventory {
     pub module: String,
+    /// `(rule name, origin module)`.
     pub rules: Vec<(String, String)>,
     pub seeded_verbs: Vec<String>,
     pub derived_verbs: Vec<String>,
     pub effect_verbs: Vec<String>,
     pub dossiers: Vec<String>,
+    /// The public vocabulary package: every signature, entity, constant and
+    /// rule of the authorised theory, identical in every condition. No
+    /// catalogue, no candidate, no reserved artefact: the baseline only.
+    pub verbs: Vec<VerbSignature>,
+    pub entities: Vec<Entity>,
+    pub constants: Vec<Constant>,
+    pub rule_bodies: Vec<Rule>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VerbSignature {
+    pub name: String,
+    pub kind: VerbKind,
+    pub args: Vec<Arg>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -555,20 +572,36 @@ impl Worker {
             derived_verbs: Vec::new(),
             effect_verbs: Vec::new(),
             dossiers: self.manifest.dossiers.keys().cloned().collect(),
+            verbs: Vec::new(),
+            entities: Vec::new(),
+            constants: Vec::new(),
+            rule_bodies: Vec::new(),
         };
         for d in &m.declarations {
             match d {
-                Declaration::Rule(r) => inventory.rules.push((
-                    r.name.clone(),
-                    m.origin(&r.name)
-                        .map(|o| o.module.clone())
-                        .unwrap_or_default(),
-                )),
-                Declaration::Verb(v) => match v.kind {
-                    VerbKind::Seeded => inventory.seeded_verbs.push(v.name.clone()),
-                    VerbKind::Derived => inventory.derived_verbs.push(v.name.clone()),
-                    VerbKind::Effect => inventory.effect_verbs.push(v.name.clone()),
-                },
+                Declaration::Rule(r) => {
+                    inventory.rules.push((
+                        r.name.clone(),
+                        m.origin(&r.name)
+                            .map(|o| o.module.clone())
+                            .unwrap_or_default(),
+                    ));
+                    inventory.rule_bodies.push(r.clone());
+                }
+                Declaration::Verb(v) => {
+                    match v.kind {
+                        VerbKind::Seeded => inventory.seeded_verbs.push(v.name.clone()),
+                        VerbKind::Derived => inventory.derived_verbs.push(v.name.clone()),
+                        VerbKind::Effect => inventory.effect_verbs.push(v.name.clone()),
+                    }
+                    inventory.verbs.push(VerbSignature {
+                        name: v.name.clone(),
+                        kind: v.kind,
+                        args: v.args.clone(),
+                    });
+                }
+                Declaration::Entity(e) => inventory.entities.push(e.clone()),
+                Declaration::Const(c) => inventory.constants.push(c.clone()),
                 _ => {}
             }
         }

@@ -22,18 +22,18 @@ use residuum::residual::{
     SearchMetrics,
 };
 use residuum::typed::{
-    Antecedent, Arg, BehaviorKind, BehaviorRef, Closure, Constructor, DeclarationOrigin,
-    DerivationRecord, DerivationTime, DerivedEvent, Event, HornClause, Polarity, ProgramRef,
-    ProgramRuleOrigin, PropositionKind, PropositionType, RecordFieldValue, Residual,
+    Antecedent, Arg, BehaviorKind, BehaviorRef, Closure, Constant, Constructor, DeclarationOrigin,
+    DerivationRecord, DerivationTime, DerivedEvent, Entity, Event, Field, HornClause, Polarity,
+    ProgramRef, ProgramRuleOrigin, PropositionKind, PropositionType, RecordFieldValue, Residual,
     ResidualClause, Rule, RuleBody, RuleRef, StateTime, StateTransitionType, Substitution,
-    SubstitutionBinding, SubstitutionValue, Term, TimeExpr, Type,
+    SubstitutionBinding, SubstitutionValue, Term, TimeExpr, Type, VerbKind,
 };
 
 use residuum::experiments::exploration::{Conservation, Partition};
 use residuum::experiments::proposal::{ProposalReport, ProposalStatus};
 use residuum::experiments::worker::{
     BudgetState, Envelope, ForwardRound, Payload, Request, ResidualOutcome, ResidualRound,
-    Response, SessionKind, Status, TheoryInventory,
+    Response, SessionKind, Status, TheoryInventory, VerbSignature,
 };
 
 pub const WIRE_VERSION: &str = "residuum-wire/1";
@@ -1906,6 +1906,54 @@ pub struct WireInventory {
     pub derived_verbs: Vec<String>,
     pub effect_verbs: Vec<String>,
     pub dossiers: Vec<String>,
+    pub verbs: Vec<WireVerb>,
+    pub entities: Vec<WireEntity>,
+    pub constants: Vec<WireArg>,
+    pub rule_bodies: Vec<WireRule>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WireVerb {
+    pub name: String,
+    pub kind: WireVerbKind,
+    pub args: Vec<WireArg>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WireVerbKind {
+    Seeded,
+    Derived,
+    Effect,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WireEntity {
+    pub name: String,
+    pub supertypes: Vec<String>,
+    pub fields: Vec<WireArg>,
+}
+
+fn args_to_wire(args: &[Arg]) -> Vec<WireArg> {
+    args.iter()
+        .map(|a| WireArg {
+            name: a.name.clone(),
+            ty: WireType::from(&a.ty),
+        })
+        .collect()
+}
+
+fn args_from_wire(args: Vec<WireArg>, what: &str) -> Result<Vec<Arg>, WireError> {
+    args.into_iter()
+        .map(|a| {
+            Ok(Arg {
+                name: ident(&a.name, what)?,
+                ty: Type::try_from(a.ty)?,
+            })
+        })
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -2140,6 +2188,44 @@ impl From<&Payload> for WirePayload {
                 derived_verbs: t.derived_verbs.clone(),
                 effect_verbs: t.effect_verbs.clone(),
                 dossiers: t.dossiers.clone(),
+                verbs: t
+                    .verbs
+                    .iter()
+                    .map(|v| WireVerb {
+                        name: v.name.clone(),
+                        kind: match v.kind {
+                            VerbKind::Seeded => WireVerbKind::Seeded,
+                            VerbKind::Derived => WireVerbKind::Derived,
+                            VerbKind::Effect => WireVerbKind::Effect,
+                        },
+                        args: args_to_wire(&v.args),
+                    })
+                    .collect(),
+                entities: t
+                    .entities
+                    .iter()
+                    .map(|e| WireEntity {
+                        name: e.name.clone(),
+                        supertypes: e.supertypes.clone(),
+                        fields: e
+                            .fields
+                            .iter()
+                            .map(|f| WireArg {
+                                name: f.name.clone(),
+                                ty: WireType::from(&f.ty),
+                            })
+                            .collect(),
+                    })
+                    .collect(),
+                constants: t
+                    .constants
+                    .iter()
+                    .map(|c| WireArg {
+                        name: c.name.clone(),
+                        ty: WireType::from(&c.ty),
+                    })
+                    .collect(),
+                rule_bodies: t.rule_bodies.iter().map(WireRule::from).collect(),
             }),
             Payload::SessionOpened { session, kind } => Self::SessionOpened {
                 session: session.clone(),
@@ -2246,6 +2332,50 @@ impl TryFrom<WirePayload> for Payload {
                 derived_verbs: idents(t.derived_verbs, "verb")?,
                 effect_verbs: idents(t.effect_verbs, "verb")?,
                 dossiers: idents(t.dossiers, "dossier")?,
+                verbs: t
+                    .verbs
+                    .into_iter()
+                    .map(|v| {
+                        Ok(VerbSignature {
+                            name: ident(&v.name, "verb")?,
+                            kind: match v.kind {
+                                WireVerbKind::Seeded => VerbKind::Seeded,
+                                WireVerbKind::Derived => VerbKind::Derived,
+                                WireVerbKind::Effect => VerbKind::Effect,
+                            },
+                            args: args_from_wire(v.args, "argument")?,
+                        })
+                    })
+                    .collect::<Result<_, WireError>>()?,
+                entities: t
+                    .entities
+                    .into_iter()
+                    .map(|e| {
+                        Ok(Entity {
+                            name: ident(&e.name, "entity")?,
+                            supertypes: idents(e.supertypes, "entity")?,
+                            fields: args_from_wire(e.fields, "field")?
+                                .into_iter()
+                                .map(|a| Field {
+                                    name: a.name,
+                                    ty: a.ty,
+                                })
+                                .collect(),
+                        })
+                    })
+                    .collect::<Result<_, WireError>>()?,
+                constants: args_from_wire(t.constants, "constant")?
+                    .into_iter()
+                    .map(|a| Constant {
+                        name: a.name,
+                        ty: a.ty,
+                    })
+                    .collect(),
+                rule_bodies: t
+                    .rule_bodies
+                    .into_iter()
+                    .map(Rule::try_from)
+                    .collect::<Result<_, _>>()?,
             }),
             WirePayload::SessionOpened { session, kind } => Self::SessionOpened {
                 session: ident(&session, "session")?,

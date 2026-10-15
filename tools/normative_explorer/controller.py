@@ -214,9 +214,47 @@ class Controller:
                                                             "status": status_key, "action_id": action_id},
                                    file="progress")
         elif kind == "partition":
+            self._observe_partition(action_id, body)
+
+    def _observe_partition(self, action_id: str, body: dict) -> None:
+        """Every partition result is observed; it is a refinement only when
+        it has the same carrier in the same order as the previous observed
+        partition, is finer, and actually differs. A partition over new or
+        reordered candidates changes the universe and is recorded as such.
+        The kernels themselves come from the worker; this is bookkeeping."""
+        hypotheses = list(body["partition"]["hypotheses"])
+        kernel = list(body["partition"]["kernel"])
+        observed = {
+            "action_id": action_id, "hypotheses": hypotheses, "kernel": kernel,
+            "classes": len(set(kernel)), "discriminants": len(body["discriminants"]),
+        }
+        self.ledger.append("partition.observed", observed, file="partitions")
+        previous = getattr(self, "_last_partition", None)
+        self._last_partition = observed
+        if previous is None:
+            return
+        if previous["hypotheses"] != hypotheses:
+            self.ledger.append("partition.carrier_changed", {
+                "action_id": action_id, "previous_action": previous["action_id"],
+                "previous_hypotheses": previous["hypotheses"], "hypotheses": hypotheses,
+            }, file="partitions")
+            return
+        same = all((kernel[i] == kernel[j]) == (previous["kernel"][i] == previous["kernel"][j])
+                   for i in range(len(kernel)) for j in range(len(kernel)))
+        finer = all(kernel[i] != kernel[j] or previous["kernel"][i] == previous["kernel"][j]
+                    for i in range(len(kernel)) for j in range(len(kernel)))
+        if same:
+            self.ledger.append("partition.unchanged", {"action_id": action_id,
+                                                       "previous_action": previous["action_id"]},
+                               file="partitions")
+        elif finer:
             self.ledger.append("partition.refined", {
-                "action_id": action_id, "hypotheses": body["partition"]["hypotheses"],
-                "classes": len(set(body["partition"]["kernel"])), "discriminants": len(body["discriminants"]),
+                "action_id": action_id, "previous_action": previous["action_id"],
+                "classes_before": previous["classes"], "classes_after": observed["classes"],
+            }, file="partitions")
+        else:
+            self.ledger.append("partition.not_a_refinement", {
+                "action_id": action_id, "previous_action": previous["action_id"],
             }, file="partitions")
 
     def _request_valuation(self, validated) -> None:

@@ -42,7 +42,8 @@ TOOLS: dict[str, tuple[dict[str, tuple[str, bool]], tuple[str, ...], bool]] = {
                           ("A", "B", "C"), False),
     "minimal_supports": ({"candidate": ("ident", True), "goal": ("event", True)}, ("B", "C"), True),
     "compare_partition": ({"candidates": ("idents", True), "goal": ("event", True)}, ("C",), True),
-    "finish_episode": ({"candidate_ids": ("idents", True), "explanation": ("text", True)}, ("A", "B", "C"), False),
+    # Finishing with no candidate is legitimate (no_verified_candidate).
+    "finish_episode": ({"candidate_ids": ("ident_list", True), "explanation": ("text", True)}, ("A", "B", "C"), False),
 }
 COMMON = {"rationale": ("text", True), "expected_observation": ("text?", True),
           "claims": ("claims", False), "legal_hypothesis": ("hypothesis?", False)}
@@ -81,9 +82,11 @@ def _check(tag: str, value, where: str) -> None:
         raise ProtocolError(f"{where}: must not be null")
     if base == "ident" and not is_ident(value):
         raise ProtocolError(f"{where}: not an identifier")
-    elif base == "idents":
-        if not isinstance(value, list) or not value or not all(is_ident(v) for v in value):
-            raise ProtocolError(f"{where}: must be a non-empty list of identifiers")
+    elif base in ("idents", "ident_list"):
+        if not isinstance(value, list) or not all(is_ident(v) for v in value):
+            raise ProtocolError(f"{where}: must be a list of identifiers")
+        if base == "idents" and not value:
+            raise ProtocolError(f"{where}: must not be empty")
         if len(set(value)) != len(value):
             raise ProtocolError(f"{where}: duplicate identifiers")
     elif base == "text":

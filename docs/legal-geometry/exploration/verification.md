@@ -522,3 +522,25 @@ unit request `inspect_theory` travels as a bare string in the wire encoding,
 not as an object; and the controller section gained `observations`
 (dossier, required, source, status) so that candidates are contrasted with
 the resolved history rather than with the model's account.
+
+## Two controls after review of the controller block
+
+- **`--python-test` selects exactly one test** (`fd17afa`): the identifier
+  is counted in a bounded list stage before anything runs; class and module
+  identifiers are refused (`selects 2 tests`, `selects 6 tests`); after the
+  run, `Ran 1 test`, no skip and `OK` are required; a probe with a skipped
+  test was refused (`expected exactly one passing, unskipped test`).
+- **Partitions are observed before any refinement claim.** Every partition
+  result is recorded as `partition.observed`; against the previous observed
+  partition the controller records `partition.carrier_changed` when the
+  hypotheses or their order differ, `partition.unchanged` when the class
+  structure is the same, `partition.refined` only when the carrier is the
+  same, the new kernel is finer and the structure changed, and
+  `partition.not_a_refinement` otherwise. Test
+  `PartitionTrackingTests.test_only_a_finer_same_carrier_partition_is_a_refinement`
+  (`20261015T062…`) exercises the five cases in sequence.
+- Found on the way and fixed: `finish_episode` refused an empty candidate
+  list, so an episode with nothing to reference could not finish and the
+  scripted provider's fallback exhausted the budget in protocol errors.
+  Finishing with no candidate is now accepted (outcome
+  `no_verified_candidate`); `compare_partition` still requires candidates.

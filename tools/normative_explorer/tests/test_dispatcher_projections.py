@@ -48,12 +48,14 @@ class CatalogueAndValidationTests(unittest.TestCase):
         self.assertEqual(ok.tool, "advance_session")
         self.assertTrue(ok.worker_side)
         self.assertFalse(schemas.validate_action(action("finish_episode", candidate_ids=["c1"], explanation="done"), "A").worker_side)
+        self.assertEqual(schemas.validate_action(action("finish_episode", candidate_ids=[], explanation="none"), "A").arguments["candidate_ids"], [])
         bad = [
             (action("advance_session", session="s1", max_steps=0), "A"),
             (action("advance_session", session="s1", max_steps=3, force=True), "A"),
             (action("advance_session", session="s 1", max_steps=3), "A"),
             (action("minimal_supports", candidate="c1", goal=event()), "A"),
             (action("compare_partition", candidates=["c1", "c1"], goal=event()), "C"),
+            (action("compare_partition", candidates=[], goal=event()), "C"),
             (action("drop_everything"), "C"),
             ({"tool": "inspect_theory"}, "C"),
             (action("begin_residual", dossier="d", goal={"verb": "x"}), "C"),

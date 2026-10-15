@@ -189,6 +189,47 @@ class RecordedEpisodeTests(unittest.TestCase):
                               and c["assertion"]["ref"] == "a8"), "out_of_view")
 
 
+def partition_payload(hypotheses, kernel):
+    return {"partition": {"pool": [], "partition": {"hypotheses": hypotheses, "kernel": kernel},
+                          "signatures": [[True] for _ in hypotheses], "discriminants": [0], "covers": []}}
+
+
+class PartitionTrackingTests(unittest.TestCase):
+    def test_only_a_finer_same_carrier_partition_is_a_refinement(self):
+        worker, _ = recorded()
+        goal = {"polarity": "positive", "verb": "x", "args": [], "kind": "derived", "time": {"var": "t"},
+                "transition": None}
+        lines = [lambda e, c=c: stub_response(e["action_id"], "complete",
+                                              {"candidate": {"candidate": c, "report": report(c, "syntax")}})
+                 for c in ("c1", "c2", "c3")]
+        lines += [
+            lambda e: stub_response(e["action_id"], "complete", partition_payload(["c1", "c2"], [0, 0])),
+            lambda e: stub_response(e["action_id"], "complete", partition_payload(["c1", "c2"], [0, 1])),
+            lambda e: stub_response(e["action_id"], "complete", partition_payload(["c1", "c2"], [0, 1])),
+            lambda e: stub_response(e["action_id"], "complete", partition_payload(["c1", "c2", "c3"], [0, 1, 1])),
+            lambda e: stub_response(e["action_id"], "complete", partition_payload(["c1", "c2", "c3"], [0, 0, 1])),
+        ]
+        script = [act("propose_candidate", source=f"rule r{i}() = I <= x() @ t") for i in range(3)]
+        script += [act("compare_partition", candidates=["c1", "c2"], goal=goal)] * 3
+        script += [act("compare_partition", candidates=["c1", "c2", "c3"], goal=goal)] * 2
+        script.append(act("finish_episode", candidate_ids=[], explanation="partitions only"))
+        tmp = scratch("partitions-")
+        m = write_manifest(tmp, worker, "C")
+        led = ledger.Ledger(Path(tmp) / "ledger", m.episode_hash, clock=lambda: "t")
+        ctl = controller.Controller(m, led, backend.StubBackend(lines), provider_sim.ScriptedProvider(script))
+        self.assertEqual(ctl.run(), "no_verified_candidate")
+        kinds = [p["kind"] for p in led.read_file("partitions")]
+        self.assertEqual(kinds, [
+            "partition.observed",
+            "partition.observed", "partition.refined",
+            "partition.observed", "partition.unchanged",
+            "partition.observed", "partition.carrier_changed",
+            "partition.observed", "partition.not_a_refinement",
+        ])
+        refined = next(p for p in led.read_file("partitions") if p["kind"] == "partition.refined")
+        self.assertEqual((refined["classes_before"], refined["classes_after"]), (1, 2))
+
+
 def stub_response(action_id, status, payload):
     return {"response": {"action_id": action_id, "status": status, "steps_consumed": 0,
                          "budget": {"actions_remaining": 9, "steps_remaining": 9, "sessions_remaining": 9,

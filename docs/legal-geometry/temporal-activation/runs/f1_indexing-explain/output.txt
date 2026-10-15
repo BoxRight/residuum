@@ -1,0 +1,40 @@
+experiment indexing
+  goal: violation(dogBan, visitAna, ana, rex, host, administrative, enact0) @ t1
+  #1 violation(dogBan, visitAna, ana, rex, host, administrative, enact0) @ t1
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule prohibitedAct | derivedAt d17
+      rule origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+      substitution: {act=visitAna, actAuthority=private, actEffective=t1, authority=administrative, beneficiary=host, conduct=enterWith, effective=enact0, norm=dogBan, object=rex, subject=ana, t=t1}
+      antecedents: #2, #3
+  #2 prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule generalDogBan | derivedAt d2
+      rule origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+      substitution: {dog=rex, owner=ana, t=t1, venue=host}
+      antecedents: #4
+  #3 Act(visitAna, ana, enterWith, rex, host, private, t1) @ t1
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    seed
+  #4 accompanies(ana, rex, host) @ t1
+    verb origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+    seed
+experiment afterSteps
+  goal: twoStepProbe(ana, rex) @ t0
+  not derived from these seeds
+experiment retroBase
+  goal: incidentAtVisit(ana, rex) @ t0
+  not derived from these seeds
+experiment retroLate
+  goal: incidentAtVisit(ana, rex) @ t0
+  #1 incidentAtVisit(ana, rex) @ t0
+    verb origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+    rule retroFinding | derivedAt d5
+      rule origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+      substitution: {dog=rex, owner=ana, t=t0, venue=host}
+      antecedents: #2, #3
+  #2 accompanies(ana, rex, host) @ t0
+    verb origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+    seed
+  #3 incidentReport(ana, rex) @ after(t0)
+    verb origin: TemporalIndexing (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f1_indexing.res)
+    seed

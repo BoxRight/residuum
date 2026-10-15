@@ -1,0 +1,416 @@
+{
+  "expectations": [
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": true,
+      "experiment": "indexing",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "indexing",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ after(t0)",
+      "expected": true,
+      "experiment": "indexing",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "violation(dogBan, visitAna, ana, rex, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "indexing",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "reminded(ana, rex) @ after(after(t0))",
+      "expected": true,
+      "experiment": "afterSteps",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "twoStepProbe(ana, rex) @ t0",
+      "expected": false,
+      "experiment": "afterSteps",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "incidentAtVisit(ana, rex) @ t0",
+      "expected": false,
+      "experiment": "retroBase",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "incidentAtVisit(ana, rex) @ t0",
+      "expected": true,
+      "experiment": "retroLate",
+      "holds": true,
+      "run": "f1_indexing"
+    },
+    {
+      "event": "right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3",
+      "expected": true,
+      "experiment": "selection",
+      "holds": true,
+      "run": "f3_program_activation"
+    },
+    {
+      "event": "right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t0",
+      "expected": false,
+      "experiment": "selection",
+      "holds": true,
+      "run": "f3_program_activation"
+    },
+    {
+      "event": "right(serviceEntry, bea, enterWith, fido, host, legislative, enact3) @ t3",
+      "expected": false,
+      "experiment": "selection",
+      "holds": true,
+      "run": "f3_program_activation"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t3",
+      "expected": true,
+      "experiment": "selection",
+      "holds": true,
+      "run": "f3_program_activation"
+    },
+    {
+      "event": "right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3",
+      "expected": false,
+      "experiment": "passive",
+      "holds": true,
+      "run": "f3_program_activation"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": false,
+      "experiment": "blockerLater",
+      "holds": true,
+      "run": "f5_default_temporal-run"
+    },
+    {
+      "event": "prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1",
+      "expected": false,
+      "experiment": "blockerLater",
+      "holds": true,
+      "run": "f5_default_temporal-run"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": true,
+      "experiment": "noBlocker",
+      "holds": true,
+      "run": "f5_default_temporal-run"
+    },
+    {
+      "event": "prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "noBlocker",
+      "holds": true,
+      "run": "f5_default_temporal-run"
+    },
+    {
+      "event": "pinnedProbe(ana, rex) @ t0",
+      "expected": true,
+      "experiment": "twoTimes",
+      "holds": true,
+      "run": "f6_constant_time"
+    },
+    {
+      "event": "pinnedProbe(ana, rex) @ t1",
+      "expected": false,
+      "experiment": "twoTimes",
+      "holds": true,
+      "run": "f6_constant_time"
+    },
+    {
+      "event": "prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "twoTimes",
+      "holds": true,
+      "run": "f6_constant_time"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": false,
+      "experiment": "history",
+      "holds": true,
+      "run": "f7_wrapped_generalization"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1",
+      "expected": false,
+      "experiment": "twoDogs",
+      "holds": true,
+      "run": "f7_wrapped_generalization"
+    },
+    {
+      "event": "prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "twoDogs",
+      "holds": true,
+      "run": "f7_wrapped_generalization"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": true,
+      "experiment": "history",
+      "holds": true,
+      "run": "f8_wrapped_with_vigencia"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": false,
+      "experiment": "historyWithoutOrder",
+      "holds": true,
+      "run": "f8_wrapped_with_vigencia"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1",
+      "expected": false,
+      "experiment": "twoDogs",
+      "holds": true,
+      "run": "f8_wrapped_with_vigencia"
+    },
+    {
+      "event": "prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1",
+      "expected": true,
+      "experiment": "twoDogs",
+      "holds": true,
+      "run": "f8_wrapped_with_vigencia"
+    },
+    {
+      "event": "prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0",
+      "expected": true,
+      "experiment": "aBeforeRevision",
+      "holds": true,
+      "run": "f8_wrapped_with_vigencia"
+    }
+  ],
+  "f2": {
+    "history": {
+      "added": [],
+      "base_subset_of_extended": true,
+      "removed": []
+    },
+    "twoDogs": {
+      "added": [
+        "annulled(dogBan, exemptA, legislative, enact1) @ t1",
+        "permission(exemptA, ana, enterWith, rex, host, legislative, enact1) @ t1"
+      ],
+      "base_subset_of_extended": true,
+      "removed": []
+    }
+  },
+  "f4": {
+    "assessments": {
+      "plainDog": {
+        "T0": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sB"
+          ]
+        },
+        "T1": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sB"
+          ],
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sB"
+          ]
+        },
+        "T2": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sB"
+          ],
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sB"
+          ],
+          "e2": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e2) @ sB"
+          ]
+        },
+        "T3": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sB"
+          ],
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sB"
+          ],
+          "e2": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e2) @ sB"
+          ],
+          "e3": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e3) @ sB"
+          ]
+        }
+      },
+      "s1Dossier": {
+        "T0": {
+          "e0": [
+            "prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA"
+          ]
+        },
+        "T1": {
+          "e0": [
+            "prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA"
+          ]
+        },
+        "T2": {
+          "e0": [
+            "prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA"
+          ]
+        },
+        "T3": {
+          "e0": [
+            "prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA"
+          ]
+        }
+      },
+      "s2Dossier": {
+        "T0": {},
+        "T1": {},
+        "T2": {
+          "e2": [
+            "prohibition(g0a, cal, enterWith, kim, host, administrative, e2) @ sD"
+          ]
+        },
+        "T3": {
+          "e2": [
+            "prohibition(g0a, cal, enterWith, kim, host, administrative, e2) @ sD"
+          ],
+          "e3": [
+            "prohibition(g0a, cal, enterWith, kim, host, administrative, e3) @ sD"
+          ]
+        }
+      },
+      "s3Dossier": {
+        "T0": {},
+        "T1": {},
+        "T2": {
+          "e2": [
+            "prohibition(g0a, eva, enterWith, max, host, administrative, e2) @ sE"
+          ]
+        },
+        "T3": {
+          "e2": [
+            "prohibition(g0a, eva, enterWith, max, host, administrative, e2) @ sE"
+          ],
+          "e3": [
+            "prohibition(g0a, eva, enterWith, max, host, administrative, e3) @ sE",
+            "right(g3, eva, enterWith, max, host, legislative, e3) @ sE"
+          ]
+        }
+      },
+      "s4Question": {
+        "T0": {},
+        "T1": {},
+        "T2": {},
+        "T3": {
+          "e3": [
+            "prohibition(g0a, eva, enterWith, pip, host, administrative, e3) @ sF",
+            "right(g3, eva, enterWith, pip, host, legislative, e3) @ sF"
+          ]
+        }
+      },
+      "twoDogs": {
+        "T0": {},
+        "T1": {
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sA"
+          ]
+        },
+        "T2": {
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sA"
+          ]
+        },
+        "T3": {
+          "e1": [
+            "prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sA"
+          ]
+        }
+      },
+      "unknownA": {
+        "T0": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sC"
+          ]
+        },
+        "T1": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sC"
+          ]
+        },
+        "T2": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sC"
+          ]
+        },
+        "T3": {
+          "e0": [
+            "prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sC"
+          ]
+        }
+      }
+    },
+    "history": {
+      "plainDog": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "s1Dossier": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "s2Dossier": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "s3Dossier": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "s4Question": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "twoDogs": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      },
+      "unknownA": {
+        "e0": true,
+        "e1": true,
+        "e2": true,
+        "e3": true
+      }
+    },
+    "inclusion": {
+      "T0<=T1": true,
+      "T1<=T2": true,
+      "T2<=T3": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+experiment history
+  Seeds: {accompanies(ana, rex, host) @ t0}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, notDo(ana, enterWith, rex, host) @ after(t0)}
+experiment twoDogs
+  Seeds: {accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1, Act(visitAna, ana, enterWith, rex, host, private, t1) @ t1, Act(visitBea, bea, enterWith, fido, host, private, t1) @ t1, higherAuthority(legislative, administrative) @ t1, notEarlier(enact1, enact0) @ t1}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1, Act(visitAna, ana, enterWith, rex, host, private, t1) @ t1, Act(visitBea, bea, enterWith, fido, host, private, t1) @ t1, higherAuthority(legislative, administrative) @ t1, notEarlier(enact1, enact0) @ t1, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1, notDo(ana, enterWith, rex, host) @ after(t1), notDo(bea, enterWith, fido, host) @ after(t1), violation(dogBan, visitAna, ana, rex, host, administrative, enact0) @ t1, violation(dogBan, visitBea, bea, fido, host, administrative, enact0) @ t1, patrimonialLiability(ana, rex, dogBan, administrative, enact0) @ t1, patrimonialLiability(bea, fido, dogBan, administrative, enact0) @ t1}

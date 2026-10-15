@@ -1,0 +1,17 @@
+{
+  "name": "docs/legal-geometry/temporal-activation/fixtures/f4_t2.res",
+  "stage": "fixture",
+  "exit_status": 0,
+  "elapsed_seconds": 0.2043946199992206,
+  "peak_rss_bytes": 16314368,
+  "cgroup_peak_bytes": 9953280,
+  "memory_events": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0"
+  },
+  "stop_reason": null
+}

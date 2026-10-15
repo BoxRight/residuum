@@ -1,0 +1,17 @@
+{
+  "name": "examples/experiments/peano_polynomial_scenario.res",
+  "stage": "fixture",
+  "exit_status": 1,
+  "elapsed_seconds": 0.36825727598625235,
+  "peak_rss_bytes": 16084992,
+  "cgroup_peak_bytes": 10399744,
+  "memory_events": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0"
+  },
+  "stop_reason": "nonzero_exit"
+}

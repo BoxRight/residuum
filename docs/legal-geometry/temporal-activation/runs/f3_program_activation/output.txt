@@ -1,0 +1,10 @@
+experiment selection
+  Seeds: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t3, serviceDog(rex, ana) @ t3, accompanies(bea, fido, host) @ t3}
+  goal: right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t3, serviceDog(rex, ana) @ t3, accompanies(bea, fido, host) @ t3, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t3, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t3, serviceContext(ana, rex, host) @ t3, notDo(ana, enterWith, rex, host) @ after(t0), notDo(ana, enterWith, rex, host) @ after(t3), notDo(bea, enterWith, fido, host) @ after(t3), right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3}
+experiment passive
+  Seeds: {accompanies(ana, rex, host) @ t3, accompanies(bea, fido, host) @ t3}
+  goal: right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3
+  Horn: false
+  Known after close: {accompanies(ana, rex, host) @ t3, accompanies(bea, fido, host) @ t3, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t3, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t3, notDo(ana, enterWith, rex, host) @ after(t3), notDo(bea, enterWith, fido, host) @ after(t3)}

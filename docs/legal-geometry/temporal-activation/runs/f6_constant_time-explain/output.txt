@@ -1,0 +1,18 @@
+experiment twoTimes
+  goal: pinnedProbe(ana, rex) @ t1
+  not derived from these seeds
+experiment specializedAtT0
+  goal: prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  #1 prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule banTemplate | derivedAt d2
+      rule origin: ConstantTime (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f6_constant_time.res)
+      substitution: {dog=rex, owner=ana, t=t0, venue=host}
+      antecedents: #2
+    rule banAtT0 | derivedAt d4
+      rule origin: ConstantTime (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f6_constant_time.res)
+      substitution: {dog=rex, owner=ana, venue=host}
+      antecedents: #2
+  #2 accompanies(ana, rex, host) @ t0
+    verb origin: ConstantTime (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f6_constant_time.res)
+    seed

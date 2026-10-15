@@ -1,0 +1,35 @@
+experiment s1Dossier
+  Seeds: {accompanies(ana, rex, host) @ sA, propertyA(rex) @ sA, evaluatedAt(e0) @ sA, evaluatedAt(e1) @ sA, evaluatedAt(e3) @ sA}
+  goal: prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ sA, propertyA(rex) @ sA, evaluatedAt(e0) @ sA, evaluatedAt(e1) @ sA, evaluatedAt(e3) @ sA, unrevisedThrough(g0, e0) @ sA, prohibition(g0, ana, enterWith, rex, host, administrative, e0) @ sA, notDo(ana, enterWith, rex, host) @ after(sA)}
+experiment plainDog
+  Seeds: {accompanies(bea, fido, host) @ sB, ~propertyA(fido) @ sB, evaluatedAt(e0) @ sB, evaluatedAt(e1) @ sB, evaluatedAt(e2) @ sB, evaluatedAt(e3) @ sB}
+  goal: prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sB
+  Horn: false
+  Known after close: {accompanies(bea, fido, host) @ sB, ~propertyA(fido) @ sB, evaluatedAt(e0) @ sB, evaluatedAt(e1) @ sB, evaluatedAt(e2) @ sB, evaluatedAt(e3) @ sB, unrevisedThrough(g0, e0) @ sB, prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sB, notDo(bea, enterWith, fido, host) @ after(sB)}
+experiment unknownA
+  Seeds: {accompanies(bea, fido, host) @ sC, evaluatedAt(e0) @ sC, evaluatedAt(e1) @ sC}
+  goal: prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sC
+  Horn: false
+  Known after close: {accompanies(bea, fido, host) @ sC, evaluatedAt(e0) @ sC, evaluatedAt(e1) @ sC, unrevisedThrough(g0, e0) @ sC, prohibition(g0, bea, enterWith, fido, host, administrative, e0) @ sC, notDo(bea, enterWith, fido, host) @ after(sC)}
+experiment s2Dossier
+  Seeds: {accompanies(cal, kim, host) @ sD, ~propertyA(kim) @ sD, allergicPresent(dan, host) @ sD, evaluatedAt(e2) @ sD, evaluatedAt(e3) @ sD}
+  goal: right(g3, cal, enterWith, kim, host, legislative, e3) @ sD
+  Horn: false
+  Known after close: {accompanies(cal, kim, host) @ sD, ~propertyA(kim) @ sD, allergicPresent(dan, host) @ sD, evaluatedAt(e2) @ sD, evaluatedAt(e3) @ sD}
+experiment s3Dossier
+  Seeds: {accompanies(eva, max, host) @ sE, ~propertyA(max) @ sE, serviceDog(max, eva) @ sE, evaluatedAt(e2) @ sE, evaluatedAt(e3) @ sE}
+  goal: right(g3, eva, enterWith, max, host, legislative, e3) @ sE
+  Horn: false
+  Known after close: {accompanies(eva, max, host) @ sE, ~propertyA(max) @ sE, serviceDog(max, eva) @ sE, evaluatedAt(e2) @ sE, evaluatedAt(e3) @ sE}
+experiment s4Question
+  Seeds: {accompanies(eva, pip, host) @ sF, ~propertyA(pip) @ sF, serviceDog(pip, eva) @ sF, allergicPresent(dan, host) @ sF, evaluatedAt(e3) @ sF}
+  goal: right(g3, eva, enterWith, pip, host, legislative, e3) @ sF
+  Horn: false
+  Known after close: {accompanies(eva, pip, host) @ sF, ~propertyA(pip) @ sF, serviceDog(pip, eva) @ sF, allergicPresent(dan, host) @ sF, evaluatedAt(e3) @ sF}
+experiment twoDogs
+  Seeds: {accompanies(ana, rex, host) @ sA, propertyA(rex) @ sA, accompanies(bea, fido, host) @ sA, ~propertyA(fido) @ sA, evaluatedAt(e1) @ sA}
+  goal: prohibition(g0a, bea, enterWith, fido, host, administrative, e1) @ sA
+  Horn: false
+  Known after close: {accompanies(ana, rex, host) @ sA, propertyA(rex) @ sA, accompanies(bea, fido, host) @ sA, ~propertyA(fido) @ sA, evaluatedAt(e1) @ sA}

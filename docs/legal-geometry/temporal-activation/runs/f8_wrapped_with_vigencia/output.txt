@@ -1,0 +1,20 @@
+experiment history
+  Seeds: {accompanies(ana, rex, host) @ t0, precedes(t0, rev1) @ t0}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, precedes(t0, rev1) @ t0, ordinaryEntry(ana, rex, host) @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, notDo(ana, enterWith, rex, host) @ after(t0)}
+experiment historyWithoutOrder
+  Seeds: {accompanies(ana, rex, host) @ t0}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: false
+  Known after close: {accompanies(ana, rex, host) @ t0}
+experiment twoDogs
+  Seeds: {accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1, ~propertyA(fido) @ t1}
+  goal: prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1, ~propertyA(fido) @ t1, ordinaryEntry(bea, fido, host) @ t1, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1, notDo(bea, enterWith, fido, host) @ after(t1)}
+experiment aBeforeRevision
+  Seeds: {accompanies(ana, rex, host) @ t0, propertyA(rex) @ t0, precedes(t0, rev1) @ t0}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, propertyA(rex) @ t0, precedes(t0, rev1) @ t0, ordinaryEntry(ana, rex, host) @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, notDo(ana, enterWith, rex, host) @ after(t0)}

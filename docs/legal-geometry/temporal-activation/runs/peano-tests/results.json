@@ -1,0 +1,104 @@
+[
+  {
+    "name": "compile only",
+    "stage": "compile",
+    "exit_status": 0,
+    "elapsed_seconds": 8.735687395994319,
+    "peak_rss_bytes": 531230720,
+    "cgroup_peak_bytes": 631668736,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "list tests",
+    "stage": "list",
+    "exit_status": 0,
+    "elapsed_seconds": 0.02105745900189504,
+    "peak_rss_bytes": 16306176,
+    "cgroup_peak_bytes": 8908800,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "list ignored tests",
+    "stage": "list",
+    "exit_status": 0,
+    "elapsed_seconds": 0.02078832799452357,
+    "peak_rss_bytes": 16195584,
+    "cgroup_peak_bytes": 8896512,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "cli::tests::peano_polynomials::polynomial_principal_computes_four_coefficients_from_requests_and_input_only",
+    "stage": "test",
+    "exit_status": 0,
+    "elapsed_seconds": 0.24467487799120136,
+    "peak_rss_bytes": 16134144,
+    "cgroup_peak_bytes": 11853824,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "cli::tests::peano_polynomials::polynomial_missing_input_is_not_zero_and_absent_request_does_not_activate",
+    "stage": "test",
+    "exit_status": 0,
+    "elapsed_seconds": 0.2651102550153155,
+    "peak_rss_bytes": 15888384,
+    "cgroup_peak_bytes": 11407360,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "cli::tests::peano_polynomial_products::polynomial_product_computes_complete_dense_convolution_on_the_verified_domain",
+    "stage": "test",
+    "exit_status": 0,
+    "elapsed_seconds": 0.5900572450191248,
+    "peak_rss_bytes": 19013632,
+    "cgroup_peak_bytes": 17506304,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  }
+]

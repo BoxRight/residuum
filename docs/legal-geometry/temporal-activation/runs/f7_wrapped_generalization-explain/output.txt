@@ -1,0 +1,24 @@
+experiment history
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  not derived from these seeds
+experiment twoDogs
+  goal: prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1
+  #1 prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule OrdinaryEntry::0::generalDogBan | derivedAt d2
+      program OrdinaryEntry | module WrappedGeneralization | member 0 | rule generalDogBan | rule module MonotoneBase
+      substitution: {#OrdinaryEntry:shared:dog=fido, #OrdinaryEntry:shared:owner=bea, #OrdinaryEntry:shared:t=t1, #OrdinaryEntry:shared:venue=host}
+      antecedents: #2, #3
+  #2 ordinaryEntry(bea, fido, host) @ t1
+    verb origin: WrappedGeneralization (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f7_wrapped_generalization.res)
+    associated program: OrdinaryEntry | origin: WrappedGeneralization
+    rule detectOrdinary | derivedAt d1
+      rule origin: WrappedGeneralization (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f7_wrapped_generalization.res)
+      substitution: {dog=fido, owner=bea, t=t1, venue=host}
+      antecedents: #3, #4
+  #3 accompanies(bea, fido, host) @ t1
+    verb origin: MonotoneBase (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f2_base.res)
+    seed
+  #4 ~propertyA(fido) @ t1
+    verb origin: MonotoneBase (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f2_base.res)
+    seed

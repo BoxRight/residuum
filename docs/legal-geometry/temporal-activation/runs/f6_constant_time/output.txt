@@ -1,0 +1,10 @@
+experiment twoTimes
+  Seeds: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1}
+  goal: pinnedProbe(ana, rex) @ t1
+  Horn: false
+  Known after close: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, pinnedProbe(ana, rex) @ t0, prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t0, prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t1, notDo(ana, enterWith, rex, host) @ after(t0), notDo(ana, enterWith, rex, host) @ after(t1)}
+experiment specializedAtT0
+  Seeds: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1}
+  goal: prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, pinnedProbe(ana, rex) @ t0, prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t0, prohibition(templateBan, ana, enterWith, rex, host, administrative, enact0) @ t1, notDo(ana, enterWith, rex, host) @ after(t0), notDo(ana, enterWith, rex, host) @ after(t1)}

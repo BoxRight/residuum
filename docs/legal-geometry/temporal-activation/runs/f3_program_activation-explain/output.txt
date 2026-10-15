@@ -1,0 +1,24 @@
+experiment selection
+  goal: right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3
+  #1 right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule ServiceRegime::0::serviceRight | derivedAt d8
+      program ServiceRegime | module ProgramActivation | member 0 | rule serviceRight | rule module ProgramActivation
+      substitution: {#ServiceRegime:shared:dog=rex, #ServiceRegime:shared:owner=ana, #ServiceRegime:shared:t=t3, #ServiceRegime:shared:venue=host}
+      antecedents: #2, #3
+  #2 serviceContext(ana, rex, host) @ t3
+    verb origin: ProgramActivation (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f3_program_activation.res)
+    associated program: ServiceRegime | origin: ProgramActivation
+    rule detectService | derivedAt d4
+      rule origin: ProgramActivation (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f3_program_activation.res)
+      substitution: {dog=rex, owner=ana, t=t3, venue=host}
+      antecedents: #3, #4
+  #3 accompanies(ana, rex, host) @ t3
+    verb origin: ProgramActivation (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f3_program_activation.res)
+    seed
+  #4 serviceDog(rex, ana) @ t3
+    verb origin: ProgramActivation (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f3_program_activation.res)
+    seed
+experiment passive
+  goal: right(serviceEntry, ana, enterWith, rex, host, legislative, enact3) @ t3
+  not derived from these seeds

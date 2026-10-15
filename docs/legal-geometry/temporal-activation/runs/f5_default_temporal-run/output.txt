@@ -1,0 +1,30 @@
+experiment blockerLater
+  default context: mandatory Horn closure (4 events)
+  blocking scope: RuleLambda
+  consistency: NotChecked
+  default GeneralDogBan -> generalDogBan: blocked
+    default origin: DefaultTemporal (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f5_default_temporal.res)
+    lambda origin: DefaultTemporal
+    applicability: unconditional
+    blocking evidence: propertyA(rex) @ t1
+      substitution: {dog=rex, t=t1}
+  selected default lambdas: 
+  Seeds: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: false
+  Known after close: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, propertyA(rex) @ t1, accompanies(bea, fido, host) @ t1}
+experiment noBlocker
+  default context: mandatory Horn closure (3 events)
+  blocking scope: RuleLambda
+  consistency: NotChecked
+  default GeneralDogBan -> generalDogBan: selected
+    default origin: DefaultTemporal (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-activation/fixtures/f5_default_temporal.res)
+    lambda origin: DefaultTemporal
+    applicability: unconditional
+    blocking: no matching blocker
+    selection: applicable, unblocked, not defeated
+  selected default lambdas: generalDogBan
+  Seeds: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, accompanies(bea, fido, host) @ t1}
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, accompanies(ana, rex, host) @ t1, accompanies(bea, fido, host) @ t1, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t1, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t1, notDo(ana, enterWith, rex, host) @ after(t0), notDo(ana, enterWith, rex, host) @ after(t1), notDo(bea, enterWith, fido, host) @ after(t1)}

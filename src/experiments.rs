@@ -21,8 +21,6 @@ pub use four::{FourSession, FourStep};
 pub mod exploration;
 mod incremental;
 pub mod proposal;
-pub mod transport;
-pub mod wire;
 pub mod worker;
 
 pub use default_selection::{DefaultExperimentResult, run_default_experiments};
@@ -556,8 +554,6 @@ pub fn render_requirement(requirement: &RequirementFormula) -> String {
 mod exploration_tests;
 #[cfg(test)]
 mod proposal_tests;
-#[cfg(test)]
-mod serde_probe_tests;
 #[cfg(test)]
 mod step_tests;
 #[cfg(test)]

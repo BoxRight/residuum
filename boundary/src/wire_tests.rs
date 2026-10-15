@@ -3,9 +3,9 @@
 //! test binary because the library test target has no memory margin left
 //! for it under the runner (see docs/legal-geometry/exploration/verification.md).
 //! Run individually through `scripts/test_safe.py --test-target cli`.
+use crate::wire::*;
 use residuum::experiments::exploration::*;
 use residuum::experiments::proposal::ProposalStatus;
-use residuum::experiments::wire::*;
 use residuum::experiments::worker::*;
 use residuum::typed::*;
 use residuum::{Abducible, HornQueryScope, QueryBinding, QueryParameterScope, SearchLimits};
@@ -14,8 +14,13 @@ use std::path::PathBuf;
 
 const HEAD: &str = "hypotheticalSuccessionImpediment";
 
+/// Workspace root: fixtures and the shared `target/` live beside the
+/// `residuum` crate, one level above this crate's manifest.
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .to_path_buf()
 }
 
 fn fixture(name: &str) -> Module {

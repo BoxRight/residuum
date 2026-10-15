@@ -923,7 +923,7 @@ Limitaciones del trabajador:
 - Sin DTOs serializados ni transporte: eso, el modo acotado del runner, el
   controlador y el proveedor siguen fuera.
 
-### 6.6 DTOs de frontera versionados (`src/experiments/wire.rs`)
+### 6.6 DTOs de frontera versionados (`boundary/src/wire.rs`)
 
 Serialización con `serde_json`, adoptada tras la
 [medición de coste](legal-geometry/exploration/serde-cost-measurement.md),
@@ -945,14 +945,16 @@ no es representación.
 | tamaño antes de deserializar, profundidad antes de despachar | `WireLimits { max_bytes, max_depth }`; bytes contados antes de parsear; profundidad medida sobre los bytes sin construir valor, antes de parsear |
 | errores diferenciados | `WireError::Transport` (tamaño, sintaxis) y `WireError::Validation` (versión, esquema, identificadores, profundidad); la ejecución sigue en `Response` |
 
-Verificación: tres tests individuales en el binario de la CLI, porque el
-objetivo de tests de la biblioteca no tenía margen de memoria para ellos
-bajo el runner (regresión registrada por modalidad en el registro de
-verificación, sin cambiar límites ni mover tests antiguos). La ida y vuelta
-compara valores estructurados con `==` y, para la metadata de transición
-que la igualdad de `Event` ignora, de forma explícita.
+Ubicación: crate propio `residuum-boundary` (`boundary/`), que depende de
+`residuum`; `residuum` no depende de él ni de `serde`. Decisión del autor
+tras la regresión de memoria registrada en el registro de verificación: la
+serialización y el transporte son adaptadores externos al entorno
+semántico y compilan como unidad independiente. Verificación: tres tests
+individuales con `scripts/test_safe.py --test-target boundary`. La ida y
+vuelta compara valores estructurados con `==` y, para la metadata de
+transición que la igualdad de `Event` ignora, de forma explícita.
 
-### 6.7 Transporte por líneas (`src/experiments/transport.rs`)
+### 6.7 Transporte por líneas (`boundary/src/transport.rs`)
 
 `serve(reader, writer, worker, limits)`: función de servicio sobre entrada
 y salida inyectables, sin proceso ni socket. Una petición por línea, una
@@ -967,16 +969,16 @@ viajan dentro de `Response`.
 | lectura acotada antes de acumular | `read_frame` consume el búfer por trozos; nunca guarda más de `max_line_bytes`; el exceso se descarta hasta el salto de línea y se cuenta |
 | decodificar y validar antes de `Worker::handle` | `decode_envelope` con `WireLimits`; una falta no consume acción |
 | idempotencia | la misma línea repetida produce la misma respuesta byte a byte |
-| sin truncar provenance | una respuesta mayor que `max_output_bytes` no se envía ni se recorta: falta `output_limit` con acción y tamaño; la acción ya ejecutó y se recupera por repetición |
+| sin truncar provenance | una respuesta mayor que `max_output_bytes` no se envía ni se recorta: falta `output_limit` con acción y tamaño. La acción ejecutó y su resultado existe en el trabajador, pero **no es entregable bajo el presupuesto del episodio**: repetir el identificador produce la misma falta y el límite no se eleva durante el episodio |
 | EOF, líneas incompletas, malformadas, errores de escritura | EOF limpio termina; bytes finales sin `\n` son falta `framing` y paran el servicio (`IncompleteLine`); línea vacía es falta; un error de escritura para el servicio tras haber ejecutado la petición, y se devuelve al llamador |
 | sin diagnósticos en el canal | `serve` sólo escribe líneas de protocolo; los recuentos y la razón de parada vuelven en `Served` |
 
-Verificación: cuatro tests en el binario de la CLI (registro de
-verificación). **Regresión de memoria abierta**: con `transport.rs` el
-objetivo de tests de la biblioteca ya no compila bajo el runner en una sola
-invocación (770 MiB desde cero), y el objetivo CLI sólo completa en
-invocaciones sucesivas. Está registrado por modalidad; este incremento no
-movió tests ni cambió límites, como se acordó, y la decisión queda abierta.
+Verificación: cuatro tests individuales en el crate de frontera. La
+regresión de memoria que produjo la versión anterior de este módulo dentro
+de `residuum` quedó registrada por modalidad y resuelta por la separación
+en crate: la preparación fría por etapas (`lib`, `boundary`, `cli`) completa
+en una invocación por etapa, desde frío de proyecto y desde frío total, con
+los informes en el registro de verificación.
 
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
@@ -1086,8 +1088,8 @@ fijados.
 - Serialización: medición en `a972927`; dependencia y prueba mínima en
   `4101360`; DTOs de frontera (6.6) en `199aadf`, con sus tests en
   `src/bin/residuum/cli/exploration_wire_tests.rs`.
-- Transporte (6.7) en el commit siguiente, con sus tests en
-  `src/bin/residuum/cli/exploration_transport_tests.rs`. Siete tests de la
-  CLI pasados individualmente; los once de biblioteca no pudieron
-  recompilarse bajo el runner por la regresión registrada. No se ejecutó la
-  suite ni ningún test antiguo; no se hizo merge ni push.
+- Transporte (6.7) en `4a3cf7c`. Separación del crate `residuum-boundary`
+  y selección `--test-target boundary` del runner en los dos commits
+  siguientes; preparación fría por etapas verificada; ocho tests de frontera
+  y diez de biblioteca pasados individualmente. No se ejecutó la suite ni
+  ningún test antiguo; no se hizo merge ni push.

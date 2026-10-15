@@ -86,6 +86,13 @@ name = "residuum"
 version = "0.1.0"
 dependencies = [
  "chumsky",
+]
+
+[[package]]
+name = "residuum-boundary"
+version = "0.1.0"
+dependencies = [
+ "residuum",
  "serde",
  "serde_json",
 ]

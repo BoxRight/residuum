@@ -1,4 +1,5 @@
-//! Versioned wire DTOs at the worker boundary (invocation protocol §9).
+//! Versioned wire DTOs at the worker boundary (invocation protocol §9),
+//! in the boundary crate so that serialisation never enters `residuum`.
 //!
 //! Explicit mirrors of the worker's request and response types and of the
 //! engine structures they carry. Serialisation lives only here: nothing in
@@ -14,13 +15,13 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::residual::{
+use residuum::residual::{
     Abducible, AbductionFailure, ActiveProgramResidualQuery, CertifiedActiveExplanation,
     HornQueryScope, ProgramResidualQuery, QueryBinding, QueryParameterScope, RequirementFormula,
     ResidualActivation, ResidualExplanation, ResidualProof, ResidualSearchTree, SearchLimits,
     SearchMetrics,
 };
-use crate::typed::{
+use residuum::typed::{
     Antecedent, Arg, BehaviorKind, BehaviorRef, Closure, Constructor, DeclarationOrigin,
     DerivationRecord, DerivationTime, DerivedEvent, Event, HornClause, Polarity, ProgramRef,
     ProgramRuleOrigin, PropositionKind, PropositionType, RecordFieldValue, Residual,
@@ -28,9 +29,9 @@ use crate::typed::{
     SubstitutionBinding, SubstitutionValue, Term, TimeExpr, Type,
 };
 
-use super::exploration::{Conservation, Partition};
-use super::proposal::{ProposalReport, ProposalStatus};
-use super::worker::{
+use residuum::experiments::exploration::{Conservation, Partition};
+use residuum::experiments::proposal::{ProposalReport, ProposalStatus};
+use residuum::experiments::worker::{
     BudgetState, Envelope, ForwardRound, Payload, Request, ResidualOutcome, ResidualRound,
     Response, SessionKind, Status, TheoryInventory,
 };

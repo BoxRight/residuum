@@ -2,9 +2,9 @@
 //! framing, in order, with faults separated from results. In-memory streams
 //! only; no process or socket. Run individually through
 //! `scripts/test_safe.py --test-target cli`.
+use crate::transport::*;
+use crate::wire::*;
 use residuum::experiments::exploration::*;
-use residuum::experiments::transport::*;
-use residuum::experiments::wire::*;
 use residuum::experiments::worker::*;
 use residuum::typed::*;
 use std::collections::BTreeMap;
@@ -13,8 +13,13 @@ use std::path::PathBuf;
 
 const HEAD: &str = "hypotheticalSuccessionImpediment";
 
+/// Workspace root: fixtures and the shared `target/` live beside the
+/// `residuum` crate, one level above this crate's manifest.
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .to_path_buf()
 }
 
 fn fixture(name: &str) -> Module {
@@ -386,13 +391,15 @@ fn transport_output_limit_reports_instead_of_truncating() {
     assert_eq!(big.action_id.as_deref(), Some("b2"));
     assert!(big.message.contains("exceeds the output limit of 3000"));
     assert!(big.message.contains("nothing was truncated"));
+    assert!(big.message.contains("not deliverable under this budget"));
     assert_eq!(fault(&outputs[2]), big, "the replay reports the same fault");
     for l in std::str::from_utf8(&out).unwrap().lines() {
         assert!(l.len() <= 3000);
     }
     // The action executed: the session is complete and a fresh advance
-    // consumes nothing. With a wide enough output limit the full response,
-    // untruncated, comes through.
+    // consumes nothing. Under the same budget the result stays undeliverable;
+    // only a different episode budget would show the full response, which
+    // this test does with a wider limit to prove nothing was truncated.
     let again = envelope(
         "b3",
         Request::AdvanceSession {

@@ -298,3 +298,62 @@ the output limit is reported as an `output_limit` fault naming the action,
 nothing truncated or sent, the action having executed, with the same fault
 on replay and the full response under a wider limit; a write error stops the
 service after the request executed, and the answer is recoverable by replay.
+
+## Boundary crate and reproducible cold preparation
+
+Decision of the project author after the regression above: the
+communication boundary becomes its own crate, `residuum-boundary`
+(`boundary/`), depending on `residuum`; `residuum` does not depend on it.
+`wire`, `transport`, the serde probe and their tests moved there with their
+cases, comparisons and oracles unchanged (imports and organisation only).
+`serde`/`serde_json` left `residuum`'s manifest. The exploration, proposal
+and worker tests stayed in the library target. The runner gained one target
+selection, `--test-target boundary`, in a separate commit: it compiles
+`-p residuum-boundary --lib` and finds the test binary by target name;
+isolation, limits and stop policy are untouched.
+
+**Staged cold preparation, each stage one invocation that completes.**
+Stages: `--compile-only --test-target lib`, then `boundary`, then `cli`.
+
+| Scenario | Stage | Report | Elapsed | RSS | cgroup peak |
+|---|---|---|---|---|---|
+| A: project-cold (`cargo clean -p residuum -p residuum-boundary`, third-party deps kept) | lib | `20261015T042913111466Z-2103249` | 12.5 s | 675 MiB | 664 MiB |
+| A | boundary | `20261015T042925724400Z-2103673` | 10.1 s | 460 MiB | 449 MiB |
+| A | cli | `20261015T042935993784Z-2104215` | 8.4 s | 545 MiB | 612 MiB |
+| B: fully cold (`target/debug` removed, dependencies rebuilt) | lib | `20261015T042944618580Z-2104643` | 16.2 s | 687 MiB | 712 MiB |
+| B | boundary | `20261015T043000942888Z-2105192` | 17.5 s | 481 MiB | 510 MiB |
+| B | cli | `20261015T043018522208Z-2105995` | 8.5 s | 554 MiB | 636 MiB |
+
+All six exit 0 with no stop; no compile was resumed from a stopped one.
+This is the first time in this worktree that a fully cold preparation
+completed stage by stage. The library target is back to where it was
+before the serialisation modules (664 MiB project-cold, as in the baseline
+measurement), and the boundary crate compiles with more than 250 MiB of
+margin.
+
+Tests after the move, all individually:
+
+| Target | Test | Report |
+|---|---|---|
+| boundary | `serde_probe_tests::serde_probe_round_trips_a_boundary_dto` | `20261015T043128908035Z-2107500` |
+| boundary | `wire_tests::wire_round_trips_every_request_variant_structurally` | `20261015T043130574636Z-2107678` |
+| boundary | `wire_tests::wire_round_trips_worker_responses_with_full_provenance` | `20261015T043131088100Z-2107706` |
+| boundary | `wire_tests::wire_rejects_malformed_oversized_deep_and_unknown_inputs` | `20261015T043132306247Z-2107733` |
+| boundary | `transport_tests::transport_serves_scripted_lines_in_order_matching_direct_worker` | `20261015T043132820842Z-2107760` |
+| boundary | `transport_tests::transport_faults_are_framed_and_do_not_execute` | `20261015T043134587886Z-2107908` |
+| boundary | `transport_tests::transport_output_limit_reports_instead_of_truncating` | `20261015T043135356477Z-2107935` |
+| boundary | `transport_tests::transport_write_errors_stop_the_service_after_execution` | `20261015T043136122861Z-2107962` |
+| lib | two `worker_tests` | `20261015T043050583707Z-2106833`, `…051943868Z-2106851` |
+| lib | four `proposal_tests` | `20261015T043052753616Z-2106987`, `…053915270Z-2107004`, `…055025715Z-2107022`, `…057940207Z-2107062` |
+| lib | four `exploration_tests` | `20261015T043059902689Z-2107078`, `…100860174Z-2107098`, `…101870858Z-2107114`, `…102678661Z-2107131` |
+| all | `cargo fmt --check` | exit 0 |
+
+One failing boundary run preceded these (`20261015T043047633480Z-2106667`
+and the transport tests of that batch): the moved tests resolved fixtures
+from the crate's manifest directory; they now resolve from the workspace
+root.
+
+The output-limit fault is now described as the review asked: the action
+executed and its result exists in the worker, but it is not deliverable
+under the episode's output budget; replaying the identifier yields the
+same fault, and the limit is not raised during an episode.

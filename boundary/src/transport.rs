@@ -13,8 +13,10 @@
 //!   `StopReason::IncompleteLine`.
 //! - Decoding and validation (`wire`) happen before `Worker::handle`.
 //! - A response that would exceed `max_output_bytes` is never truncated: an
-//!   `OutputLimit` fault names the action and the size instead. The worker's
-//!   state has advanced; the same `action_id` replays the same response.
+//!   `OutputLimit` fault names the action and the size instead. The action
+//!   executed and its result exists in the worker, but it is not deliverable
+//!   under this budget: replaying the `action_id` yields the same fault, and
+//!   the limit cannot be raised during the episode.
 //! - A write error stops the service and is returned to the caller; the
 //!   request that was being answered has already executed.
 //! - The service writes nothing but protocol lines; diagnostics are returned
@@ -24,8 +26,8 @@ use std::io::{BufRead, Write};
 
 use serde::{Deserialize, Serialize};
 
-use super::wire::{WIRE_VERSION, WireError, WireLimits, WireResponse, decode_envelope};
-use super::worker::Worker;
+use crate::wire::{WIRE_VERSION, WireError, WireLimits, WireResponse, decode_envelope};
+use residuum::experiments::worker::Worker;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TransportLimits {
@@ -263,8 +265,8 @@ pub fn serve<R: BufRead, W: Write>(
                                     Some(action_id),
                                     format!(
                                         "response of {} bytes exceeds the output limit of {}; \
-                                         nothing was truncated or sent; the action executed and \
-                                         replays under the same action_id",
+                                         nothing was truncated or sent; the action executed but \
+                                         its result is not deliverable under this budget",
                                         text.len(),
                                         limits.max_output_bytes
                                     ),

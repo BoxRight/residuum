@@ -9,6 +9,8 @@ pub mod transport;
 pub mod wire;
 
 #[cfg(test)]
+mod process_script_tests;
+#[cfg(test)]
 mod serde_probe_tests;
 #[cfg(test)]
 mod startup_tests;

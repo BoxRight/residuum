@@ -409,3 +409,63 @@ The mode has **not** been executed and the binary has not been built: both
 wait for review, after which the equivalence between direct worker,
 in-memory service and bounded process is to be checked, provenance and
 failure states included.
+
+## Bounded process check: direct worker = in-memory service = binary
+
+Commit base `744adcc` (worker mode tightened: 15 s, exclusive options).
+
+**Script.** `process_script_tests::process_script_fixture_is_written_with_in_memory_expectation`
+(`20261015T051640248204Z-2140558`, 1 passed) writes under
+`target/exploration/process/` the manifest (`manifest.json`), seventeen
+request lines (`requests.jsonl`) and the in-memory service's protocol output
+(`expected.jsonl`), after asserting line by line that the in-memory service
+equals the direct worker for every decodable line and produces a fault for
+every undecodable one. The script covers: inventory; forward session with a
+step limit (pending) and completion with all justifications; byte-identical
+idempotent replay; a reused identifier with other content (execution
+error); an admitted and a syntactically rejected candidate; candidate
+evaluation to `evaluated_compatible` with its closure; an unscoped residual
+query ending in `unresolved_parameters`; three protocol faults (malformed
+line, empty line, unknown field); an unknown session; minimal supports.
+
+**First attempt stopped, recorded.** `20261015T051708921074Z-2141084`:
+`cargo build -p residuum-boundary --bin residuum-worker` stopped at 768 MiB
+after 20.9 s while compiling the dependencies, `residuum` and the binary in
+the `dev` profile with full debug information. `CARGO_PROFILE_TEST_DEBUG=0`
+does not apply to `cargo build`; the dev-profile counterpart is
+`CARGO_PROFILE_DEV_DEBUG=0`, used from here on for the worker mode exactly as
+the test setting is used for tests. Limits unchanged. A run that resumed the
+stopped artefacts (`20261015T051808867036Z-2142418`) is not counted as
+preparation; the cold runs below are.
+
+**Cold runs, one invocation each, with `CARGO_PROFILE_DEV_DEBUG=0`.**
+
+| State | Report | Compile | Run | Output |
+|---|---|---|---|---|
+| project-cold (`cargo clean -p residuum -p residuum-boundary`) | `20261015T051843538524Z-2142972` | 2 crates, 10.2 s, 435 MiB cgroup | 0.3 s, 11 MiB, exit 0 | byte-identical to `expected.jsonl` |
+| fully cold (`target/debug` removed) | `20261015T051854387512Z-2143531` | 21 crates, 20.7 s, 505 MiB cgroup | 0.3 s, 11 MiB, exit 0 | byte-identical to `expected.jsonl` |
+
+Process stderr in both: `worker: episode \`riggs-process-001\` manifest
+\`h-process\` loaded; 6 dossiers; serving` and `worker: stopped: eof; lines
+17 responses 14 faults 3; exit 0`; stdout carried the seventeen protocol
+lines only.
+
+Structural verification of the process output (Python, `json` only): same
+seventeen objects as the in-memory expectation; response order equal to the
+request order with faults in the undecodable positions; statuses
+`complete, complete, step_limit, complete, complete, error, complete,
+structural_reject, complete, complete, complete, unresolved_parameters,
+transport, framing, validation, error, complete`; lines 4 and 5
+byte-identical (replay); the reused identifier's error names the reuse; the
+step-limited forward response is incomplete; the forward rounds over both
+advances carry 6 justifications with records (ordered antecedents and
+substitutions) and 12 known events; the evaluation closure contains the
+candidate rule's justification and the report is compatible; the residual
+failure carries the engine's message; the three faults are classed
+transport, framing, validation; the unknown session is an execution error;
+minimal supports find the goal in the universe.
+
+After the fully cold run, the three test targets still complete staged:
+lib `20261015T051915662198Z-2144455` (694 MiB), boundary
+`20261015T051928180974Z-2144886` (401 MiB), cli
+`20261015T051932424885Z-2145182` (629 MiB).

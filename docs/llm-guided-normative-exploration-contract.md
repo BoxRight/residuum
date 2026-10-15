@@ -1005,15 +1005,25 @@ toque. `stdout` lleva únicamente líneas de protocolo; los diagnósticos van a
 Toda la lógica está en `startup::run` sobre flujos inyectables y se prueba
 sin proceso: equivalencia con el trabajador directo petición a petición,
 cada código de salida con su diagnóstico, ida y vuelta del DTO de
-manifiesto campo a campo. El binario no se ha compilado ni ejecutado: su
-lanzamiento requiere el modo acotado del runner, propuesto en un commit
-separado que debe revisarse antes de ejecutarlo. Después queda la
-comprobación de equivalencia entre trabajador directo, servicio en memoria y
-proceso acotado, incluida provenance y estados de fallo.
+manifiesto campo a campo.
+
+**Ejecución acotada verificada.** Con el modo
+`scripts/test_safe.py --worker-manifest … --worker-requests …` (15 s de
+ejecución, opciones exclusivas, ámbitos separados con los mismos controles),
+un guion finito de diecisiete líneas generado por un test del crate de
+frontera produjo, desde frío de proyecto y desde frío total y en una sola
+invocación cada vez, una salida byte a byte idéntica a la del servicio en
+memoria, que a su vez es igual al trabajador directo línea a línea. La
+comprobación cubre respuestas estructuradas, orden, provenance, repetición
+idempotente, errores de ejecución, faltas de protocolo y estados pendientes;
+el código de salida cero no se dio por suficiente. La compilación del binario
+usa `CARGO_PROFILE_DEV_DEBUG=0`, contraparte en el perfil `dev` de la práctica
+documentada para tests, porque con información de depuración completa la
+compilación en frío excede el tope del runner; los límites no cambian.
 
 Qué no está implementado: `P1-program` con `B_RULE_USES`, el certificado de
 conservación para cabezas intermedias existentes, el minimax de preguntas,
-la ejecución del proceso bajo el runner, el controlador y el proveedor.
+el controlador y el proveedor.
 Los tests antiguos del harness no se modificaron ni se volvieron a ejecutar;
 la equivalencia se comprueba contra sus certificados archivados.
 
@@ -1122,6 +1132,8 @@ fijados.
   en `7befa44` y selección `--test-target boundary` del runner en `a843126`;
   preparación fría por etapas verificada; ocho tests de frontera y diez de
   biblioteca pasados individualmente.
-- Binario mínimo (6.8) en el commit siguiente; once tests de frontera
-  pasados individualmente; el binario no se compiló ni ejecutó. No se
-  ejecutó la suite ni ningún test antiguo; no se hizo merge ni push.
+- Binario mínimo (6.8) en `e544d4b`; protocolo de invocación incorporado en
+  `94608f9`; modo acotado del runner en `f600bb3` y `744adcc`; comprobación
+  del proceso acotado en el commit siguiente. Doce tests de frontera pasados
+  individualmente; el binario ejecutado sólo bajo el runner. No se ejecutó la
+  suite ni ningún test antiguo; no se hizo merge ni push.

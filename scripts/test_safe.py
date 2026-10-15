@@ -139,14 +139,26 @@ def supervise(report, index, request, group):
             print(f'worker pid {processes["worker"].pid}; controller pid {processes["controller"].pid}',
                   file=log, flush=True)
             exits = {}
+            grace_until = None   # the surviving process gets a short grace inside the global deadline
+            pending_reason = None
             while len(exits) < 2:
                 now = time.monotonic()
                 for name, process in processes.items():
                     if name not in exits and process.poll() is not None:
                         exits[name] = process.returncode
                         print(f'{name} exited {process.returncode} at {now - started:.3f}s', file=log, flush=True)
-                if 'worker' in exits and 'controller' not in exits:
-                    reason = reason or 'worker_lost'
+                if len(exits) == 1 and grace_until is None:
+                    grace_until = min(now + 2.0, started + request['timeout'])
+                    if 'worker' in exits:
+                        # The controller sees EOF or a broken pipe and should record its
+                        # technical abort and exit; it is not killed before the grace ends.
+                        pending_reason = 'worker_lost'
+                    else:
+                        # The controller closed its channels; the worker sees EOF on stdin.
+                        pending_reason = 'worker_did_not_exit'
+                    print(f'{pending_reason}: grace until {grace_until - started:.3f}s', file=log, flush=True)
+                if grace_until is not None and now >= grace_until and len(exits) < 2:
+                    reason = reason or pending_reason
                 peak = int((group / 'memory.peak').read_text())
                 if now - started >= request['timeout']:
                     reason = reason or 'timeout'
@@ -170,16 +182,10 @@ def supervise(report, index, request, group):
                 samples.append((now, rss))
                 if reason:
                     break
-                if 'controller' in exits and 'worker' not in exits:
-                    # The controller closed its channels; the worker sees EOF and
-                    # should exit on its own within a short grace period.
-                    try:
-                        processes['worker'].wait(timeout=2)
-                    except subprocess.TimeoutExpired:
-                        reason = 'worker_did_not_exit'
-                        break
-                    continue
                 time.sleep(0.02)
+            if len(exits) == 2 and pending_reason == 'worker_lost':
+                # Both ended, but the worker went first: a technical end to record.
+                reason = reason or 'worker_lost'
         finally:
             for name, process in processes.items():
                 kill_process_group(process)
@@ -244,6 +250,25 @@ def run_bounded(report, rows, stage, name, command, timeout, diagnostics=None,
         raise RuntimeError(f'{name}: {row["stop_reason"]}; no remaining tests executed. '
                            f'See {report / f"{index:02d}.output.txt"}')
     return report / f'{index:02d}.output.txt'
+
+
+def normalize_worker_manifest(document, base):
+    """The worker resolves imports and workdir against the directory of the
+    manifest it receives. Writing the worker section elsewhere would silently
+    re-base relative paths, so they are resolved here against the original
+    manifest's directory, and every change is reported for the record."""
+    worker = json.loads(json.dumps(document['worker']))
+    changes = []
+
+    def resolve(field, value):
+        if isinstance(value, str) and value and not Path(value).is_absolute():
+            resolved = str((base / value).resolve())
+            changes.append({'field': field, 'original': value, 'resolved': resolved})
+            return resolved
+        return value
+    worker['imports'] = [resolve(f'imports[{i}]', v) for i, v in enumerate(worker.get('imports', []))]
+    worker['workdir'] = resolve('workdir', worker.get('workdir'))
+    return worker, changes
 
 
 def build_worker_binary(report, rows):
@@ -429,8 +454,12 @@ def main():
         document = json.loads(manifest.read_text())
         if not isinstance(document, dict) or 'worker' not in document:
             raise RuntimeError('The episode manifest must contain a worker section')
+        worker_section, changes = normalize_worker_manifest(document, manifest.parent)
         worker_manifest = ledger_dir / 'worker-manifest.json'
-        worker_manifest.write_text(json.dumps(document['worker'], indent=2, ensure_ascii=False) + '\n')
+        worker_manifest.write_text(json.dumps(worker_section, indent=2, ensure_ascii=False) + '\n')
+        (ledger_dir / 'worker-manifest-normalization.json').write_text(json.dumps(
+            {'original_manifest': str(manifest), 'base': str(manifest.parent), 'changes': changes},
+            indent=2) + '\n')
         binary = build_worker_binary(report, rows)
         bootstrap = (f'import sys; sys.path.insert(0, {str(ROOT)!r}); '
                      f'from tools.normative_explorer import run_episode; '

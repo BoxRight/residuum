@@ -236,3 +236,30 @@ referirse a los ejemplos de evaluación.
    significado nuevo documentado y no una consecuencia de la ontología?
 5. **Composiciones con argumento forzado** (el acto de entrar o el de llevar
    sin cosa). ¿Se excluyen, o se admiten con la pérdida declarada?
+
+## 9. Correcciones tras la consulta del usuario (2026-10-18)
+
+Pruebas en el scratchpad (`scratchpad/domain/`), ejecutadas con
+`test_safe.py --forward`:
+
+| Pregunta | Resultado | Informe |
+|---|---|---|
+| ¿Existe `Thing?`? | Sí. `Optional` existe y lo usan `Relation.thing` y `do`/`notDo`. El límite está en que LegalGeneral declara `object : Thing` en las posiciones: es un límite de la **ontología**, no del lenguaje. Se evitaría con una variante renombrada de LegalGeneral, o con `Relation`, que ya tiene la cosa opcional. | — |
+| ¿Sirven los subtipos (`entity Animal <: Thing`) como descripciones? | Se declaran, pero el elaborador asigna **un solo tipo por variable**. Usar `o` como `Thing` en el anclaje y como `Animal` en otro átomo da el error `conflicting inferred types for o`. Además, el tipo de una constante es fijo (un contrafactual sobre él cambiaría la identidad del participante), y el parser admite un único supertipo por declaración. | `20261018T231716550010Z-1000013` |
+| ¿Fechas con `after`? | Sí. `after(after(epoch))` se usa como argumento de fecha, y una regla empareja el patrón `born(p, after(after(d)))`. Con las construcciones Peano ya certificadas en el repositorio (`peano_after.res`, `peano_multiplication.res`), el orden y la aritmética unaria sobre fechas son **expresables**. | `20261018T231733091051Z-1000211` (`after_arg.res`) |
+| ¿Desigualdad? | No se obtiene con subtipos ni con `after`. El emparejamiento solo comprueba igualdad, y no hay negación por fallo. Solo puede aportarse como dato explícito. | — |
+
+**Rectificaciones de §3 y §6:**
+- Retiro «no hay aritmética de fechas». Lo correcto es que no hay aritmética
+  **predefinida**, pero se puede **componer** con `after` y programas.
+- La minoría de edad y la edad avanzada dejan de ser extensiones B.
+  Se construyen componiendo `born(p, d)`, una fecha del expediente como
+  argumento (nunca el índice `@ t`) y un programa definicional de orden.
+- Los subtipos sirven para distinciones de clase **invariantes** de una
+  entidad. No sirven para propiedades que varían entre situaciones ni para
+  propiedades que tenga que leer una hipótesis que liga el objeto desde una
+  posición de tipo `Thing`.
+- Si se componen descripciones con reglas, P1 («solo firma») se relaja así:
+  se admiten **programas definicionales** cuyas cabezas son verbos
+  descriptivos, nunca posiciones normativas, y que se certifican por
+  separado (terminación, sin cabezas de Q).

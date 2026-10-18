@@ -304,6 +304,8 @@ mod temporal_constructors;
 mod semantic_domain;
 #[path = "temporal_history_tests.rs"]
 mod temporal_history;
+#[path = "temporal_order_tests.rs"]
+mod temporal_order;
 
 #[path = "peano_polynomial_tests.rs"]
 mod peano_polynomials;

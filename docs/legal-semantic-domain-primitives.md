@@ -263,3 +263,78 @@ Pruebas en el scratchpad (`scratchpad/domain/`), ejecutadas con
   se admiten **programas definicionales** cuyas cabezas son verbos
   descriptivos, nunca posiciones normativas, y que se certifican por
   separado (terminación, sin cabezas de Q).
+
+## 10. Mapa actualizado tras certificar el orden temporal
+
+Fuentes:
+- `legal-semantic-temporal-order.md`, con 4 tests;
+- `act_content_is_recorded_without_normative_effects_and_kept_apart_from_the_act`,
+  informe `20261018T232601432883Z-1006816`, sobre las fixtures de
+  `semantic-domain/expressivity/`.
+
+Por decisión del usuario, se **excluyen** las composiciones que requieren
+argumentos ficticios.
+
+### 10.1 Acto y contenido (COMPROBADO)
+
+- `constitutes(act : Fact, r : Relation)` y
+  `certifies(act : Fact, thing : Thing, conduct : Conduct, beneficiary : Person)`
+  se siembran y LegalGeneral **no deriva nada** de ellos. El `Act` de
+  certificar, solo, tampoco deriva nada. **No se atribuye ningún efecto
+  normativo automático.**
+- Una regla distingue el acto con su contenido de cada componente por
+  separado:
+  - `Act(k, …, certify, …)` junto con `certifies(k, …)` sí la activa;
+  - el acto sin contenido no la activa;
+  - el contenido sin acto no la activa.
+- Las variables se ligan dentro de un patrón `Relation`, incluido el campo
+  opcional `thing`. Así queda resuelto el punto que §2 dejaba sin comprobar.
+- El contenido certificado se expresa **relacionalmente con tipos
+  primitivos** (cosa, conducta y beneficiario), sin constantes de «aptitud»
+  ad hoc.
+
+**Hallazgo (COMPROBADO, no corregido):** una variable ligada a un campo
+opcional puede llevar `none` a un argumento declarado `Thing`, que no es
+opcional. El caso observado es `relationalDebtor(appointment, cal, none, bea)`.
+- El elaborador acepta la regla, y el emparejamiento no comprueba el tipo
+  declarado de la posición de la cabeza.
+- Es una laguna de tipado del motor. No se modifica (no está autorizado); se
+  documenta.
+- Ninguna construcción del dominio debe depender de este comportamiento: una
+  regla que lea campos opcionales debe declarar su cabeza con `Thing?` o fijar
+  el campo.
+
+### 10.2 Clasificación final
+
+| Clase | Propiedades | Construcción |
+|---|---|---|
+| **Primitiva existente** | acto de registro, acto de vacunación, acto de certificar, conducta realizada (régimen retrospectivo) | `Act(id, autor, conducta, cosa, beneficiario, autoridad, fecha)` con constantes de tipos existentes. Solo se admite cuando todos los argumentos tienen un referente real. |
+| **Primitiva existente** | contenido relacional u obligacional (deber de cuidado, prestación de servicio) | record `Relation`. Representa el contenido, no toda la institución. |
+| **Definible por programa (certificado)** | orden de fechas, minoría y mayoría de edad, nacido después de la fecha del expediente | `TemporalOrder` sobre `born`, `dossierDate` y `after` |
+| **Definible por programa (pendiente)** | edad avanzada; anterioridad de un acto respecto del expediente | misma construcción con un umbral declarado; `before` entre la fecha del acto y la del expediente |
+| **Extensión descriptiva genuina** | nacimiento | `born(person, date)` |
+| **Extensión descriptiva genuina** | fuente de un contenido | `constitutes(act, r)` (COMPROBADO sin efectos) |
+| **Extensión descriptiva genuina** | contenido de una certificación | `certifies(act, thing, conduct, beneficiary)` (COMPROBADO sin efectos) |
+| **Extensión descriptiva genuina** | clase descriptiva de una cosa | `kind(thing, ThingKind)` |
+| **Extensión descriptiva genuina** | condición de salud | `condition(person, PersonCondition)` |
+| **Extensión descriptiva genuina** | sensibilidad a una clase de cosas | `sensitiveTo(person, ThingKind)` |
+| **Extensión descriptiva genuina** | convivencia y copresencia como estados | `cohabit`, `copresent` |
+| **Extensión descriptiva genuina** | tenencia de hecho como estado | `holding(person, thing)` |
+| **Extensión descriptiva genuina** | fecha del expediente y puntos de fecha | `dossierDate`, `datePoint` |
+| **Extensión descriptiva genuina** | conducta examinada en el régimen prospectivo | anclaje `considered` |
+| **Excluida** (argumento ficticio) | el acto de contratar o de nombrar sin cosa; el acto de entrar sin cosa; llevar consigo con beneficiario forzado | Su contenido sí puede representarse con `constitutes` remitiendo al id del acto, aunque el `Act` mismo no sea representable. |
+| **Sin representación fiel** | calificación como negocio jurídico (declaración de voluntad e intención); institución completa (tutela con representación y administración); contenido certificado que no sea una aptitud para una conducta; edad con precisión inferior al año; desigualdad, salvo como dato explícito | — |
+
+### 10.3 Regímenes de expediente
+
+| Régimen | Anclaje | Consecuencias observables |
+|---|---|---|
+| **Retrospectivo** | `Act(a, s, c, o, b, private, fecha)`: la conducta ocurrió | posiciones de las hipótesis, más `violation`/`compliance` derivadas por LegalGeneral |
+| **Prospectivo** | `considered(s, c, o, b)`: la conducta se examina, sin valor fáctico | solo posiciones |
+
+Los dos regímenes conviven y se distinguen por el anclaje.
+
+En el régimen retrospectivo:
+- la Proposición 1 del contrato del dominio no vale;
+- la evaluación necesita el cierre completo;
+- Q puede incluir consecuencias.

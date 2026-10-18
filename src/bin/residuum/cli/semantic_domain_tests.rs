@@ -445,3 +445,58 @@ fn initial_cardinalities_support_relational_contrasts_and_distinct_coverages() {
         assert!(changed(s).contains(h), "{s}");
     }
 }
+
+#[test]
+fn act_content_is_recorded_without_normative_effects_and_kept_apart_from_the_act() {
+    const EXPRESSIVITY: &str = "docs/legal-geometry/semantic-domain/expressivity";
+    let content = load_formal_module(path(&format!("{EXPRESSIVITY}/content.res"))).unwrap();
+    let readers = load_formal_module(path(&format!("{EXPRESSIVITY}/readers.res"))).unwrap();
+    let experiments = [
+        "relationalContent",
+        "actWithContent",
+        "actWithoutContent",
+        "contentWithoutAct",
+    ];
+    for name in experiments {
+        let s = seeds(&content, name);
+        // LegalGeneral reads neither constitutes nor certifies, and the Act of
+        // certifying alone derives nothing: the closure equals the seeds.
+        let closure = run(&content, &s);
+        let known: BTreeSet<_> = closure
+            .known
+            .iter()
+            .map(residuum::experiments::render_event)
+            .collect();
+        let seeded: BTreeSet<_> = s.iter().map(residuum::experiments::render_event).collect();
+        assert_eq!(known, seeded, "{name}");
+        assert!(closure.derivations.is_empty(), "{name}");
+    }
+    let derived = |name: &str, verb: &str| -> Vec<String> {
+        run(&readers, &seeds(&content, name))
+            .known
+            .iter()
+            .filter(|e| e.verb == verb)
+            .map(residuum::experiments::render_event)
+            .collect()
+    };
+    // Act and content are distinguishable: only their conjunction is read.
+    assert_eq!(derived("actWithContent", "certifiedContent").len(), 1);
+    assert!(derived("actWithoutContent", "certifiedContent").is_empty());
+    assert!(derived("contentWithoutAct", "certifiedContent").is_empty());
+    // Variables bind inside the Relation record, including the optional thing.
+    let relational = derived("relationalContent", "relationalDebtor");
+    assert!(
+        relational
+            .iter()
+            .any(|e| e.contains("service, ana, obj, bea"))
+    );
+    // Observed typing gap, documented and not relied upon: the variable bound
+    // to the optional field carries `none` into the head argument declared
+    // `Thing` (not optional). Elaboration accepts the rule; matching does not
+    // check the declared type of the head position.
+    assert!(
+        relational
+            .iter()
+            .any(|e| e.contains("appointment, cal, none, bea"))
+    );
+}

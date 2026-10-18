@@ -1,0 +1,45 @@
+experiment dossier2
+  goal: annulled(dogBan, permitFido, legislative, enact1) @ t2
+  #1 annulled(dogBan, permitFido, legislative, enact1) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule permissionAnnulsProhibition | derivedAt d5
+      rule origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+      substitution: {beneficiary=host, conduct=enterWith, high=permitFido, highAuthority=legislative, highDate=enact1, low=dogBan, lowAuthority=administrative, lowDate=enact0, object=fido, subject=bea, t=t2}
+      antecedents: #2, #3, #4, #5
+  #2 permission(permitFido, bea, enterWith, fido, host, legislative, enact1) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule filedPermission | derivedAt d1
+      rule origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+      substitution: {authority=legislative, beneficiary=host, conduct=enterWith, effective=enact1, id=permitFido, object=fido, subject=bea, t=t2}
+      antecedents: #6
+  #3 prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule R1::0::refinedBan | derivedAt d3
+      program R1 | module FormalizationR1 | member 0 | rule refinedBan | rule module Generalizations
+      substitution: {#R1:shared:t=t2, #R1:use0:dog=fido, #R1:use0:e=enact0, #R1:use0:owner=bea, #R1:use0:venue=host}
+      antecedents: #7, #8, #9, #10
+  #4 higherAuthority(legislative, administrative) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    seed
+  #5 notEarlier(enact1, enact0) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    seed
+  #6 permissionFiled(permitFido, bea, enterWith, fido, host, legislative, enact1) @ t2
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    seed
+  #7 appliesR1() @ t2
+    verb origin: FormalizationR1 (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/formalization_r1.res)
+    associated program: R1 | origin: FormalizationR1
+    rule anchorR1AtT2 | derivedAt d2
+      rule origin: Stage2 (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/stage2.res)
+      substitution: {}
+      antecedents: I
+  #8 accompanies(bea, fido, host) @ t2
+    verb origin: TemporalHistoryVocabulary (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/vocabulary.res)
+    seed
+  #9 ~propertyA(fido) @ t2
+    verb origin: TemporalHistoryVocabulary (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/vocabulary.res)
+    seed
+  #10 normEffective(dogBan, enact0) @ t2
+    verb origin: TemporalHistoryVocabulary (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/vocabulary.res)
+    seed

@@ -1,0 +1,5 @@
+experiment dossier2
+  Seeds: {accompanies(bea, fido, host) @ t2, ~propertyA(fido) @ t2, normEffective(dogBan, enact0) @ t2, permissionFiled(permitFido, bea, enterWith, fido, host, legislative, enact1) @ t2, higherAuthority(legislative, administrative) @ t2, notEarlier(enact1, enact0) @ t2}
+  goal: annulled(dogBan, permitFido, legislative, enact1) @ t2
+  Horn: true
+  Known after close: {accompanies(bea, fido, host) @ t2, ~propertyA(fido) @ t2, normEffective(dogBan, enact0) @ t2, permissionFiled(permitFido, bea, enterWith, fido, host, legislative, enact1) @ t2, higherAuthority(legislative, administrative) @ t2, notEarlier(enact1, enact0) @ t2, permission(permitFido, bea, enterWith, fido, host, legislative, enact1) @ t2, appliesR1() @ t2, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t2, notDo(bea, enterWith, fido, host) @ after(t2), annulled(dogBan, permitFido, legislative, enact1) @ t2}

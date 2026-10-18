@@ -1,0 +1,5 @@
+experiment history
+  Seeds: {accompanies(ana, rex, host) @ t0, propertyA(rex) @ t0, accompanies(bea, fido, host) @ t0, normEffective(dogBan, enact0) @ t0, Act(visitAna0, ana, enterWith, rex, host, private, visitDate0) @ t0}
+  goal: notDo(ana, enterWith, rex, host) @ after(t0)
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ t0, propertyA(rex) @ t0, accompanies(bea, fido, host) @ t0, normEffective(dogBan, enact0) @ t0, Act(visitAna0, ana, enterWith, rex, host, private, visitDate0) @ t0, appliesR0() @ t0, appliesR1() @ t0, prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0, prohibition(dogBan, bea, enterWith, fido, host, administrative, enact0) @ t0, notDo(ana, enterWith, rex, host) @ after(t0), notDo(bea, enterWith, fido, host) @ after(t0), violation(dogBan, visitAna0, ana, rex, host, administrative, enact0) @ t0, patrimonialLiability(ana, rex, dogBan, administrative, enact0) @ t0}

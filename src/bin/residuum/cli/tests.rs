@@ -300,6 +300,9 @@ mod temporal_identity;
 #[path = "temporal_constructor_tests.rs"]
 mod temporal_constructors;
 
+#[path = "temporal_history_tests.rs"]
+mod temporal_history;
+
 #[path = "peano_polynomial_tests.rs"]
 mod peano_polynomials;
 

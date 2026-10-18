@@ -1,0 +1,5 @@
+experiment dossierAfter
+  Seeds: {accompanies(ana, rex, host) @ after(t0), propertyA(rex) @ after(t0), normEffective(regDuty, enact1) @ after(t0)}
+  goal: obligation(regDuty, ana, register, rex, host, administrative, enact1) @ after(t0)
+  Horn: true
+  Known after close: {accompanies(ana, rex, host) @ after(t0), propertyA(rex) @ after(t0), normEffective(regDuty, enact1) @ after(t0), appliesR1() @ after(t0), obligation(regDuty, ana, register, rex, host, administrative, enact1) @ after(t0), do(ana, register, rex, host) @ after(after(t0))}

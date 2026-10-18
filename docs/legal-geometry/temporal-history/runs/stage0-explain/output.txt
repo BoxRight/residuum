@@ -1,0 +1,21 @@
+experiment dossier0
+  goal: prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+  #1 prohibition(dogBan, ana, enterWith, rex, host, administrative, enact0) @ t0
+    verb origin: LegalGeneral (/tmp/residuum-legal-order-geometry/examples/experiments/legal_geometry/ontology_reference/legal_general.res)
+    rule R0::0::ordinaryBan | derivedAt d2
+      program R0 | module FormalizationR0 | member 0 | rule ordinaryBan | rule module Generalizations
+      substitution: {#R0:shared:t=t0, #R0:use0:dog=rex, #R0:use0:e=enact0, #R0:use0:owner=ana, #R0:use0:venue=host}
+      antecedents: #2, #3, #4
+  #2 appliesR0() @ t0
+    verb origin: FormalizationR0 (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/formalization_r0.res)
+    associated program: R0 | origin: FormalizationR0
+    rule anchorR0AtT0 | derivedAt d1
+      rule origin: Stage0 (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/stage0.res)
+      substitution: {}
+      antecedents: I
+  #3 accompanies(ana, rex, host) @ t0
+    verb origin: TemporalHistoryVocabulary (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/vocabulary.res)
+    seed
+  #4 normEffective(dogBan, enact0) @ t0
+    verb origin: TemporalHistoryVocabulary (/tmp/residuum-legal-order-geometry/docs/legal-geometry/temporal-history/fixtures/vocabulary.res)
+    seed

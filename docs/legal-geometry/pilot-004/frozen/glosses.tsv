@@ -1,0 +1,18 @@
+symbol	source	gloss
+Act	LegalGeneral	A recorded act: the subject performs the conduct with the thing for the beneficiary, under an authority, effective on a date; the identifier names the act.
+prohibition	LegalGeneral	Normative position of prohibition on the subject performing the conduct with the thing towards the beneficiary.
+permission	LegalGeneral	Normative position of permission for the subject performing the conduct with the thing towards the beneficiary.
+obligation	LegalGeneral	Normative position of obligation on the subject to perform the conduct with the thing towards the beneficiary.
+copresent	Pilot004Vocabulary	The two persons are in the same place at the moment of the dossier.
+condition	Pilot004Vocabulary	The dossier records that the person has the condition.
+kind	Pilot004Vocabulary	The dossier records that the thing is of the kind.
+~	Residuum	There is explicit evidence that the fact does not hold; absence of a fact is not such evidence.
+allergic	Pilot004Vocabulary	an allergy
+visuallyImpaired	Pilot004Vocabulary	a visual impairment
+animal	Pilot004Vocabulary	an animal
+food	Pilot004Vocabulary	food or drink
+enterWith	Pilot004Vocabulary	entering while carrying the thing
+private	LegalGeneral	private authority
+administrative	LegalGeneral	administrative authority
+hypNorm	Pilot004Vocabulary	the hypothetical norm under evaluation
+hypEnacted	Pilot004Vocabulary	the declared validity of the hypothetical norm

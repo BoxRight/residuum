@@ -1,0 +1,25 @@
+key	value
+theory	LegalGeneral (examples/experiments/legal_geometry/ontology_reference/legal_general.res) + Pilot004Vocabulary
+regime	retrospective: anchor Act(act, subject, enterWith, thing, beneficiary, private, date) @ dossier index
+observable_kinds	prohibition, permission, obligation (positions on the participants of the dossier act)
+projection	drop id, authority, effective; constant by construction (hypNorm, administrative, hypEnacted)
+loss	|P+ \ N| + |P- ∩ N| over observable kinds; unvalued kinds do not count; P+ ∩ P- must be empty
+rotations	4: reserved dossier r in {dossier1..dossier4}; observed = the other three
+start_rule	1-antecedent candidates ordered by sha256("pilot-004/start/" + id) ascending; first 3
+start_nodes	p4c365, p4c002, p4c190
+episode	(rotation, start node); 12 episodes per condition
+conditions	B: fixed d0; C: revised after refutation; D: rewritten without refutation
+revision_samples	3 independent samples per revision call in C and D
+evaluation_budget	8 candidate evaluations per episode trajectory
+discrepancy	first observed dossier (ascending number) with loss > 0 for the current node
+information_level	I2: dossier seeds, valued kinds of that dossier, produced positions with provenance
+navigation	next = argmax cosine(z(current), z(u)) over unevaluated candidates u; ties by ascending id
+stop	first candidate with loss 0 on all observed dossiers; else the evaluated candidate with minimal observed loss, ties by evaluation order
+prospective	evaluate the output on the reserved dossier; loss revealed only after the prediction is recorded
+description_language	English
+embedding_text	d0 line, then one line per claim text of the hypothesis component, in claim order
+revision_length	at most 120 words in the hypothesis component
+revision_ground_terms	forbidden: ana, bea, cal, obj, act1-4, date1-4, t1-4, dossier1-4, p4c ids
+revision_vocabulary	verbs and constants of the vocabulary and of LegalGeneral only
+claim_provenance	formal | consequence | valuation | hypothesis
+not_frozen	embedding provider, language model, prompt texts, cost budget (decided after the harness without LLM is certified)

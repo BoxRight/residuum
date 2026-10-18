@@ -300,6 +300,8 @@ mod temporal_identity;
 #[path = "temporal_constructor_tests.rs"]
 mod temporal_constructors;
 
+#[path = "pilot004_tests.rs"]
+mod pilot004;
 #[path = "semantic_domain_tests.rs"]
 mod semantic_domain;
 #[path = "temporal_history_tests.rs"]

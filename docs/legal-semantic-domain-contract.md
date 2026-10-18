@@ -94,8 +94,7 @@ Cómo se eligió el vocabulario:
 
 El módulo existe como fixture en
 `docs/legal-geometry/semantic-domain/fixtures/vocabulary_natural.res`, y la
-obligación V1/V2 está COMPROBADA (§12). Las glosas de §3.0 quedan
-**pendientes de tu aprobación**.
+obligación V1/V2 está COMPROBADA (§12). Las glosas están retiradas (§3.0).
 
 ```text
 module SharedSpacesVocabulary
@@ -125,48 +124,16 @@ const hypEnacted : PropositionTime
 El bloque anterior es un resumen: en el módulo real cada constante va en su
 propia línea.
 
-### 3.0 Lista de glosas para revisión
+### 3.0 Glosas: retiradas
 
-**Criterios.** Cada glosa:
-- dice qué hecho se registra, no qué consecuencia tiene;
-- no usa términos deónticos, evaluativos ni de riesgo;
-- no menciona conductas ni posiciones normativas;
-- describe hechos que constan en el expediente, sin inferirlos.
+Las glosas de la versión `43b04ba` se han retirado por decisión del usuario.
+Las había redactado el asistente en esta sesión, y algunas estaban próximas a
+los ejemplos de evaluación.
 
-La columna «Vigilar» señala dónde una glosa podría sugerir un tratamiento
-aunque no lo enuncie.
-
-| Símbolo | Tipo | Glosa propuesta | Vigilar |
-|---|---|---|---|
-| `considered(s, c, o, b)` | anclaje | El expediente examina la conducta c que realiza s con la cosa o, respecto de b. | «respecto de b» no dice que b sea titular de nada |
-| `personTrait(p, r)` | verbo | Consta en el expediente que la persona p tiene el rasgo r. | — |
-| `thingTrait(o, r)` | verbo | Consta en el expediente que la cosa o tiene el rasgo r. | — |
-| `sensitiveTo(p, r)` | verbo | Consta una sensibilidad física de p (alergia o intolerancia) a las cosas que tienen el rasgo r. | no dice «riesgo» ni «reacción grave» |
-| `bond(p, q, k)` | verbo | Consta la relación k de p hacia q, con esa orientación. | la orientación no implica reciprocidad (§4) |
-| `custody(p, o)` | verbo | p lleva consigo la cosa o, o la tiene a su cargo. | no implica propiedad (`owns` es otro verbo de LegalGeneral) |
-| `minor` | PersonTrait | Persona menor de edad. | — |
-| `elderly` | PersonTrait | Persona de edad avanzada según el expediente. | sin umbral |
-| `visuallyImpaired` | PersonTrait | Discapacidad visual documentada. | — |
-| `mobilityImpaired` | PersonTrait | Movilidad reducida documentada. | — |
-| `pregnant` | PersonTrait | Embarazo documentado. | — |
-| `animal` | ThingTrait | La cosa es un animal. | — |
-| `certifiedAssistance` | ThingTrait | Consta un certificado de preparación de la cosa para asistir a una persona. | describe un documento; no dice que la asistencia esté autorizada ni que sea necesaria |
-| `vaccinated` | ThingTrait | Consta un registro de vacunación de la cosa. | — |
-| `food` | ThingTrait | La cosa es un alimento o una bebida. | — |
-| `electronic` | ThingTrait | La cosa es un aparato electrónico. | — |
-| `motorized` | ThingTrait | La cosa tiene propulsión por motor. | — |
-| `large` | ThingTrait | El expediente describe la cosa como de gran tamaño. | sin umbral; impreciso a propósito, igual que `elderly` |
-| `registered` | ThingTrait | La cosa está inscrita en un registro público. | — |
-| `guardianOf` | Bond | p tiene a q bajo su guarda o tutela. | — |
-| `employs` | Bond | p emplea a q. | — |
-| `livesWith` | Bond | p convive con q. | no se impone simetría |
-| `clientOf` | Bond | p tiene contratado un servicio con q. | — |
-| `presentWith` | Bond | p está en el mismo lugar que q en el momento del expediente. | copresencia, sin calificación |
-| `enterWith` | Conduct | Entrar llevando la cosa. | conducta, no tratamiento |
-| `useInside` | Conduct | Utilizar la cosa en el lugar. | ídem |
-| `leaveUnattended` | Conduct | Dejar la cosa en el lugar sin que nadie la lleve consigo. | describe un hecho, no una falta de diligencia |
-| `hypNorm` | Fact | Identificador de la norma hipotética evaluada. | no se muestra como hecho del expediente |
-| `hypEnacted` | PropositionTime | Vigencia declarada de la norma hipotética. | nunca es el momento del expediente |
+Las nuevas glosas se derivarán de un mapa entre las categorías de la teoría
+del hecho y del acto jurídico y las relaciones y operaciones de LegalGeneral.
+Ese mapa está pendiente de aprobación. Hasta entonces, el vocabulario no
+tiene glosas.
 
 Las conductas no se corresponden con los tratamientos. Los tratamientos
 observables son tipos de posición (`prohibition`, `permission`,
@@ -636,8 +603,8 @@ El boceto de viabilidad anterior (scratchpad, informe
 
 ## 13. Decisiones abiertas
 
-1. **Aprobación de las glosas (§3.0).** Es la revisión humana de V3. Las
-   entradas marcadas en «Vigilar» son las que más conviene examinar.
+1. **Mapa doctrinal y glosas derivadas (§3.0).** Las glosas anteriores están
+   retiradas, y las nuevas dependen de que se apruebe el mapa.
 2. **Contrato de generación de situaciones y valoraciones.** Va separado:
    probabilidades por estado, número de expedientes, splits, negociación
    simulada y objetivo sintético. Se fijará después de congelar el dominio

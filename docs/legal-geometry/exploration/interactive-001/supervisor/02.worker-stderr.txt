@@ -1,0 +1,2 @@
+worker: episode `riggs-interactive-001` manifest `h-interactive-001` loaded; 6 dossiers; serving
+worker: stopped: eof; lines 14 responses 14 faults 0; exit 0

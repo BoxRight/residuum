@@ -1,0 +1,253 @@
+"""Manifest freezing, ledger chain and reconstruction, state machine and
+budgets. Run individually through ``scripts/test_safe.py --python-test``."""
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from tools.normative_explorer import episode, ledger, manifest
+
+
+def worker_section():
+    return {
+        "wire_version": "residuum-wire/1",
+        "episode_id": "ep-1",
+        "manifest_hash": "h-1",
+        "imports": ["theory.res"],
+        "workdir": "work",
+        "profile": {"heads": ["x"], "body_verbs": ["y"], "evidential_not_verbs": [],
+                    "max_atoms": 4, "max_binders": 16, "max_after_depth": 2,
+                    "max_unit_nodes": 1, "require_connected": False},
+        "decision": {"components": [], "criterion": {"component": 0}},
+        "dossiers": {"d1": []},
+        "budgets": {"max_actions": 10, "max_steps_per_action": 8, "max_steps_total": 50,
+                    "max_sessions": 4, "max_candidates": 3, "max_clauses": 2,
+                    "search_limits": {"max_depth": 32, "max_nodes": 4096, "max_branches": 4096}},
+        "transport": None,
+    }
+
+
+def controller_section(condition="C"):
+    return {
+        "controller_version": "normative-explorer/0.1",
+        "condition": condition,
+        "model": {"provider": "simulated", "model_id": "script-1", "parameters": {}},
+        "max_model_requests": 20,
+        "max_actions": 15,
+        "max_output_tokens": 4000,
+        "valuation_source": "stipulation:test",
+        "explorer_instructions": "test",
+        "observations": [{"dossier": "d1", "required": True, "source": "stipulation:test", "status": "documented"}],
+    }
+
+
+def document(condition="C"):
+    return {"worker": worker_section(), "controller": controller_section(condition)}
+
+
+class ManifestTests(unittest.TestCase):
+    def test_freeze_detects_any_change(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "m.json"
+            path.write_text(json.dumps(document()))
+            frozen = manifest.load(path)
+            self.assertEqual(frozen.episode_id, "ep-1")
+            self.assertEqual(frozen.worker_hash, "h-1")
+            manifest.recheck(frozen)
+            changed = document()
+            changed["controller"]["condition"] = "A"
+            path.write_text(json.dumps(changed))
+            with self.assertRaises(manifest.ManifestError):
+                manifest.recheck(frozen)
+
+    def test_rejections(self):
+        cases = []
+        d = document(); d["worker"]["extra"] = 1; cases.append(d)
+        d = document(); del d["controller"]["condition"]; cases.append(d)
+        d = document(); d["controller"]["condition"] = "D"; cases.append(d)
+        d = document(); d["worker"]["dossiers"] = {}; cases.append(d)
+        d = document(); d["worker"]["budgets"]["max_actions"] = 0; cases.append(d)
+        d = document(); d["worker"]["episode_id"] = "bad id"; cases.append(d)
+        d = document(); d["controller"]["model"]["secret"] = "k"; cases.append(d)
+        d = document(); d["worker"]["wire_version"] = "residuum-wire/9"; cases.append(d)
+        for bad in cases:
+            with self.assertRaises(manifest.ManifestError):
+                manifest.validate(bad, Path("x"))
+        self.assertEqual(manifest.worker_manifest_text(manifest.validate(document(), Path("x"))).count("\n") > 5, True)
+
+
+class LedgerTests(unittest.TestCase):
+    def test_chain_and_reconstruction(self):
+        with tempple_dir() as tmp:
+            led = ledger.Ledger(Path(tmp), "hash-1", clock=lambda: "t")
+            a1 = led.next_id("a")
+            self.assertEqual(a1, "a1")
+            led.append("action.validated", {"action_id": a1, "tool": "inspect_theory", "request": {"inspect_theory": None}}, file="actions")
+            digest = led.store_artifact('{"response": 1}')
+            led.append("action.result", {"action_id": a1, "status": "complete", "artifact": digest})
+            view = led.store_artifact('{"view": 1}')
+            led.append("view.recorded", {"action_id": a1, "artifact": view}, file="visible-views")
+            events = led.read_events()
+            self.assertEqual([e["seq"] for e in events], [1, 2, 3])
+            self.assertEqual(events[0]["prev"], ledger.GENESIS)
+            self.assertEqual(events[1]["prev"], events[0]["hash"])
+            rebuilt = led.reconstruct()
+            self.assertEqual(rebuilt["actions"]["a1"]["status"], "complete")
+            self.assertEqual(led.read_artifact(rebuilt["actions"]["a1"]["result_artifact"]), '{"response": 1}')
+            self.assertEqual(led.read_file("actions")[0]["seq"], 1)
+            # Resume continues the chain.
+            again = ledger.Ledger(Path(tmp), "hash-1", clock=lambda: "t")
+            again.append("note", {"x": 1})
+            self.assertEqual(again.read_events()[-1]["seq"], 4)
+            # Tampering is detected.
+            path = Path(tmp) / "events.jsonl"
+            lines = path.read_text().splitlines()
+            lines[1] = lines[1].replace('"complete"', '"error"')
+            path.write_text("\n".join(lines) + "\n")
+            with self.assertRaises(ledger.LedgerError):
+                ledger.Ledger(Path(tmp), "hash-1").read_events()
+            with self.assertRaises(ledger.LedgerError):
+                ledger.Ledger(Path(tmp), "other")
+
+    def test_reconstruction_recognises_an_interrupted_episode(self):
+        with tempple_dir() as tmp:
+            led = ledger.Ledger(Path(tmp), "h", clock=lambda: "t")
+            self.assertFalse(led.reconstruct()["interrupted"])
+            led.append("episode.started", {})
+            led.append("action.validated", {"action_id": "a1", "tool": "inspect_theory", "request": "inspect_theory"})
+            rebuilt = led.reconstruct()
+            self.assertTrue(rebuilt["interrupted"])
+            self.assertIsNone(rebuilt["terminal"])
+            led.append("episode.aborted", {"message": "worker lost"})
+            rebuilt = led.reconstruct()
+            self.assertFalse(rebuilt["interrupted"])
+            self.assertEqual(rebuilt["terminal"], "episode.aborted")
+
+    def test_unknown_file_is_refused(self):
+        with tempple_dir() as tmp:
+            led = ledger.Ledger(Path(tmp), "h")
+            with self.assertRaises(ledger.LedgerError):
+                led.append("x", {}, file="secrets")
+
+
+class StateAndBudgetTests(unittest.TestCase):
+    def test_transitions(self):
+        s = episode.EpisodeState()
+        for target in ("PREFLIGHT", "READY", "MODEL_REQUESTED", "MODEL_RECEIVED", "ACTION_VALIDATED",
+                       "TOOL_RUNNING", "RESULT_RECORDED", "VIEW_RECORDED", "READY", "FINISHED"):
+            s.to(target)
+        self.assertTrue(s.terminal)
+        with self.assertRaises(episode.StateError):
+            s.to("READY")
+        t = episode.EpisodeState()
+        with self.assertRaises(episode.StateError):
+            t.to("TOOL_RUNNING")
+
+    def test_budgets(self):
+        b = episode.Budgets(max_model_requests=2, max_actions=1, max_output_tokens=10)
+        b.reserve_request(); b.reserve_request()
+        with self.assertRaises(episode.BudgetExhausted):
+            b.reserve_request()
+        b.charge_action()
+        with self.assertRaises(episode.BudgetExhausted):
+            b.charge_action()
+        self.assertEqual(b.output_cap(), 10)
+        b.charge_usage({"output_tokens": 10})
+        with self.assertRaises(episode.BudgetExhausted):
+            b.output_cap()
+        b.charge_usage(None)
+        self.assertEqual(b.snapshot()["usage_unknown"], 1)
+        capped = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=9, max_input_tokens=1000)
+        capped.reserve_request()
+        capped.charge_usage({"output_tokens": 1, "input_tokens": 1200})
+        with self.assertRaisesRegex(episode.BudgetExhausted, "input tokens"):
+            capped.reserve_request()
+        self.assertEqual(capped.snapshot()["input_tokens"], [1200, 1000])
+
+    def test_tool_strictness_is_optional_anthropic_only_and_closed(self):
+        import copy
+        base = document("C")
+        base["controller"]["model"] = {"provider": "anthropic", "model_id": "claude-sonnet-5-5", "parameters": {},
+                                       "client": {"timeout_seconds": 60}}
+        for value in ("none", "within_limits"):
+            doc = copy.deepcopy(base)
+            doc["controller"]["model"]["tool_strictness"] = value
+            manifest.validate(doc, Path("x"))
+        manifest.validate(copy.deepcopy(base), Path("x"))
+        bad = copy.deepcopy(base)
+        bad["controller"]["model"]["tool_strictness"] = "auto"
+        with self.assertRaisesRegex(manifest.ManifestError, "tool_strictness must be one of"):
+            manifest.validate(bad, Path("x"))
+        sim = document("C")
+        sim["controller"]["model"]["tool_strictness"] = "none"
+        with self.assertRaisesRegex(manifest.ManifestError, "only for the anthropic provider"):
+            manifest.validate(sim, Path("x"))
+
+    def test_cost_ceiling_reserves_each_call_and_charges_unknown_usage_in_full(self):
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        b = episode.Budgets(max_model_requests=99, max_actions=9, max_output_tokens=10**6,
+                            max_cost_usd=1.0, pricing=prices)
+        # Bound of a call: 100 000 input at 2.5 $/M plus 16 000 output at 10 $/M = 0.41 $.
+        self.assertAlmostEqual(b.call_cost_bound(100_000, 16_000), 0.41)
+        b.reserve_call(100_000, 16_000)
+        b.charge_usage({"output_tokens": 1000, "input_tokens": 100_000, "uncached_input_tokens": 1000,
+                        "cache_creation_input_tokens": 9000, "cache_read_input_tokens": 90_000})
+        actual = (1000 * 2 + 9000 * 2.5 + 90_000 * 0.10 + 1000 * 10) / 1e6
+        self.assertAlmostEqual(b.cost_usd, actual)
+        b.reserve_call(100_000, 16_000)
+        b.charge_usage(None)                      # unknown: the whole reservation
+        self.assertAlmostEqual(b.cost_usd, actual + 0.41)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "cost ceiling"):
+            b.reserve_call(1_500_000, 16_000)     # 3.91 $ would exceed what remains
+        with self.assertRaisesRegex(episode.BudgetExhausted, "bound is unavailable"):
+            b.reserve_call(None, None)
+        no_prices = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=9, max_cost_usd=1.0)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "bound is unavailable"):
+            no_prices.reserve_call(10, 10)
+
+    def test_partially_reported_usage_is_charged_at_the_reservation_not_as_zero(self):
+        from tools.normative_explorer.provider_anthropic import AnthropicMessagesProvider as A
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        # Absent and null counts are unknown; a declared zero is kept.
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 100}}), {"output_tokens": 100})
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 100, "input_tokens": 0,
+                                                    "cache_creation_input_tokens": None,
+                                                    "cache_read_input_tokens": 0}}),
+                         {"output_tokens": 100, "uncached_input_tokens": 0, "cache_read_input_tokens": 0})
+        self.assertEqual(A.extract_usage({"usage": {"output_tokens": 1, "input_tokens": 0,
+                                                    "cache_creation_input_tokens": 0,
+                                                    "cache_read_input_tokens": 0}})["input_tokens"], 0)
+        self.assertIsNone(A.extract_usage({"usage": {"output_tokens": None}}))
+        for usage in [{"output_tokens": 100}, A.extract_usage({"usage": {"output_tokens": 100, "input_tokens": 5}})]:
+            b = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=10**6,
+                                max_cost_usd=1.0, pricing=prices)
+            b.reserve_call(100_000, 16_000)
+            b.charge_usage(usage)
+            self.assertAlmostEqual(b.cost_usd, 0.41)
+            self.assertEqual(b.input_tokens, 100_000)
+            self.assertEqual(b.usage_partial, 1)
+            self.assertIsNone(b.overrun)
+
+    def test_usage_above_the_reservation_is_flagged_and_stops_further_calls(self):
+        prices = {"input_per_mtok": 2.0, "output_per_mtok": 10.0, "cache_write_multiplier": 1.25,
+                  "cache_read_per_mtok": 0.10}
+        b = episode.Budgets(max_model_requests=9, max_actions=9, max_output_tokens=10**6,
+                            max_cost_usd=10.0, pricing=prices)
+        b.reserve_call(1000, 100)
+        b.charge_usage({"output_tokens": 50, "input_tokens": 1500, "uncached_input_tokens": 0,
+                        "cache_creation_input_tokens": 1500, "cache_read_input_tokens": 0})
+        self.assertIn("input 1500 > reserved 1000", b.overrun)
+        self.assertIn("cost", b.overrun)
+        self.assertEqual(b.snapshot()["overrun"], b.overrun)
+        with self.assertRaisesRegex(episode.BudgetExhausted, "reservation exceeded"):
+            b.reserve_call(10, 10)
+
+
+def tempple_dir():
+    return tempfile.TemporaryDirectory()
+
+
+if __name__ == "__main__":
+    unittest.main()

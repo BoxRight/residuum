@@ -1,0 +1,12 @@
+{"input_upper":120307,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.4607675,"seq":4,"spent_usd":0.0,"turn":1}
+{"history_items":0,"kind":"model_request_prepared","output_cap":60000,"seq":5,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":1}
+{"artifact":"a707ff5d1b9c8101fb3a3a71e4761b74b7e456d51f4a7e79026a7c12b48780a3","kind":"model_request_body","seq":6,"turn":1}
+{"input_upper":125347,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.4733675,"seq":13,"spent_usd":0.125638,"turn":2}
+{"history_items":1,"kind":"model_request_prepared","output_cap":59378,"seq":14,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":2}
+{"artifact":"2f1349b2123c9b9a25cd619ae24cf036135250391f58b2042b692080f1a3ff77","kind":"model_request_body","seq":15,"turn":2}
+{"input_upper":126108,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.47527,"seq":21,"spent_usd":0.1363309,"turn":3}
+{"history_items":2,"kind":"model_request_prepared","output_cap":59187,"seq":22,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":3}
+{"artifact":"9bb721109035a4ca0a76d29d43436c267d9376451c0b1dd6d35eaff367861df7","kind":"model_request_body","seq":23,"turn":3}
+{"input_upper":161000,"kind":"cost_reserved","output_upper":16000,"reservation_usd":0.5625,"seq":30,"spent_usd":0.1437589,"turn":4}
+{"history_items":3,"kind":"model_request_prepared","output_cap":59017,"seq":31,"tools":["inspect_theory","begin_forward","begin_residual","begin_active_residual","advance_session","propose_candidate","begin_candidate_evaluation","request_valuation","minimal_supports","compare_partition","finish_episode"],"turn":4}
+{"artifact":"438bd2c54f1adf1fb5116b8067f69a18d896023266a77b82965b425c7740826f","kind":"model_request_body","seq":32,"turn":4}

@@ -1,0 +1,159 @@
+{
+  "candidate": "c1",
+  "dossiers": {
+    "causalLinkUnestablished": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "extra_derivations": [],
+      "reference_preserved": true
+    },
+    "historicalRiggs": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 6,
+        "distinct_justifications": 6,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": true,
+        "channel_events": [
+          {
+            "args": [
+              {
+                "const": "palmerWill"
+              },
+              {
+                "const": "francisPalmer"
+              },
+              {
+                "const": "elmerPalmer"
+              },
+              {
+                "const": "residuaryInterest"
+              },
+              {
+                "const": "private"
+              },
+              {
+                "const": "will1880"
+              }
+            ],
+            "kind": "derived",
+            "polarity": "positive",
+            "time": {
+              "at": "dossierTime"
+            },
+            "transition": null,
+            "verb": "hypotheticalSuccessionImpediment"
+          }
+        ],
+        "complete": true,
+        "derivations": 7,
+        "distinct_justifications": 7,
+        "rules_reaching_channel": [
+          "impediment"
+        ]
+      },
+      "extra_derivations": [
+        "impediment"
+      ],
+      "reference_preserved": true
+    },
+    "killingByThirdParty": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "extra_derivations": [],
+      "reference_preserved": true
+    },
+    "killingWithoutAcquisitionPurpose": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 5,
+        "distinct_justifications": 5,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 5,
+        "distinct_justifications": 5,
+        "rules_reaching_channel": []
+      },
+      "extra_derivations": [],
+      "reference_preserved": true
+    },
+    "noBeneficiaryKilling": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 4,
+        "distinct_justifications": 4,
+        "rules_reaching_channel": []
+      },
+      "extra_derivations": [],
+      "reference_preserved": true
+    },
+    "survivalUnestablished": {
+      "baseline": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 0,
+        "distinct_justifications": 0,
+        "rules_reaching_channel": []
+      },
+      "candidate": {
+        "channel": false,
+        "channel_events": [],
+        "complete": true,
+        "derivations": 0,
+        "distinct_justifications": 0,
+        "rules_reaching_channel": []
+      },
+      "extra_derivations": [],
+      "reference_preserved": true
+    }
+  }
+}

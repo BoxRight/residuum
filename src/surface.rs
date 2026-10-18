@@ -40,6 +40,28 @@ pub struct FormalExperiment {
     pub input: Vec<SurfaceEvent>,
     pub query_kind: crate::typed::ExperimentQueryKind,
     pub goal: SurfaceEvent,
+    pub query_options: SurfaceQueryOptions,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SurfaceQueryOptions {
+    pub active: bool,
+    pub scope: Option<SurfaceQueryScope>,
+    /// Preserve clause presence, including `with {}` without a scope.
+    pub bindings: Option<Vec<SurfaceQueryBinding>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SurfaceQueryScope {
+    Rules(Vec<String>),
+    Program(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SurfaceQueryBinding {
+    pub scope: crate::typed::BehaviorRef,
+    pub parameter: String,
+    pub value: SurfaceTerm,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

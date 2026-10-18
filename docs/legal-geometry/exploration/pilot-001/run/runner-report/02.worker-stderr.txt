@@ -1,0 +1,2 @@
+worker: episode `riggs-pilot-001` manifest `h-pilot-001` loaded; 6 dossiers; serving
+worker: stopped: eof; lines 5 responses 5 faults 0; exit 0

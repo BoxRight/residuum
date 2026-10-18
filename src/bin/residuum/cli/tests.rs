@@ -39,11 +39,17 @@ mod programs;
 #[path = "temporal_beta_tests.rs"]
 mod temporal_beta;
 
+#[path = "query_binding_syntax_tests.rs"]
+mod query_binding_syntax;
+
 #[path = "module_tests.rs"]
 mod modules;
 
 #[path = "extraction_tests.rs"]
 mod extraction;
+
+#[path = "legal_partition_tests.rs"]
+mod legal_partition;
 
 const LEGAL: &str = include_str!("../../../../examples/legal/case_monotonic_formal.res");
 const RESIDUAL: &str = include_str!("../../../../examples/experiments/residual_proof.res");

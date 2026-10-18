@@ -8,7 +8,7 @@ use crate::elab::{Error, elaborate_formal_with_dependencies};
 use crate::surface::{FormalDeclaration, FormalModule};
 use crate::typed::{Declaration, DeclarationOrigin, Module, Type};
 
-const MAX_SOURCE_BYTES: usize = 64 * 1024;
+const MAX_SOURCE_BYTES: usize = 1024 * 1024;
 const MAX_MODULES: usize = 64;
 
 /// Resolve paths relative to the importing file. All non-experiment symbols,
@@ -65,7 +65,7 @@ impl Resolver {
             .read_to_string(&mut source)
             .map_err(|e| Error::new(format!("cannot read module `{}`: {e}", path.display())))?;
         if source.len() > remaining {
-            return Err(Error::new("module graph exceeds 64 KiB of source"));
+            return Err(Error::new("module graph exceeds 1 MiB of source"));
         }
         self.bytes += source.len();
         let surface = crate::parse_formal(&source)

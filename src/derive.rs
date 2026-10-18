@@ -2,6 +2,8 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 
 mod incremental;
+mod steps;
+pub use steps::{DerivativeSession, DerivativeStep, ForwardSession, ForwardStep};
 mod known_index;
 mod program_incremental;
 use known_index::{KnownIndex, KnownView};
@@ -342,6 +344,12 @@ fn activation_bindings(
     source: &ProgramSource,
     trigger: &Event,
 ) -> Option<BTreeMap<String, SubstitutionValue>> {
+    if trigger.verb != source.verb.name
+        || trigger.polarity != Polarity::Positive
+        || trigger.args.len() != source.verb.args.len()
+    {
+        return None;
+    }
     let mut bindings = BTreeMap::new();
     for (parameter, value) in source.parameters.iter().zip(&trigger.args) {
         bind_typed(
@@ -400,13 +408,6 @@ fn close_with_programs(
         let activation = profile::start();
         for trigger in &frontier {
             for source in programs {
-                let verb = &source.verb;
-                if trigger.verb != verb.name
-                    || trigger.polarity != Polarity::Positive
-                    || trigger.args.len() != verb.args.len()
-                {
-                    continue;
-                }
                 let Some(bindings) = activation_bindings(source, trigger) else {
                     continue;
                 };
@@ -447,26 +448,17 @@ fn close_with_programs(
             #[cfg(test)]
             profile::rule(&rule.name, program.is_some(), matching, candidates.len());
             for unstamped in candidates {
-                #[cfg(test)]
-                let duplicate = profile::contains(&seen_unstamped, &unstamped);
-                #[cfg(not(test))]
-                let duplicate = seen_unstamped.contains(&unstamped);
-                if duplicate {
+                let Some((derived, is_new)) =
+                    retain_derivation(unstamped, &mut seen_unstamped, &mut known_keys, clock)
+                else {
                     continue;
-                }
-                #[cfg(test)]
-                let retention = profile::start();
-                seen_unstamped.push(unstamped.clone());
-                let is_new = known_keys.insert(unstamped.event.clone());
-                let derived = stamp(unstamped, clock.next_derivation_time());
+                };
                 if is_new {
                     known_index.insert(known.len(), &derived.event);
                     known.push(derived.event.clone());
                     next_frontier.push(derived.event.clone());
                 }
                 derivations.push(derived);
-                #[cfg(test)]
-                profile::phase("retention", retention);
             }
         }
 
@@ -476,6 +468,31 @@ fn close_with_programs(
     }
 
     Closure { known, derivations }
+}
+
+/// Shared proof identity, event identity and stamping boundary. Scheduling and
+/// indexing stay with each evaluator, so synchronous rounds remain synchronous.
+fn retain_derivation(
+    unstamped: UnstampedDerivation,
+    seen: &mut Vec<UnstampedDerivation>,
+    known_keys: &mut BTreeSet<Event>,
+    clock: &mut dyn DerivationClock,
+) -> Option<(DerivedEvent, bool)> {
+    #[cfg(test)]
+    let duplicate = profile::contains(seen, &unstamped);
+    #[cfg(not(test))]
+    let duplicate = seen.contains(&unstamped);
+    if duplicate {
+        return None;
+    }
+    #[cfg(test)]
+    let timer = profile::start();
+    seen.push(unstamped.clone());
+    let is_new = known_keys.insert(unstamped.event.clone());
+    let derived = stamp(unstamped, clock.next_derivation_time());
+    #[cfg(test)]
+    profile::phase("retention", timer);
+    Some((derived, is_new))
 }
 
 #[derive(Debug, Clone)]

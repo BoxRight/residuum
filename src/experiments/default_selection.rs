@@ -19,6 +19,35 @@ pub struct DefaultExperimentResult {
 /// Horn closure, never consequences of a default before it has been selected.
 /// Selection is not reconsidered after the final closure (no Reiter iteration).
 pub fn run_default_experiments(module: &Module) -> Result<Vec<DefaultExperimentResult>, Error> {
+    let mandatory = mandatory_module(module)?;
+    // Reuse the existing runner's seed-only and acyclic termination checks.
+    let contexts = run_forward_experiments(&mandatory)?;
+    let mut results = Vec::new();
+    for context in contexts {
+        let extension = evaluate_defaults(module, &context.closure.known)?;
+        let mut active = mandatory.clone();
+        active
+            .declarations
+            .retain(|d| !matches!(d, Declaration::Experiment(_)));
+        // All selected member clauses and the unchanged mandatory environment
+        // participate in one module-aware fixpoint, never per-member closures.
+        active
+            .declarations
+            .extend(extension.rules().iter().cloned().map(Declaration::Rule));
+        active
+            .declarations
+            .push(Declaration::Experiment(context.experiment));
+        let observation = run_forward_experiments(&active)?.remove(0);
+        results.push(DefaultExperimentResult {
+            context: context.closure,
+            extension,
+            observation,
+        });
+    }
+    Ok(results)
+}
+
+pub(super) fn mandatory_module(module: &Module) -> Result<Module, Error> {
     let mut controlled = BTreeSet::new();
     let mut controlled_programs = BTreeSet::new();
     for declaration in &module.declarations {
@@ -71,29 +100,5 @@ pub fn run_default_experiments(module: &Module) -> Result<Vec<DefaultExperimentR
         Declaration::Rule(r) => !controlled.contains(r.name.as_str()),
         _ => true,
     });
-    // Reuse the existing runner's seed-only and acyclic termination checks.
-    let contexts = run_forward_experiments(&mandatory)?;
-    let mut results = Vec::new();
-    for context in contexts {
-        let extension = evaluate_defaults(module, &context.closure.known)?;
-        let mut active = mandatory.clone();
-        active
-            .declarations
-            .retain(|d| !matches!(d, Declaration::Experiment(_)));
-        // All selected member clauses and the unchanged mandatory environment
-        // participate in one module-aware fixpoint, never per-member closures.
-        active
-            .declarations
-            .extend(extension.rules().iter().cloned().map(Declaration::Rule));
-        active
-            .declarations
-            .push(Declaration::Experiment(context.experiment));
-        let observation = run_forward_experiments(&active)?.remove(0);
-        results.push(DefaultExperimentResult {
-            context: context.closure,
-            extension,
-            observation,
-        });
-    }
-    Ok(results)
+    Ok(mandatory)
 }

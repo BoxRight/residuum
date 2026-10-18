@@ -1,0 +1,880 @@
+{
+  "worker": {
+    "wire_version": "residuum-wire/1",
+    "episode_id": "riggs-interactive-001",
+    "manifest_hash": "h-interactive-001",
+    "imports": [
+      "/tmp/residuum-llm-normative-exploration-spec/examples/experiments/legal_geometry/riggs_problem_manifest.res",
+      "/tmp/residuum-llm-normative-exploration-spec/examples/experiments/legal_geometry/riggs_cases.res"
+    ],
+    "workdir": "/tmp/residuum-llm-normative-exploration-spec/target/exploration/interactive/work",
+    "profile": {
+      "heads": [
+        "compliance",
+        "do",
+        "enforceability",
+        "give",
+        "hypotheticalSuccessionImpediment",
+        "notDo",
+        "obligation",
+        "permission",
+        "violation"
+      ],
+      "body_verbs": [
+        "Act",
+        "acquisitionLinkedToWrong",
+        "acquisitionPurposeRecorded",
+        "deathCausedBy",
+        "deathRecorded",
+        "do",
+        "give",
+        "intentionalKilling",
+        "notDo",
+        "obligation",
+        "obligationFiled",
+        "omissionProhibition",
+        "operativeDisposition",
+        "patrimonialAsset",
+        "permission",
+        "permissionFiled",
+        "prohibition",
+        "purposefulAcquisition",
+        "right",
+        "survivorRecorded",
+        "testamentaryEntitlement"
+      ],
+      "evidential_not_verbs": [
+        "Act",
+        "acquisitionPurposeRecorded",
+        "intentionalKilling"
+      ],
+      "max_atoms": 4,
+      "max_binders": 16,
+      "max_after_depth": 2,
+      "max_unit_nodes": 1,
+      "require_connected": false
+    },
+    "decision": {
+      "components": [
+        {
+          "polarity": "positive",
+          "verb": "testamentaryEntitlement",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "derived",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "hypotheticalSuccessionImpediment",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "derived",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "criterion": {
+        "component": 1
+      }
+    },
+    "dossiers": {
+      "causalLinkUnestablished": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "survivorRecorded",
+          "args": [
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "historicalRiggs": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "survivorRecorded",
+          "args": [
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathCausedBy",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerDeath"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "acquisitionPurposeRecorded",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "elmerPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "killingByThirdParty": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "survivorRecorded",
+          "args": [
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "otherKiller"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "evidential_not",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathCausedBy",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerDeath"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "killingWithoutAcquisitionPurpose": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "survivorRecorded",
+          "args": [
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathCausedBy",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerDeath"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "evidential_not",
+          "verb": "acquisitionPurposeRecorded",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "elmerPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "noBeneficiaryKilling": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "survivorRecorded",
+          "args": [
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "evidential_not",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ],
+      "survivalUnestablished": [
+        {
+          "polarity": "positive",
+          "verb": "operativeDisposition",
+          "args": [
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "residuaryInterest"
+            },
+            {
+              "const": "private"
+            },
+            {
+              "const": "will1880"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathRecorded",
+          "args": [
+            {
+              "const": "palmerDeath"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "intentionalKilling",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "elmerPalmer"
+            },
+            {
+              "const": "francisPalmer"
+            },
+            {
+              "const": "judicial"
+            },
+            {
+              "const": "death1882"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "deathCausedBy",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerDeath"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        },
+        {
+          "polarity": "positive",
+          "verb": "acquisitionPurposeRecorded",
+          "args": [
+            {
+              "const": "killingEvidence"
+            },
+            {
+              "const": "palmerWill"
+            },
+            {
+              "const": "elmerPalmer"
+            }
+          ],
+          "kind": "seeded",
+          "time": {
+            "at": "dossierTime"
+          },
+          "transition": null
+        }
+      ]
+    },
+    "budgets": {
+      "max_actions": 60,
+      "max_steps_per_action": 8,
+      "max_steps_total": 300,
+      "max_sessions": 10,
+      "max_candidates": 6,
+      "max_clauses": 2,
+      "search_limits": {
+        "max_depth": 32,
+        "max_nodes": 4096,
+        "max_branches": 4096
+      }
+    },
+    "transport": null
+  },
+  "controller": {
+    "controller_version": "normative-explorer/0.1",
+    "condition": "C",
+    "model": {
+      "provider": "simulated",
+      "model_id": "branching-policy",
+      "parameters": {}
+    },
+    "max_model_requests": 40,
+    "max_actions": 30,
+    "max_output_tokens": 100000,
+    "valuation_source": "examples/experiments/legal_geometry/riggs_rule_observations.tsv",
+    "explorer_instructions": "simulated provider; branching policy; condition C",
+    "observations": [
+      {
+        "dossier": "historicalRiggs",
+        "required": true,
+        "source": "riggs_rule_observations.tsv#historicalRiggs",
+        "status": "documented"
+      }
+    ]
+  }
+}

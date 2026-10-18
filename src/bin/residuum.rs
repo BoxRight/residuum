@@ -27,13 +27,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         print!("{USAGE}");
         return Ok(());
     }
-    if args.len() != 2 {
+    if args.len() < 2 {
         return Err(USAGE.into());
     }
     let command = Command::parse(args[0].to_str().ok_or("invalid command encoding")?)?;
+    let steps = cli::StepOptions::parse(&args[2..])?;
     require_limits()?;
     let path = PathBuf::from(&args[1]);
-    let output = cli::execute_file(command, &path)?;
+    let output = if let Some(options) = steps {
+        cli::execute_file_steps(command, &path, options)?
+    } else {
+        cli::execute_file(command, &path)?
+    };
     use std::io::Write;
     io::stdout().lock().write_all(output.as_bytes())?;
     Ok(())

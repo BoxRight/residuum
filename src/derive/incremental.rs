@@ -1,7 +1,9 @@
 //! Add-only, semi-naive maintenance of a closure under a fixed rule set.
 //! The existing close initializes the state and remains the comparison oracle.
 
-use super::{AntecedentMatch, DerivationClock, finish_instantiation, match_event, stamp};
+use super::{
+    AntecedentMatch, DerivationClock, finish_instantiation, match_event, retain_derivation,
+};
 use crate::typed::{Antecedent, Closure, DerivedEvent, Event, Rule, RuleBody, UnstampedDerivation};
 use std::collections::BTreeSet;
 
@@ -60,6 +62,12 @@ impl IncrementalClosure {
         &self.closure
     }
 
+    /// Expose Kleene approximations of the additive derivative from this
+    /// internally verified closed base, without mutating the base or calling update.
+    pub fn begin_stepwise_update(&self, additions: Vec<Event>) -> super::DerivativeSession {
+        super::steps::DerivativeSession::from_closed(&self.closure, &self.rules, additions)
+    }
+
     /// Caller supplies derivation time independently of rounds and PropTime.
     /// Empty/duplicate additions do no inference work and receive no stamps.
     /// Like close, this requires a terminating positive Horn instance.
@@ -97,18 +105,11 @@ impl IncrementalClosure {
                 #[cfg(test)]
                 super::profile::rule(&rule.name, false, matching, candidates.len());
                 for unstamped in candidates {
-                    #[cfg(test)]
-                    let duplicate = super::profile::contains(&self.seen, &unstamped);
-                    #[cfg(not(test))]
-                    let duplicate = self.seen.contains(&unstamped);
-                    if duplicate {
+                    let Some((derived, is_new)) =
+                        retain_derivation(unstamped, &mut self.seen, &mut self.known_keys, clock)
+                    else {
                         continue;
-                    }
-                    #[cfg(test)]
-                    let retention = super::profile::start();
-                    self.seen.push(unstamped.clone());
-                    let is_new = self.known_keys.insert(unstamped.event.clone());
-                    let derived = stamp(unstamped, clock.next_derivation_time());
+                    };
                     if is_new {
                         self.closure.known.push(derived.event.clone());
                         delta.known.push(derived.event.clone());
@@ -116,8 +117,6 @@ impl IncrementalClosure {
                     }
                     self.closure.derivations.push(derived.clone());
                     delta.derivations.push(derived);
-                    #[cfg(test)]
-                    super::profile::phase("retention", retention);
                 }
             }
             #[cfg(test)]

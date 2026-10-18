@@ -74,20 +74,7 @@ pub fn query_active_program_residual<C: DerivationClock>(
     limits: SearchLimits,
     clock: &mut C,
 ) -> Result<ActiveProgramResidualQuery, Error> {
-    let allowed: Vec<_> = module
-        .declarations
-        .iter()
-        .filter_map(|d| match d {
-            Declaration::Verb(v) if v.is_abducible() => Some(v),
-            _ => None,
-        })
-        .flat_map(|v| {
-            [Polarity::Positive, Polarity::EvidentialNot].map(|polarity| Abducible {
-                verb: v.name.clone(),
-                polarity,
-            })
-        })
-        .collect();
+    let allowed = super::engine::default_abducibles(module);
     query_active_program_residual_with_abducibles(module, evidence, goal, &allowed, limits, clock)
 }
 
@@ -105,6 +92,17 @@ pub fn query_active_program_residual_with_abducibles<C: DerivationClock>(
 ) -> Result<ActiveProgramResidualQuery, Error> {
     let (view, templates) = guarded_view(module)?;
     let search = query_program_residual_with_abducibles(&view, evidence, goal, allowed, limits)?;
+    certify(module, evidence, goal, search, &templates, clock)
+}
+
+pub(super) fn certify<C: DerivationClock>(
+    module: &Module,
+    evidence: &[Event],
+    goal: &Event,
+    search: super::ProgramResidualQuery,
+    templates: &BTreeMap<String, ResidualActivation>,
+    clock: &mut C,
+) -> Result<ActiveProgramResidualQuery, Error> {
     let mut metrics = search.metrics;
     let mut explanations = Vec::new();
     for candidate in search.explanations {
@@ -116,7 +114,7 @@ pub fn query_active_program_residual_with_abducibles<C: DerivationClock>(
             continue;
         }
         let mut activations = Vec::new();
-        activation_steps(&candidate.proof, &templates, &mut activations);
+        activation_steps(&candidate.proof, templates, &mut activations);
         explanations.push(CertifiedActiveExplanation {
             candidate,
             activations,
@@ -194,7 +192,9 @@ fn activation_steps(
     }
 }
 
-fn guarded_view(module: &Module) -> Result<(Module, BTreeMap<String, ResidualActivation>), Error> {
+pub(super) fn guarded_view(
+    module: &Module,
+) -> Result<(Module, BTreeMap<String, ResidualActivation>), Error> {
     if module
         .declarations
         .iter()

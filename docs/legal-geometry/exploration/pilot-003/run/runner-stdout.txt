@@ -1,0 +1,4 @@
+Reports: /tmp/residuum-llm-normative-exploration-spec/target/test-diagnostics/20261015T195355226467Z-2777791
+compile residuum-worker | 0 | 0.1025s | 27.50 MiB RSS
+controller+worker | 0 | 17.4009s | 88.17 MiB RSS
+episode ledger: /tmp/residuum-llm-normative-exploration-spec/target/exploration/pilot-003/ledger

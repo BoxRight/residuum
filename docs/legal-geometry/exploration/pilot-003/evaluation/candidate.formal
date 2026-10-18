@@ -1,0 +1,4 @@
+rule impediment(will, testator, beneficiary, object, authority, effective, act, death, t) =
+  testamentaryEntitlement(will, testator, beneficiary, object, authority, effective) @ t
+  & purposefulAcquisition(will, act, death, beneficiary, object, authority, effective) @ t
+  <= hypotheticalSuccessionImpediment(will, testator, beneficiary, object, authority, effective) @ t

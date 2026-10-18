@@ -1,0 +1,21 @@
+{
+  "original_manifest": "/tmp/residuum-llm-normative-exploration-spec/docs/legal-geometry/exploration/pilot-003/episode.json",
+  "base": "/tmp/residuum-llm-normative-exploration-spec/docs/legal-geometry/exploration/pilot-003",
+  "changes": [
+    {
+      "field": "imports[0]",
+      "original": "../../../../examples/experiments/legal_geometry/riggs_problem_manifest.res",
+      "resolved": "/tmp/residuum-llm-normative-exploration-spec/examples/experiments/legal_geometry/riggs_problem_manifest.res"
+    },
+    {
+      "field": "imports[1]",
+      "original": "../../../../examples/experiments/legal_geometry/riggs_cases.res",
+      "resolved": "/tmp/residuum-llm-normative-exploration-spec/examples/experiments/legal_geometry/riggs_cases.res"
+    },
+    {
+      "field": "workdir",
+      "original": "../../../../target/exploration/pilot-003/work",
+      "resolved": "/tmp/residuum-llm-normative-exploration-spec/target/exploration/pilot-003/work"
+    }
+  ]
+}

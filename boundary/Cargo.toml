@@ -1,0 +1,10 @@
+[package]
+name = "residuum-boundary"
+version = "0.1.0"
+edition = "2024"
+description = "Communication boundary of the exploration worker: versioned wire DTOs and line transport. Depends on residuum; residuum does not depend on it."
+
+[dependencies]
+residuum = { path = ".." }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

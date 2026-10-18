@@ -1,0 +1,42 @@
+[
+  {
+    "action_id": "t1",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "p1",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "p2",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "p2",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "p3",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "a1",
+    "identical": true,
+    "workdir_in_line": true
+  },
+  {
+    "action_id": "a2",
+    "identical": true,
+    "workdir_in_line": false
+  },
+  {
+    "action_id": "a3",
+    "identical": true,
+    "workdir_in_line": true
+  }
+]

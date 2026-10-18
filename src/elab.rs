@@ -4,15 +4,16 @@ use std::fmt;
 use crate::derive::{substitute_antecedent, substitute_event};
 use crate::surface::{
     CnlDeclaration, CnlModule, FormalDeclaration, FormalModule, SurfaceAntecedent,
-    SurfaceDefaultBody, SurfaceEvent, SurfaceFieldAccess, SurfaceRuleBody, SurfaceStateOperation,
-    SurfaceTerm, SurfaceTime, SurfaceVerbKind,
+    SurfaceDefaultBody, SurfaceEvent, SurfaceFieldAccess, SurfaceQueryOptions, SurfaceQueryScope,
+    SurfaceRuleBody, SurfaceStateOperation, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
 };
 use crate::typed::{
     Antecedent, Arg, BehaviorKind, BehaviorRef, Constant, Declaration, Default, DefaultBody,
     DefaultRef, Effect, Entity, Event, Experiment, ExperimentInputKind, ExperimentQueryKind, Field,
-    FieldAccess, HornClause, Module, Polarity, PropositionKind, PropositionType, RecordFieldValue,
-    Residual, ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime,
-    StateTransitionType, SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
+    FieldAccess, HornClause, HornQueryScope, Module, Polarity, ProgramRef, PropositionKind,
+    PropositionType, QueryBinding, QueryOptions, QueryParameterScope, RecordFieldValue, Residual,
+    ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime, StateTransitionType,
+    SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -329,6 +330,9 @@ pub(crate) fn elaborate_formal_with_dependencies(
         declarations,
         origins: BTreeMap::new(),
     };
+    // Query scope validation needs original producer identities during lowering;
+    // the file resolver replaces these source-only origins after linking.
+    result.origins = source_origins(&result);
     let mut names = BTreeSet::new();
     for experiment in experiments {
         if !names.insert(experiment.name.clone()) {
@@ -364,6 +368,14 @@ pub(crate) fn elaborate_formal_with_dependencies(
             })
             .collect::<Result<Vec<_>, Error>>()?;
         let goal = lower_ground_event(experiment.goal, &verb_sigs, &constants, &result)?;
+        let query_options = lower_query_options(
+            experiment.query_options,
+            experiment.query_kind,
+            &goal,
+            &result,
+            &entity_fields,
+            &constants,
+        )?;
         result
             .declarations
             .push(Declaration::Experiment(Experiment {
@@ -372,9 +384,15 @@ pub(crate) fn elaborate_formal_with_dependencies(
                 input,
                 query_kind: experiment.query_kind,
                 goal,
+                query_options,
             }));
     }
-    result.origins = result
+    result.origins = source_origins(&result);
+    Ok(result)
+}
+
+fn source_origins(result: &Module) -> BTreeMap<String, crate::typed::DeclarationOrigin> {
+    result
         .declarations
         .iter()
         .map(|d| {
@@ -386,8 +404,73 @@ pub(crate) fn elaborate_formal_with_dependencies(
                 },
             )
         })
-        .collect();
-    Ok(result)
+        .collect()
+}
+
+fn lower_query_options(
+    source: SurfaceQueryOptions,
+    kind: ExperimentQueryKind,
+    goal: &Event,
+    module: &Module,
+    fields: &BTreeMap<String, Vec<Field>>,
+    constants: &BTreeMap<String, Type>,
+) -> Result<QueryOptions, Error> {
+    if kind != ExperimentQueryKind::Residual
+        && (source.active || source.scope.is_some() || source.bindings.is_some())
+    {
+        return Err(Error::new(
+            "fourFusion does not accept active mode, residual search scope or bindings",
+        ));
+    }
+    if source.bindings.is_some() && source.scope.is_none() {
+        return Err(Error::new(
+            "explicit query bindings require an explicit search scope",
+        ));
+    }
+    let scope = source.scope.map(|scope| match scope {
+        SurfaceQueryScope::Rules(names) => {
+            HornQueryScope::Rules(names.into_iter().map(|name| RuleRef { name }).collect())
+        }
+        SurfaceQueryScope::Program(name) => HornQueryScope::Program(ProgramRef { name }),
+    });
+    let bindings = source
+        .bindings
+        .unwrap_or_default()
+        .into_iter()
+        .map(|binding| {
+            let scope = match binding.scope.kind {
+                BehaviorKind::Rule => QueryParameterScope::Rule(RuleRef {
+                    name: binding.scope.name,
+                }),
+                BehaviorKind::Program => QueryParameterScope::Program(ProgramRef {
+                    name: binding.scope.name,
+                }),
+            };
+            let expected =
+                crate::residual::query_parameter_type(module, &scope, &binding.parameter)?;
+            // No query lambda scope: names in values resolve to module constants,
+            // never to homonymous Rule or Program parameter names.
+            let (value, actual) = lower_term(binding.value, &[], fields, constants)?;
+            let ty = if value == Term::None {
+                expected
+            } else {
+                actual
+            };
+            Ok(QueryBinding {
+                scope,
+                parameter: binding.parameter,
+                ty,
+                value: SubstitutionValue::Term(value),
+            })
+        })
+        .collect::<Result<Vec<_>, Error>>()?;
+    let mut options = QueryOptions {
+        active: source.active,
+        scope,
+        bindings,
+    };
+    crate::residual::validate_query_options(module, &mut options, goal)?;
+    Ok(options)
 }
 
 fn lower_ground_event(
@@ -1242,7 +1325,7 @@ pub(crate) fn lower_term(
     }
 }
 
-fn is_assignable(actual: &Type, expected: &Type) -> bool {
+pub(crate) fn is_assignable(actual: &Type, expected: &Type) -> bool {
     if actual == expected {
         return true;
     }

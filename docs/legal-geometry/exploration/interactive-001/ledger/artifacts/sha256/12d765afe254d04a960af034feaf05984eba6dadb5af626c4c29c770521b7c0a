@@ -1,0 +1,1 @@
+{"response": {"action_id": "p1", "budget": {"actions_remaining": 49, "candidates_remaining": 5, "sessions_remaining": 6, "steps_remaining": 285}, "payload": {"session_opened": {"kind": "forward", "session": "s4"}}, "status": "complete", "steps_consumed": 0}}

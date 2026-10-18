@@ -1,0 +1,8 @@
+test cli::tests::semantic_domain::initial_cardinalities_support_relational_contrasts_and_distinct_coverages ... hypothesis \ situation: s0 sCert sNoSens sNotAnimal sRoleSubject sRoleBeneficiary sConduct sMinor sNeutral
+hThing: 1 1 1 0 1 1 1 1 1
+hThingNoCert: 1 0 1 0 1 1 1 1 1
+hThirdParty: 1 1 0 1 1 0 1 1 1
+hSharedTrait: 0 0 0 0 0 1 0 0 0
+hBeneficiaryTrait: 0 0 0 0 0 0 0 1 0
+hCustodyEnter: 1 1 1 1 0 1 0 1 1
+hCustody: 1 1 1 1 0 1 1 1 1

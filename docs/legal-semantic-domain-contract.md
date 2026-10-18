@@ -1,8 +1,17 @@
 # Contrato del dominio para la revisión semántica
 
-Estado: **CONTRATO PROPUESTO**. Este documento no genera valoraciones, no
-añade fixtures al repositorio, no implementa la ablación y no ha hecho
-llamadas a modelos. LegalGeneral, el motor, `main` y `v1` no se han tocado.
+Estado: **PROPUESTA CERRADA PARA REVISIÓN**. Incorpora las condiciones del
+usuario del 2026-10-18 (§14).
+
+Lo que hace y no hace este documento:
+- No genera valoraciones ni etiquetas.
+- No selecciona situaciones reservadas.
+- No implementa la ablación.
+- No hace llamadas a modelos.
+- LegalGeneral, el motor, `main` y `v1` no se han tocado.
+
+Lo único que se ha añadido son las fixtures del vocabulario y de los testigos
+de suficiencia, más tres tests individuales (§12).
 
 Complementa `legal-semantic-revision-contract.md` (§0 bis: alcance acordado).
 
@@ -38,9 +47,15 @@ Marcas usadas:
   - 2 es la longitud mínima que permite expresar una propiedad de un tercero
     vinculado por una relación;
   - 1 solo alcanza propiedades de los participantes de la cabeza.
-- **Viabilidad COMPROBADA:** un boceto del módulo elabora sobre LegalGeneral,
-  y una hipótesis con tercero existencial deriva su posición y el efecto
-  `notDo` de LegalGeneral (§12).
+- **Suficiencia COMPROBADA con el motor** (§12), con tres tests
+  individuales y 7 hipótesis testigo sobre 9 situaciones:
+  - contrastes discriminantes y no discriminantes;
+  - inclusiones estrictas y pares incomparables de cobertura;
+  - cambios de rol;
+  - propiedades de terceros y del beneficiario.
+
+  La proyección de autoridad y vigencia es inyectiva en la ablación, y su
+  contraejemplo se detecta.
 
 ## 1. Qué fija LegalGeneral y qué le falta
 
@@ -75,10 +90,12 @@ Cómo se eligió el vocabulario:
   como rasgo. Se sustituye por la relación uniforme `sensitiveTo(person, ThingTrait)`,
   que se aplica por igual a animales, alimentos, aparatos o vehículos.
 
-## 3. Módulo de vocabulario (PROPUESTO)
+## 3. Módulo de vocabulario
 
-`docs/legal-geometry/semantic-domain/vocabulary_natural.res`. No se crea en este
-entregable.
+El módulo existe como fixture en
+`docs/legal-geometry/semantic-domain/fixtures/vocabulary_natural.res`, y la
+obligación V1/V2 está COMPROBADA (§12). Las glosas de §3.0 quedan
+**pendientes de tu aprobación**.
 
 ```text
 module SharedSpacesVocabulary
@@ -105,21 +122,58 @@ const hypNorm : Fact
 const hypEnacted : PropositionTime
 ```
 
-Formal no admite declarar varias constantes en una sola línea; el módulo real
-tendrá una por línea.
+El bloque anterior es un resumen: en el módulo real cada constante va en su
+propia línea.
 
-| Símbolo | Lectura descriptiva (glosa permitida) |
-|---|---|
-| `considered(s, c, o, b)` | «se examina la conducta c de s con la cosa o, en el ámbito de b». Es la pregunta del expediente, no un hecho jurídico. |
-| `personTrait(p, r)` | p tiene el rasgo r |
-| `thingTrait(o, r)` | la cosa o tiene el rasgo r |
-| `sensitiveTo(p, r)` | p tiene una sensibilidad física documentada a las cosas con rasgo r |
-| `bond(p, q, k)` | entre p y q existe la relación k, con esa orientación |
-| `custody(p, o)` | p tiene o consigo o a su cargo |
-| `hypNorm`, `hypEnacted` | identificador y vigencia declarada de la norma *hipotética* evaluada (§5) |
+### 3.0 Lista de glosas para revisión
 
-Las glosas son definicionales. Las glosas extendidas siguen las mismas
-reglas P2 y pasan la misma revisión humana (V3) antes de la congelación.
+**Criterios.** Cada glosa:
+- dice qué hecho se registra, no qué consecuencia tiene;
+- no usa términos deónticos, evaluativos ni de riesgo;
+- no menciona conductas ni posiciones normativas;
+- describe hechos que constan en el expediente, sin inferirlos.
+
+La columna «Vigilar» señala dónde una glosa podría sugerir un tratamiento
+aunque no lo enuncie.
+
+| Símbolo | Tipo | Glosa propuesta | Vigilar |
+|---|---|---|---|
+| `considered(s, c, o, b)` | anclaje | El expediente examina la conducta c que realiza s con la cosa o, respecto de b. | «respecto de b» no dice que b sea titular de nada |
+| `personTrait(p, r)` | verbo | Consta en el expediente que la persona p tiene el rasgo r. | — |
+| `thingTrait(o, r)` | verbo | Consta en el expediente que la cosa o tiene el rasgo r. | — |
+| `sensitiveTo(p, r)` | verbo | Consta una sensibilidad física de p (alergia o intolerancia) a las cosas que tienen el rasgo r. | no dice «riesgo» ni «reacción grave» |
+| `bond(p, q, k)` | verbo | Consta la relación k de p hacia q, con esa orientación. | la orientación no implica reciprocidad (§4) |
+| `custody(p, o)` | verbo | p lleva consigo la cosa o, o la tiene a su cargo. | no implica propiedad (`owns` es otro verbo de LegalGeneral) |
+| `minor` | PersonTrait | Persona menor de edad. | — |
+| `elderly` | PersonTrait | Persona de edad avanzada según el expediente. | sin umbral |
+| `visuallyImpaired` | PersonTrait | Discapacidad visual documentada. | — |
+| `mobilityImpaired` | PersonTrait | Movilidad reducida documentada. | — |
+| `pregnant` | PersonTrait | Embarazo documentado. | — |
+| `animal` | ThingTrait | La cosa es un animal. | — |
+| `certifiedAssistance` | ThingTrait | Consta un certificado de preparación de la cosa para asistir a una persona. | describe un documento; no dice que la asistencia esté autorizada ni que sea necesaria |
+| `vaccinated` | ThingTrait | Consta un registro de vacunación de la cosa. | — |
+| `food` | ThingTrait | La cosa es un alimento o una bebida. | — |
+| `electronic` | ThingTrait | La cosa es un aparato electrónico. | — |
+| `motorized` | ThingTrait | La cosa tiene propulsión por motor. | — |
+| `large` | ThingTrait | El expediente describe la cosa como de gran tamaño. | sin umbral; impreciso a propósito, igual que `elderly` |
+| `registered` | ThingTrait | La cosa está inscrita en un registro público. | — |
+| `guardianOf` | Bond | p tiene a q bajo su guarda o tutela. | — |
+| `employs` | Bond | p emplea a q. | — |
+| `livesWith` | Bond | p convive con q. | no se impone simetría |
+| `clientOf` | Bond | p tiene contratado un servicio con q. | — |
+| `presentWith` | Bond | p está en el mismo lugar que q en el momento del expediente. | copresencia, sin calificación |
+| `enterWith` | Conduct | Entrar llevando la cosa. | conducta, no tratamiento |
+| `useInside` | Conduct | Utilizar la cosa en el lugar. | ídem |
+| `leaveUnattended` | Conduct | Dejar la cosa en el lugar sin que nadie la lleve consigo. | describe un hecho, no una falta de diligencia |
+| `hypNorm` | Fact | Identificador de la norma hipotética evaluada. | no se muestra como hecho del expediente |
+| `hypEnacted` | PropositionTime | Vigencia declarada de la norma hipotética. | nunca es el momento del expediente |
+
+Las conductas no se corresponden con los tratamientos. Los tratamientos
+observables son tipos de posición (`prohibition`, `permission`,
+`obligation`), y las conductas son acciones. Cualquier conducta puede
+recibir cualquier tipo de posición, y la gramática permite las 3 × 3
+combinaciones y la conducta variable. El número de conductas es un parámetro
+del generador (§4.1).
 
 ### 3.1 Controles de vocabulario
 
@@ -164,7 +218,7 @@ y los átomos con estado `?` no se siembran.
 | | Condición |
 |---|---|
 | K1 | Tipado correcto: el experimento elabora (`elab.rs:344-380`). |
-| K2 | Exactamente un anclaje, con $s\neq b$ como constantes distintas. |
+| K2 | Exactamente un anclaje `considered(s, c, o, b)`, con $s$ y $b$ dos personas **distintas cualesquiera** del reparto. Los roles los asigna el anclaje, no los nombres. |
 | K3 | Nunca $a$ y $\sim a$ a la vez. La evidencia contradictoria es otro fenómeno, ya modelado por `inconsistent`, y se deja para la extensión. |
 | K4 | No hay hechos normativos sembrados de LegalGeneral (`prohibition`, `permissionFiled`, `right`, …), ni `Act`, `higherAuthority` o `notEarlier`. Las posiciones proceden solo de las hipótesis. En la extensión (§7.2) esta condición se levanta. |
 | K5 | Un solo índice $t$ por situación (el momento del expediente), que es un `PropositionTime` constante del expediente. |
@@ -175,12 +229,41 @@ presupuestos sobre el mundo; se declararían aparte y se medirían.
 
 **Desplazamientos contrafactuales Δ:**
 - $\delta_{a,v}$ cambia el estado de un átomo $a\in\Sigma_0$ al valor
-  $v\in\{+,\sim,?\}\setminus\{\alpha(a)\}$. Además, $\delta_c$ cambia la
-  conducta del anclaje.
-- Toda situación tiene exactamente $2\cdot124+2=250$ vecinos inmediatos.
+  $v\in\{+,\sim,?\}\setminus\{\alpha(a)\}$.
+- $\delta_c$ cambia la conducta del anclaje.
+- $\delta_{subj}$ y $\delta_{ben}$ asignan el rol de sujeto o de beneficiario
+  a otra persona que no ocupa ningún rol, que hasta entonces era un tercero.
+- $\delta_{swap}$ intercambia sujeto y beneficiario.
+- Con $n_P$ personas, $n_C$ conductas y la base $\Sigma_0$, cada situación
+  tiene exactamente $2\lvert\Sigma_0\rvert+(n_C-1)+2(n_P-2)+1$ vecinos
+  inmediatos. Con el universo inicial son $248+2+4+1=255$.
 - Todos los vecinos son admisibles, porque K3 se conserva por construcción.
 - Δ se enumera de forma **uniforme**, sin preferir átomos por su supuesta
   relevancia.
+
+### 4.1 Parámetros del universo
+
+El universo se construye a partir de tres parámetros del generador. No son
+restricciones del modelo:
+
+| Parámetro | Inicial | Efecto |
+|---|---|---|
+| $n_P$ (personas) | 4 | $\lvert\Sigma_0\rvert=5n_P+8n_P+5n_P(n_P-1)+n_Pn_O+8n_O$ (124 con el universo inicial) |
+| $n_O$ (cosas) | 1 | con $n_O>1$ hacen falta anclajes sobre otras cosas y relaciones cosa–cosa (extensión) |
+| $n_C$ (conductas) | 3 | solo cambia las constantes de `considered` |
+
+**Suficiencia del universo inicial** (argumento mínimo; la verificación está
+en §12):
+- **$n_P\ge4$.** Para cambiar un rol y que siga quedando un tercero hacen
+  falta dos personas en roles y dos fuera de ellos. Una ocupa el rol que
+  queda libre y la otra permanece como tercero. Con 3 personas, un
+  $\delta_{subj}$ o $\delta_{ben}$ deja la situación sin terceros.
+- **$n_C\ge2$** distingue una hipótesis de conducta fija de una de conducta
+  variable. **$n_C=3$** permite además que dos hipótesis con conductas fijas
+  distintas sean incomparables y que quede una tercera conducta que ninguna
+  de las dos cubre.
+- **$n_O=1$** basta para la gramática de $H_2$, que nombra una sola cosa (la
+  del anclaje).
 
 **Semejanza entre situaciones** (para una lectura lewisiana, declarada
 aparte): la distancia de Hamming sobre $\alpha$ y $\kappa$.
@@ -206,16 +289,34 @@ o_Q(e)=(\text{verbo},\ subject,\ conduct,\ object,\ beneficiary,\ t)
 \quad\text{para } e\in C_{T\oplus h}(S),\ \operatorname{verbo}(e)\in Q_{pos}.
 $$
 
-La proyección **descarta** `id`, `authority` y `effective`:
-- En el registro de evaluación (𝒫) el evento se conserva completo.
-- Solo la comparación con valoraciones usa $o_Q$.
-- Así la valoración no depende del identificador con que cada hipótesis
-  nombra su norma, y responde a la decisión pendiente de «comparar módulo el
-  identificador».
+**Qué hace la proyección y por qué es válida.** La proyección no elimina
+nada de la representación ni de la ejecución:
+- Toda hipótesis escribe `hypNorm`, `administrative` y `hypEnacted` en su
+  cabeza, y Residuum los ejecuta y los conserva en Known y en 𝒫.
+- $o_Q$ solo **compara** posiciones prescindiendo de esos tres argumentos.
+- Es válido porque en la ablación los tres son **iguales por construcción**
+  y no son variables experimentales.
 
-**ABIERTO:** que descartar `authority` y `effective` es adecuado para la
-ablación. En la extensión (§7.2), donde intervienen anulación y vigencia,
-esos argumentos tienen que observarse.
+**Condición de validez, COMPROBADA en los testigos**
+(`projection_drops_only_arguments_constant_by_construction`):
+- toda posición de $Q_{pos}$ en cualquier cierre de la ablación lleva esos
+  tres valores;
+- la proyección es inyectiva sobre las posiciones de cada cierre.
+
+**Contraejemplo, también COMPROBADO.** `conflation.res` deriva dos
+prohibiciones que solo difieren en la autoridad (`administrative` frente a
+`legislative`). Son posiciones jurídicamente distintas, la proyección las
+identificaría, y el detector `conflations` lo señala. Por eso:
+- la proyección no se usa fuera del régimen de constancia;
+- en la extensión (§7.2), donde intervienen la anulación y la vigencia,
+  `authority` y `effective` se observan.
+
+**Canal del anclaje.** Para los contrastes se usa además
+$o_{anc}(h,S)=\{K: K(\cdot,s,c,o,b,\cdot,\cdot)\in N_h(S)\}$: los tipos de
+posición derivados sobre la conducta examinada.
+- Es una proyección de $o_Q$ y es invariante bajo un cambio de rol.
+- Sin ella, cambiar el sujeto cambiaría trivialmente los nombres de toda
+  posición.
 
 **`effective` en la ablación:**
 - Toda hipótesis usa la constante `hypEnacted` («vigencia declarada de la
@@ -454,48 +555,103 @@ Todas se ejecutarán antes de generar valoraciones, con tests individuales vía
 | V5 | Toda $h\in H_2$ elabora con el elaborador real y cumple H2–H7. Hay contraejemplos negativos para cada código de rechazo. |
 | V6 | El atajo de la Proposición 1 coincide con `close_program`. |
 | V7 | Isomorfismo de renombrado: $\operatorname{Run}(\rho T,\rho S)=\rho\operatorname{Run}(T,S)$ en todos los pares comprobados, para O1 y O2. |
-| V8 | Comprobador de K1–K5. Δ genera exactamente 250 vecinos admisibles. El generador de situaciones es reproducible por semilla. |
+| V8 | Comprobador de K1–K5. Δ genera exactamente $2\lvert\Sigma_0\rvert+(n_C-1)+2(n_P-2)+1$ vecinos admisibles (255 con el universo inicial). El generador de situaciones es reproducible por semilla. |
 | V9 | Una muestra declarada de $H_2$ pasa los detectores L1–L7. Además, una adopción de prueba en una historia de dos etapas conserva las proyecciones, con el patrón de `projection_of_the_history_equals_each_isolated_run`. |
 | V10 | Congelación: el hash de vocabulario, glosas, gramática, $H_2$, generador y Q queda registrado en el ledger antes de cualquier valoración. |
 
-## 12. Comprobación de viabilidad realizada
+## 12. Verificación del vocabulario, de la proyección y de la suficiencia
 
-Fuera del repositorio, en el scratchpad, elaboré un boceto reducido del
-vocabulario: dos rasgos por tipo, `bond` y `custody`, con una relación de
-alergia todavía como rasgo, anterior a la decisión de §2. Contiene una
-hipótesis con tercero existencial y un expediente:
+**Fixtures** en `docs/legal-geometry/semantic-domain/fixtures/`:
+- `vocabulary_natural.res`;
+- `cast.res`: las personas `ana`, `bea`, `cal` y `dan`, la cosa `obj` y el
+  momento `t0`;
+- `witnesses.res`: 9 situaciones;
+- `hypotheses/*.res`: 7 hipótesis de $H_2$, cada una en su propio módulo;
+- `conflation.res`.
 
-```text
-rule h(s, c, o, b, x, t) =
-    considered(s, c, o, b) @ t & bond(x, b, presentWith) @ t
-    & personTrait(x, allergicToAnimals) @ t
-    <= prohibition(hypNorm, s, c, o, b, administrative, hypEnacted) @ t
-```
+**Tests** en `src/bin/residuum/cli/semantic_domain_tests.rs`, ejecutados de
+uno en uno con `test_safe.py --test-target cli`. Sus resultados están en
+`runs/sufficiency-tests.txt`:
 
-Ejecución `--forward` con `test_safe.py`, informe
-`20261018T215441674171Z-942749`. **COMPROBADO:**
-- elabora;
-- `x` se liga al tercero `eva`;
-- se deriva `prohibition(hypNorm, ana, enterWith, rex, host, administrative, hypEnacted) @ t0`;
-- LegalGeneral deriva `notDo(ana, enterWith, rex, host) @ after(t0)`;
-- `~thingTrait(rex, certifiedAssistance)` permanece como evidencia sin
-  efecto, porque ninguna regla la usa.
+| Test | Informe | Comprueba |
+|---|---|---|
+| `vocabulary_is_a_descriptive_signature_over_unchanged_legal_general` | `20261018T220448598445Z-950333` | V1 y V2: el módulo solo declara 3 entidades, 23 constantes y 6 verbos Seeded sin efecto ni programa; toda declaración de LegalGeneral es idéntica a la original; parte léxica de V3 (lista de exclusión) |
+| `projection_drops_only_arguments_constant_by_construction` | `20261018T220451218031Z-950613` | §5: argumentos constantes, inyectividad y detección del contraejemplo |
+| `initial_cardinalities_support_relational_contrasts_and_distinct_coverages` | `20261018T220452835091Z-950656` | la suficiencia, en los puntos que siguen |
 
-Esta comprobación es solo de viabilidad sintáctica y semántica. No es la
-obligación V1 sobre el módulo definitivo.
+**Puntos de suficiencia que comprueba el tercer test:**
+1. Las 9 situaciones cumplen K1–K5, y cada una está a **un solo
+   desplazamiento** de `s0`.
+2. La teoría base (vocabulario más LegalGeneral) no deriva ninguna posición
+   (K4).
+3. En los 63 pares (hipótesis, situación), las posiciones proyectadas del
+   cierre coinciden con las cabezas instanciadas sobre las semillas. Es la
+   Proposición 1 sobre los testigos (V6 parcial).
+4. La matriz de activación obtenida con el motor
+   (`runs/witness-matrix.txt`):
+
+   | | s0 | sCert | sNoSens | sNotAnimal | sRoleSubject | sRoleBeneficiary | sConduct | sMinor | sNeutral |
+   |---|---|---|---|---|---|---|---|---|---|
+   | hThing | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 |
+   | hThingNoCert | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1 |
+   | hThirdParty | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1 |
+   | hSharedTrait | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+   | hBeneficiaryTrait | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+   | hCustodyEnter | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1 |
+   | hCustody | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 |
+
+5. **Coberturas distintas** sobre los testigos:
+   - dos inclusiones estrictas: `hThingNoCert` ⊂ `hThing`, y
+     `hCustodyEnter` ⊂ `hCustody`;
+   - tres pares incomparables: (`hThing`, `hThirdParty`),
+     (`hThirdParty`, `hSharedTrait`) y (`hThing`, `hBeneficiaryTrait`);
+   - las 7 firmas son distintas, así que la partición es discreta.
+6. **Contrastes:**
+   - **discriminante:** `sCert` separa `hThing` de `hThingNoCert`, que
+     coinciden en `s0`;
+   - **no discriminante:** `sNoSens` no afecta a ese par, y `sNeutral` no
+     afecta a ninguna de las 7 hipótesis.
+7. **Configuraciones relacionales y cambios de rol:**
+   - `sRoleBeneficiary` convierte al tercero `cal` en beneficiaria, mientras
+     `dan` sigue siendo un tercero. Con eso, `hThirdParty` deja de activarse
+     y `hSharedTrait` empieza a hacerlo.
+   - `sRoleSubject` asigna el rol de sujeto a `dan` y deja a `ana` en la
+     situación. Cambian las dos hipótesis de custodia.
+8. **Propiedades de otros participantes:**
+   - `hThirdParty` (tercero existencial), `hBeneficiaryTrait` y
+     `hSharedTrait` (beneficiaria) cambian en contrastes que no tocan ningún
+     átomo sobre el sujeto;
+   - también hay hipótesis de cabeza `permission` y de cabeza `obligation`.
+
+**Qué demuestran los testigos y qué no:**
+- Demuestran que existen esas construcciones con las cardinalidades
+  iniciales.
+- No son un censo de $H_2$ ni una muestra de la distribución de expedientes.
+- No se reutilizarán como situaciones observadas ni reservadas, y no llevan
+  valoraciones.
+- El censo exhaustivo de coberturas de $H_2$ pertenece a V4–V6.
+
+El boceto de viabilidad anterior (scratchpad, informe
+`20261018T215441674171Z-942749`) queda sustituido por estas fixtures.
 
 ## 13. Decisiones abiertas
 
-1. **Lista de vocabulario y glosas (V3).** ¿Apruebas las clases semánticas y
-   las constantes de §3, o prefieres otro dominio de situaciones con la misma
-   estructura?
-2. **Proyección $o_Q$.** ¿Es aceptable descartar `authority` y `effective`
-   en la ablación?
-3. **Reparto de participantes de K.** ¿Bastan cuatro personas y una cosa
-   para la ablación? Una segunda cosa duplicaría `thingTrait`/`custody` y
-   abriría relaciones cosa–cosa.
-4. **Conductas.** ¿Bastan tres? Las conductas son constantes y no cambian la
-   gramática.
-5. **Generador de situaciones.** Probabilidades por estado, número de
-   expedientes observados y reservados, y splits. Se fijarán junto con el
-   contrato de valoraciones, antes de ellas.
+1. **Aprobación de las glosas (§3.0).** Es la revisión humana de V3. Las
+   entradas marcadas en «Vigilar» son las que más conviene examinar.
+2. **Contrato de generación de situaciones y valoraciones.** Va separado:
+   probabilidades por estado, número de expedientes, splits, negociación
+   simulada y objetivo sintético. Se fijará después de congelar el dominio
+   (V10) y sin usar los testigos.
+3. **Integración local de la rama del explorador.** Es una operación
+   separada y verificable, pendiente de tu autorización.
+
+## 14. Condiciones del usuario incorporadas (2026-10-18)
+
+| Condición | Dónde |
+|---|---|
+| Mantener el dominio; glosas admisibles, sin justificaciones ni tratamientos; revisión de la lista concreta | §3.0, pendiente de aprobación |
+| Autoridad y vigencia constantes, sin eliminarlas de la representación ni de la ejecución; proyección documentada y comprobada | §5; test de proyección más contraejemplo |
+| Cuatro personas y una cosa, sujetas a una prueba de suficiencia: relaciones, cambios de rol, contrafactuales, no solo propiedades del sujeto | §4.1, §12 |
+| Tres conductas como parámetro, sin correspondencia con los tratamientos | §3.0, §4.1 |
+| Contrastes discriminantes y no discriminantes, coberturas distintas, configuraciones relacionales | §12 |
+| Generación de situaciones y valoraciones separada; sin etiquetas; sin seleccionar el conjunto reservado | §12, §13 |

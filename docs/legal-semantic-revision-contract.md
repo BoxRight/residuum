@@ -51,6 +51,41 @@ Marcas usadas:
    documentada, en un dominio con cabeza artificial), ninguna de las
    hipótesis falsables de §7 se puede medir. Es la decisión ABIERTA principal.
 
+## 0 bis. Alcance acordado (revisión del usuario, 2026-10-18)
+
+Este contrato es el de una **ablación controlada**:
+*¿sirve por sí misma la revisión de la representación semántica?*
+No es la arquitectura del sistema completo.
+
+1. **Política fija.** Solo se exige en la ablación. En el sistema completo el
+   LLM podrá interpretar refutaciones, proponer distinciones y nuevas Γ
+   (`Propose`) y elegir contrafactuales. Ese será un experimento distinto, que
+   se hará después.
+2. **Controles.** Se mantienen A_fb, el vocabulario opaco y la reescritura sin
+   feedback (D). La Proposición 2 no invalida la hipótesis: localiza el origen
+   posible de una ventaja en el conocimiento conceptual previo, o en un sesgo
+   que la familia simbólica no expresa, y el control opaco lo mide.
+3. **Dominio.** El catálogo se deriva del dominio ontológico y de las
+   transformaciones normativas de interés, no del subperfil `compliance` por
+   el mero hecho de estar enumerado. Después se delimita un subespacio finito
+   para la ablación. Hay que fijarlo **antes** de generar valoraciones.
+4. **Valoraciones.**
+   - La negociación simulada entre partes es una opción para el experimento
+     principal. Sus resultados se registran como valoraciones externas al
+     aprendiz, con fuente `simulada`.
+   - El objetivo sintético oculto queda como control metodológico.
+5. **Métricas.** Se separan tres capacidades:
+
+   | Capacidad | Métrica |
+   |---|---|
+   | Revisión semántica | cambio útil de vecindades y prioridades |
+   | Aprendizaje de generalizaciones | pérdida prospectiva |
+   | Investigación contrafactual | valoraciones independientes necesarias para descartar hipótesis |
+
+   La métrica primaria de la ablación es la pérdida prospectiva, acompañada
+   del número de valoraciones. Las evaluaciones de Residuum son secundarias.
+6. **Lo que sigue sin autorizar:** llamadas pagadas y cambios en el motor.
+
 ## 1. Crítica del contrato anterior
 
 | Contrato anterior | Problema | Reformulación |

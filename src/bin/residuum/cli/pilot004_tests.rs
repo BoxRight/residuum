@@ -425,9 +425,9 @@ fn pilot_dossiers_are_admissible_and_include_a_relational_contrast() {
         );
         states.insert(name, state);
     }
-    // One-factor variations from dossier1.
-    let differing = |other: &str| -> BTreeSet<String> {
-        let (a, b) = (&states["dossier1"], &states[other]);
+    // Contract v2: dossier1 and dossier2 differ, and only in copresence.
+    let differing = |a: &str, b: &str| -> BTreeSet<String> {
+        let (a, b) = (&states[a], &states[b]);
         a.keys()
             .chain(b.keys())
             .filter(|k| a.get(*k) != b.get(*k))
@@ -435,13 +435,8 @@ fn pilot_dossiers_are_admissible_and_include_a_relational_contrast() {
             .collect()
     };
     assert_eq!(
-        differing("dossier2"),
+        differing("dossier1", "dossier2"),
         BTreeSet::from(["copresent".to_string()])
-    );
-    assert_eq!(differing("dossier3"), BTreeSet::from(["kind".to_string()]));
-    assert_eq!(
-        differing("dossier4"),
-        BTreeSet::from(["condition".to_string()])
     );
     // dossier1 and dossier2 have the same individual attributes; they differ
     // only in a relation between participants.
@@ -541,41 +536,89 @@ fn catalogue_is_the_complete_admissible_grammar_with_reproducible_descriptions()
     }
 }
 
+/// Frozen protocol parameters (frozen/protocol.tsv).
+fn protocol(key: &str) -> String {
+    let text = std::fs::read_to_string(path(&format!("{FROZEN}/protocol.tsv"))).unwrap();
+    text.lines()
+        .find_map(|l| l.strip_prefix(&format!("{key}\t")).map(str::to_string))
+        .unwrap_or_else(|| panic!("protocol key {key}"))
+}
+
+/// FNV-1a 64 over UTF-8 bytes: the label-free order of start nodes.
+fn fnv1a(text: &str) -> u64 {
+    let mut hash: u64 = 0xcbf29ce484222325;
+    for byte in text.bytes() {
+        hash ^= byte as u64;
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+    hash
+}
+
+fn ground(e: &Event) -> Vec<String> {
+    e.args.iter().map(constant).collect()
+}
+
 #[test]
 fn every_candidate_runs_in_isolation_with_constant_projected_arguments() {
     let dossiers = frozen("dossiers.res");
     let mut evaluated = 0;
+    let mut patterns: BTreeMap<String, Vec<bool>> = BTreeMap::new();
     let mut signatures = BTreeSet::new();
     let mut inert = 0;
-    for (_, rule) in catalogue() {
+    let rules = catalogue();
+    for (_, rule) in &rules {
         let mut signature = Vec::new();
-        let module = install(&dossiers, &rule);
+        let module = install(&dossiers, rule);
         for name in DOSSIERS {
             let s = seeds(&dossiers, name);
             let closure = run(&module, &s);
             let again = run(&module, &s);
             assert_eq!(closure.known, again.known, "{} on {name}", rule.name);
             let act = s.iter().find(|e| e.verb == "Act").unwrap();
-            for e in closure
+            let positions: Vec<_> = closure
                 .known
                 .iter()
                 .filter(|e| HEADS.contains(&e.verb.as_str()))
-            {
+                .collect();
+            for e in &positions {
                 assert_eq!(constant(&e.args[0]), "hypNorm");
                 assert_eq!(constant(&e.args[5]), "administrative");
                 assert_eq!(constant(&e.args[6]), "hypEnacted");
                 // Positions concern exactly the participants of the act.
                 assert_eq!(e.args[1..5], act.args[1..5], "{} on {name}", rule.name);
             }
-            let kinds: BTreeSet<_> = closure
+            // Constitutive consequences are computed by LegalGeneral and kept
+            // in the closure and its provenance; they are not in the primary
+            // loss.
+            let has = |verb: &str| closure.known.iter().any(|e| e.verb == verb);
+            let produced = |verb: &str| closure.derivations.iter().any(|d| d.event.verb == verb);
+            let kinds: BTreeSet<_> = positions.iter().map(|e| e.verb.clone()).collect();
+            let a = ground(act);
+            for (kind, consequences) in [
+                ("prohibition", ["violation", "notDo"]),
+                ("obligation", ["compliance", "do"]),
+            ] {
+                let expected = kinds.contains(kind);
+                for c in consequences {
+                    assert_eq!(has(c), expected, "{} on {name}: {c}", rule.name);
+                    assert_eq!(produced(c), expected, "{} on {name}: {c}", rule.name);
+                }
+            }
+            for e in closure
                 .known
                 .iter()
-                .filter(|e| HEADS.contains(&e.verb.as_str()))
-                .map(|e| e.verb.clone())
-                .collect();
+                .filter(|e| e.verb == "violation" || e.verb == "compliance")
+            {
+                let g = ground(e);
+                assert_eq!((g[0].as_str(), g[1].as_str()), ("hypNorm", a[0].as_str()));
+            }
             signature.push(kinds);
             evaluated += 1;
         }
+        patterns.insert(
+            rule.name.clone(),
+            signature.iter().map(|k| !k.is_empty()).collect(),
+        );
         if signature.iter().all(|k| k.is_empty()) {
             inert += 1;
         }
@@ -587,4 +630,41 @@ fn every_candidate_runs_in_isolation_with_constant_projected_arguments() {
         "prediction classes: {}; candidates deriving no position on any dossier: {inert}",
         signatures.len()
     );
+    assert_eq!(signatures.len().to_string(), protocol("prediction_classes"));
+    assert_eq!(inert.to_string(), protocol("inert_candidates"));
+    // Literal coverage: every one-antecedent candidate varies across dossiers.
+    let one: Vec<_> = rules
+        .iter()
+        .filter(|(_, r)| {
+            let RuleBody::HornClause(c) = &r.body else {
+                unreachable!()
+            };
+            atoms(&c.antecedent).len() == 2
+        })
+        .map(|(_, r)| r.name.clone())
+        .collect();
+    assert_eq!(one.len(), 54);
+    for name in &one {
+        let p = &patterns[name];
+        assert!(
+            p.iter().any(|x| *x) && !p.iter().all(|x| *x),
+            "{name} does not vary"
+        );
+    }
+    // Start nodes: one-antecedent candidates in FNV-1a order of
+    // "pilot-004/start/<id>", keeping those active on at least one and at
+    // most three dossiers; the first three.
+    let mut ordered = one.clone();
+    ordered.sort_by_key(|id| (fnv1a(&format!("pilot-004/start/{id}")), id.clone()));
+    let starts: Vec<_> = ordered
+        .iter()
+        .filter(|id| {
+            let n = patterns[*id].iter().filter(|x| **x).count();
+            (1..=3).contains(&n)
+        })
+        .take(3)
+        .cloned()
+        .collect();
+    println!("start nodes: {}", starts.join(", "));
+    assert_eq!(starts.join(", "), protocol("start_nodes"));
 }

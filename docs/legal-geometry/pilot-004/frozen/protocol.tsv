@@ -1,12 +1,13 @@
 key	value
+contract_version	2
 theory	LegalGeneral (examples/experiments/legal_geometry/ontology_reference/legal_general.res) + Pilot004Vocabulary
 regime	retrospective: anchor Act(act, subject, enterWith, thing, beneficiary, private, date) @ dossier index
-observable_kinds	prohibition, permission, obligation (positions on the participants of the dossier act)
+observable_kinds	primary loss: prohibition, permission, obligation (positions on the participants of the dossier act)
 projection	drop id, authority, effective; constant by construction (hypNorm, administrative, hypEnacted)
 loss	|P+ \ N| + |P- ∩ N| over observable kinds; unvalued kinds do not count; P+ ∩ P- must be empty
 rotations	4: reserved dossier r in {dossier1..dossier4}; observed = the other three
-start_rule	1-antecedent candidates ordered by sha256("pilot-004/start/" + id) ascending; first 3
-start_nodes	p4c365, p4c002, p4c190
+start_rule	1-antecedent candidates ordered by FNV-1a 64 of "pilot-004/start/" + id (ties by id); keep those deriving a position on at least 1 and at most 3 of the 4 dossiers (certified by close_program); first 3
+start_nodes	p4c188, p4c189, p4c184
 episode	(rotation, start node); 12 episodes per condition
 conditions	B: fixed d0; C: revised after refutation; D: rewritten without refutation
 revision_samples	3 independent samples per revision call in C and D
@@ -23,3 +24,8 @@ revision_ground_terms	forbidden: ana, bea, cal, obj, act1-4, date1-4, t1-4, doss
 revision_vocabulary	verbs and constants of the vocabulary and of LegalGeneral only
 claim_provenance	formal | consequence | valuation | hypothesis
 not_frozen	embedding provider, language model, prompt texts, cost budget (decided after the harness without LLM is certified)
+constitutive_consequences	violation, compliance, notDo, do: computed by LegalGeneral, kept in closure and provenance, not in the primary loss
+dossier_design	tools/pilot004/design_dossiers.py: hard admissibility, relational contrast dossier1/dossier2 (copresence only), literal coverage; then max distinct prediction patterns, min inert candidates, min facts; seed 4004, 60 restarts, 6000 iterations
+cast	ana (subject), bea (beneficiary), cal, dan; thing obj
+prediction_classes	43
+inert_candidates	66

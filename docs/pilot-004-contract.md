@@ -1,7 +1,10 @@
 # Contrato del Piloto 004: revisión semántica tras una refutación verificable
 
-Estado: **CONGELADO PARA REVISIÓN** (2026-10-18). Las valoraciones se pedirán
-después de que revises los expedientes. No se ha ejecutado el ciclo de
+Estado: **VERSIÓN 2, CONGELADA PARA REVISIÓN** (2026-10-19). Sustituye a la
+versión 1 (`e28fbdf`, §13), que se rechazó por baja capacidad discriminante.
+La versión 2 solo revisa de forma estructural los expedientes y la selección
+de nodos iniciales. La gramática y las 534 candidatas no cambian. Las
+valoraciones se pedirán después de que revises esta versión. No se ha ejecutado el ciclo de
 revisión, no se ha elegido proveedor de embeddings ni modelo, y no se ha hecho
 ninguna llamada pagada.
 
@@ -36,18 +39,20 @@ Directorio `docs/legal-geometry/pilot-004/`. Los hashes están en
 | Artefacto | SHA-256 |
 |---|---|
 | `frozen/vocabulary.res` | `f1b87199d802f1fa112a98949ec220f00fad743208ffd60161d9fa0901df42a5` |
-| `frozen/dossiers.res` | `9dd5be455c28ba9a9f3d0458d00470d896589dfcf3b420b30f360fb2c0d8cf36` |
+| `frozen/dossiers.res` (v2) | `ecc58e13257273db2d5a9fc9ce857c4ecfdf17cd53db334c088819b599b7ba74` |
 | `frozen/glosses.tsv` | `f6fcd209fae789892f26ffb9c033b0849f584e8cabcc5e9833c062e02c626b93` |
 | `frozen/catalog_prohibition.res` | `e2ff4cdc9fff83ac302906ee4e8a74fbfe0c574c8efd8b61cf277b3d0cca2638` |
 | `frozen/catalog_permission.res` | `eaab4ef6ae532eea342d116e4f92846f0944dccbd84f38b75ccd439f14bdf1cb` |
 | `frozen/catalog_obligation.res` | `60ce5a10fc023afd41573bf08c7dddeed9c32b37b0a89c25ccdcb947a8759271` |
 | `frozen/descriptions.tsv` | `67ef05bcd6a7b206870e778ae57754d84969c48f5d89b9138eaf5f04d194f44d` |
-| `frozen/protocol.tsv` | `6d36af8725d5b20d67373fd7338afc4d3823405a6920faca22501f2714d278b0` |
+| `frozen/protocol.tsv` (v2) | `fe371aa0305de32b3865fb51417b41ff1e55f3668bccc3721d164b727753865d` |
 | `tools/pilot004/generate_catalog.py` | `135309fe77a508405c1eda1f1bdf1c324dc2870361c98e881727c77b2a10de08` |
+| `tools/pilot004/design_dossiers.py` (v2) | `a079f0995128da29ade0852826ed3dc30ac61b41d028095f760592829c857804` |
 | LegalGeneral original (sin cambios) | `639fdcdf194cbd27167be633d53f25c3e6f1e1bcdd1f2ef7a606981b70c60bbc` |
 
-Al volver a ejecutar el generador se obtienen archivos con hashes idénticos
-(COMPROBADO).
+Al volver a ejecutar el generador de candidatas y el diseñador de
+expedientes se obtienen archivos con hashes idénticos (COMPROBADO para los
+dos).
 
 ## 2. Dominio
 
@@ -79,51 +84,73 @@ Las constantes son instancias:
 negociales, `constitutes` y `certifies`, la conexión `before`/`notEarlier`,
 el vocabulario opaco y las composiciones con argumentos ficticios.
 
-## 3. Los cuatro expedientes (retrospectivos)
+## 3. Los cuatro expedientes (retrospectivos, versión 2)
 
-Cada expediente registra un acto
-`Act(actN, ana, enterWith, obj, bea, private, dateN) @ tN`: `ana` entró
-llevando `obj` en relación con `bea`.
-- `tN` es el momento del expediente.
-- `dateN` es la fecha del acto y solo aparece como argumento.
+**Criterio estructural declarado antes de la búsqueda, sin etiquetas**
+(`tools/pilot004/design_dossiers.py`, semilla 4004, 60 reinicios × 6000
+iteraciones de búsqueda local):
 
-| Expediente | Hechos descriptivos | Diferencia con `dossier1` |
-|---|---|---|
-| `dossier1` | `kind(obj, animal)`, `condition(cal, allergic)`, `copresent(cal, bea)`, `copresent(bea, cal)` | — (base) |
-| `dossier2` | `kind(obj, animal)`, `condition(cal, allergic)`, `~copresent(cal, bea)`, `~copresent(bea, cal)` | **relación entre participantes**: hay evidencia explícita de no copresencia; los atributos individuales son idénticos |
-| `dossier3` | `kind(obj, food)`, `condition(cal, allergic)`, `copresent(cal, bea)`, `copresent(bea, cal)` | clase de la cosa |
-| `dossier4` | los de `dossier1` más `condition(ana, visuallyImpaired)` | condición del sujeto |
+1. **Condiciones obligatorias:**
+   - admisibilidad K1–K5;
+   - un anclaje `Act` por expediente;
+   - copresencia registrada en ambas orientaciones;
+   - **contraste relacional**: `dossier1` y `dossier2` tienen atributos
+     individuales idénticos y difieren solo en copresencia;
+   - **cobertura de literales**: cada literal que puede aparecer solo se
+     satisface en al menos un expediente y falla en al menos otro.
+2. **Objetivo, en este orden:**
+   - maximizar el número de patrones distintos de predicción del catálogo;
+   - minimizar las candidatas inertes;
+   - minimizar el número de hechos sembrados.
 
-**Principio de diseño:** variaciones de un solo factor sobre una base, que
-cubren una vez cada extensión. Se fijaron antes de cualquier valoración y no
-dependen de qué tratamiento se espere.
+El objetivo es simétrico sobre las candidatas: no favorece a ninguna. El
+emparejador de la búsqueda solo propone el diseño, y las cifras congeladas
+las certifica `close_program`. En las 534 candidatas, los patrones del
+emparejador coinciden con los del motor.
 
-**Posiciones observables que habría que valorar** en cada expediente $N$:
+**Reparto:** `ana` es el sujeto y `bea` la beneficiaria; `cal`, `dan` y la
+cosa `obj` completan el reparto. El anclaje común es
+`Act(actN, ana, enterWith, obj, bea, private, dateN) @ tN`.
 
-| Posición | Consecuencias que deriva LegalGeneral (en 𝒫, no se valoran aparte) |
+| Expediente | Hechos descriptivos (la copresencia se registra en ambas orientaciones) |
 |---|---|
-| `prohibition(hypNorm, ana, enterWith, obj, bea, administrative, hypEnacted) @ tN` | `violation` (con el `Act`) y `notDo @ after tN` |
-| `permission(…)` | — |
-| `obligation(…)` | `compliance` (con el `Act`) y `do @ after tN` |
+| `dossier1` | `condition(ana, allergic)`, `~condition(ana, visuallyImpaired)`, `~condition(bea, allergic)`, `condition(bea, visuallyImpaired)`, `kind(obj, animal)`, `~kind(obj, food)`, `copresent(ana, bea)` |
+| `dossier2` | igual que `dossier1`, salvo `~copresent(ana, bea)` → **contraste relacional** |
+| `dossier3` | `~condition(ana, allergic)`, `condition(ana, visuallyImpaired)`, `~condition(bea, allergic)`, `~condition(bea, visuallyImpaired)`, `kind(obj, animal)`, `kind(obj, food)`, `copresent(ana, bea)`, `copresent(ana, cal)`, `~copresent(ana, dan)`, `~copresent(bea, cal)`, `copresent(bea, dan)` |
+| `dossier4` | `~condition(ana, allergic)`, `condition(ana, visuallyImpaired)`, `condition(bea, allergic)`, `~condition(bea, visuallyImpaired)`, `condition(cal, allergic)`, `~kind(obj, animal)`, `~kind(obj, food)`, `~copresent(ana, bea)`, `copresent(ana, cal)`, `~copresent(ana, dan)`, `copresent(bea, cal)`, `~copresent(bea, dan)` |
 
-Se valoran solo los tipos de posición. Las consecuencias son deterministas
-dadas la posición y el acto, así que valorarlas no añadiría información.
+**Estructura certificada** (informe `20261019T010013659961Z-1080357`):
 
-**Lo que muestra la estructura, calculada sin valoraciones** (test
-`every_candidate_runs_in_isolation…`, informe
-`20261018T234127183212Z-1018144`):
-- Las 534 candidatas inducen **19 clases** de predicción sobre los 4
-  expedientes.
-- **498 candidatas no derivan ninguna posición** en ningún expediente.
+| Medida | Versión 1 | Versión 2 |
+|---|---|---|
+| Clases de predicción de las 534 candidatas | 19 | **43** |
+| Candidatas que no derivan ninguna posición | 498 (93,3 %) | **66 (12,4 %)** |
+| Candidatas de un antecedente que varían entre expedientes | — | **54 de 54** |
 
-El motivo es que los expedientes no contienen evidencia negativa de
-condiciones o clases, ni copresencia del sujeto. Los literales negativos de
-`condition` y `kind`, y los de `copresent(s, ·)`, nunca se activan.
+Las 43 clases son 14 patrones activos por cada uno de los 3 tipos de cabeza,
+más una única clase inerte común, porque la firma vacía es la misma para las
+tres cabezas. Hay 15 patrones de cuerpo en total.
 
-**Tienes que revisarlo antes de valorar.** Es una propiedad del diseño de los
-expedientes, no de las etiquetas. Si se amplían los expedientes con hechos de
-ese tipo, sería una nueva versión congelada, decidida por cobertura
-estructural.
+**Para tu revisión:**
+- En `dossier3`, la cosa es a la vez `animal` y `food`. El dominio no declara
+  restricciones semánticas entre clases, así que es admisible; si la
+  rechazas, habría que declarar esa restricción y congelar una versión
+  nueva.
+- El contraste relacional entre `dossier1` y `dossier2` es la copresencia
+  entre sujeto y beneficiaria. Los terceros (`cal`, `dan`) solo aparecen en
+  `dossier3` y `dossier4`.
+- Las cuatro rotaciones seguirán aportando poca información prospectiva.
+  Sirven para probar el mecanismo, no para demostrar una ventaja general.
+
+**Posiciones observables y consecuencias:**
+- La **pérdida primaria** se calcula sobre `prohibition`, `permission` y
+  `obligation` del acto.
+- Las **consecuencias constitutivas** (`violation`, `compliance`, `notDo` y
+  `do`) se calculan y se conservan en el cierre y en la provenance, y se
+  verifican. El test comprueba en las 2.136 evaluaciones que una prohibición
+  produce `violation` y `notDo`, que una obligación produce `compliance` y
+  `do`, y que no aparecen en otro caso.
+- Las consecuencias no forman parte de la pérdida primaria.
 
 ## 4. Gramática y catálogo de candidatas
 
@@ -205,10 +232,16 @@ el espacio compatible resulta vacío, se registra como resultado.
 - **Episodio:** un par (rotación, nodo inicial).
   - Rotaciones: el expediente reservado es $r\in\{1,2,3,4\}$, y los otros
     tres son los observados.
-  - Nodos iniciales: las candidatas de un antecedente, ordenadas por
-    `sha256("pilot-004/start/" + id)`, tomando las 3 primeras: `p4c365`,
-    `p4c002` y `p4c190`. Es una regla anterior a las valoraciones e
-    independiente de ellas.
+  - Nodos iniciales (versión 2): las candidatas de un antecedente, ordenadas
+    por FNV-1a 64 de `"pilot-004/start/" + id`. Se conservan las que derivan
+    una posición en al menos 1 y como mucho 3 de los 4 expedientes
+    (actividad inferencial mínima, certificada con `close_program`), y se
+    toman las 3 primeras: **`p4c188`, `p4c189` y `p4c184`**. FNV-1a sustituye
+    a SHA-256 para que el test Rust la recalcule sin dependencias. La regla
+    no usa valoraciones.
+  - **Para tu revisión:** los tres nodos tienen cabeza `permission`. La regla
+    no exige diversidad de cabezas. Exigirla ahora sería una condición
+    nueva, aunque siga siendo independiente de las etiquetas.
   - En total, 12 episodios por condición.
 - **Trayectoria** (presupuesto de 8 evaluaciones):
   1. Evaluar el nodo actual sobre los expedientes observados.
@@ -289,13 +322,20 @@ Se decidirán después de certificar el harness sin LLM.
 
 Tests individuales con `test_safe.py --test-target cli`:
 
-| Test | Informe |
+| Test (versión 2) | Informe |
 |---|---|
-| `pilot_vocabulary_is_a_general_descriptive_signature_with_glosses` | `20261018T234035388723Z-1017159` |
-| `pilot_dossiers_are_admissible_and_include_a_relational_contrast` | `20261018T234041167133Z-1017465` |
-| `catalogue_is_the_complete_admissible_grammar_with_reproducible_descriptions` | `20261018T234041782707Z-1017485` |
-| `every_candidate_runs_in_isolation_with_constant_projected_arguments` | `20261018T234127183212Z-1018144` |
+| `pilot_vocabulary_is_a_general_descriptive_signature_with_glosses` | `20261019T010009682914Z-1080154` |
+| `pilot_dossiers_are_admissible_and_include_a_relational_contrast` | `20261019T010010400907Z-1080179` |
+| `catalogue_is_the_complete_admissible_grammar_with_reproducible_descriptions` | `20261019T010011119911Z-1080201` |
+| `every_candidate_runs_in_isolation_with_constant_projected_arguments` | `20261019T010013659961Z-1080357` |
 
 ## 12. Integración del explorador
 
 Ver `docs/pilot-004-explorer-integration.md`.
+
+## 13. Historial de versiones
+
+| Versión | Commit | Cambios | Hash de `dossiers.res` | Hash de `protocol.tsv` |
+|---|---|---|---|---|
+| 1 | `e28fbdf` | inicial; rechazada por baja capacidad discriminante (498 candidatas inertes, 19 clases) y por nodos iniciales inertes | `9dd5be45…` | `6d36af85…` |
+| 2 | este commit | expedientes rediseñados con un criterio estructural; nodos iniciales con actividad mínima; consecuencias constitutivas verificadas; gramática, catálogo, vocabulario, glosas y descripciones sin cambios | ver §1 | ver §1 |

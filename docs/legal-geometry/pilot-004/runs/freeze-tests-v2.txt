@@ -1,0 +1,4 @@
+PASS cli::tests::pilot004::pilot_vocabulary_is_a_general_descriptive_signature_with_glosses 20261019T010009682914Z-1080154
+PASS cli::tests::pilot004::pilot_dossiers_are_admissible_and_include_a_relational_contrast 20261019T010010400907Z-1080179
+PASS cli::tests::pilot004::catalogue_is_the_complete_admissible_grammar_with_reproducible_descriptions 20261019T010011119911Z-1080201
+PASS cli::tests::pilot004::every_candidate_runs_in_isolation_with_constant_projected_arguments 20261019T010013659961Z-1080357

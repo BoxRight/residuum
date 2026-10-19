@@ -1,0 +1,17 @@
+# Plantilla de valoraciones independientes del Piloto 004 (contrato v2).
+# Una fila por expediente y tipo de posición. valor: required (P+) | excluded (P-) | unvalued.
+# La posición es siempre la del acto del expediente: K(hypNorm, ana, enterWith, obj, bea, administrative, hypEnacted) @ tN.
+# Rellenar sin consultar predicciones de candidatas. No se usará hasta registrar su hash.
+dossier	position	value	source	grounds
+dossier1	prohibition			
+dossier1	permission			
+dossier1	obligation			
+dossier2	prohibition			
+dossier2	permission			
+dossier2	obligation			
+dossier3	prohibition			
+dossier3	permission			
+dossier3	obligation			
+dossier4	prohibition			
+dossier4	permission			
+dossier4	obligation			

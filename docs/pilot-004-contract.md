@@ -1,6 +1,6 @@
 # Contrato del Piloto 004: revisión semántica tras una refutación verificable
 
-Estado: **VERSIÓN 2, CONGELADA PARA REVISIÓN** (2026-10-19). Sustituye a la
+Estado: **VERSIÓN 2, APROBADA PROVISIONALMENTE PARA LA REVISIÓN DE VALORACIONES** (2026-10-19). Sustituye a la
 versión 1 (`e28fbdf`, §13), que se rechazó por baja capacidad discriminante.
 La versión 2 solo revisa de forma estructural los expedientes y la selección
 de nodos iniciales. La gramática y las 534 candidatas no cambian. Las
@@ -131,16 +131,28 @@ Las 43 clases son 14 patrones activos por cada uno de los 3 tipos de cabeza,
 más una única clase inerte común, porque la firma vacía es la misma para las
 tres cabezas. Hay 15 patrones de cuerpo en total.
 
-**Para tu revisión:**
-- En `dossier3`, la cosa es a la vez `animal` y `food`. El dominio no declara
-  restricciones semánticas entre clases, así que es admisible; si la
-  rechazas, habría que declarar esa restricción y congelar una versión
-  nueva.
-- El contraste relacional entre `dossier1` y `dossier2` es la copresencia
-  entre sujeto y beneficiaria. Los terceros (`cal`, `dan`) solo aparecen en
-  `dossier3` y `dossier4`.
-- Las cuatro rotaciones seguirán aportando poca información prospectiva.
-  Sirven para probar el mecanismo, no para demostrar una ventaja general.
+**Decisiones del usuario (2026-10-19) y comprobación de las glosas:**
+- **`dossier3` se conserva.** Las glosas congeladas no hacen incompatibles
+  las dos clases (COMPROBADO):
+  - `kind` dice «The dossier records that the thing is of the kind»: registra
+    una clase sin exclusividad;
+  - `animal` es «an animal»;
+  - `food` es «food or drink», sin la condición de estar preparado para el
+    consumo.
+
+  El catálogo ya contiene candidatas con `kind(o, animal) & kind(o, food)`,
+  cuyo $d_0$ es «the thing is an animal, and the thing is food or drink». No
+  se añade ninguna exclusión semántica.
+- **Variedad relacional limitada (registrada, no bloqueante).** El contraste
+  relacional `dossier1`/`dossier2` es la copresencia entre sujeto y
+  beneficiaria, y `cal` y `dan` solo aparecen en `dossier3` y `dossier4`.
+- **Interpretación de las 43 clases.** Son 43 patrones distintos de resultado
+  de las candidatas sobre los cuatro expedientes, no 43 justificaciones.
+  Garantizan alternativas que se pueden distinguir por observación, pero no
+  que las descripciones permitan elegir mejor entre ellas.
+- **Información prospectiva.** Las cuatro rotaciones sirven para probar el
+  mecanismo, no para demostrar una ventaja general.
+- No se busca más optimización estructural.
 
 **Posiciones observables y consecuencias:**
 - La **pérdida primaria** se calcula sobre `prohibition`, `permission` y
@@ -239,10 +251,10 @@ el espacio compatible resulta vacío, se registra como resultado.
     toman las 3 primeras: **`p4c188`, `p4c189` y `p4c184`**. FNV-1a sustituye
     a SHA-256 para que el test Rust la recalcule sin dependencias. La regla
     no usa valoraciones.
-  - **Para tu revisión:** los tres nodos tienen cabeza `permission`. La regla
-    no exige diversidad de cabezas. Exigirla ahora sería una condición
-    nueva, aunque siga siendo independiente de las etiquetas.
-  - En total, 12 episodios por condición.
+  - **Limitación registrada (decisión del usuario, 2026-10-19).** Los tres
+    nodos tienen cabeza `permission`, de modo que todas las trayectorias
+    parten de la misma clase de posición. No se cambia la selección: forzar
+    variedad sería una decisión de diseño tomada después de ver el resultado.
 - **Trayectoria** (presupuesto de 8 evaluaciones):
   1. Evaluar el nodo actual sobre los expedientes observados.
   2. Si $\ell=0$ en todos, parar y devolverlo.

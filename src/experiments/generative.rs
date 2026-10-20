@@ -739,7 +739,11 @@ pub enum LearnerAction {
     Commit {
         hypotheses: Vec<String>,
     },
-    EndPhase,
+    /// An explore phase ends only after a proposal in that phase or with a
+    /// stated abstention; a revise phase ends freely.
+    EndPhase {
+        abstention: Option<String>,
+    },
 }
 
 /// Reported by the provider for one learner turn; kept apart from attempts
@@ -950,6 +954,7 @@ pub struct Counters {
     pub admitted: usize,
     pub verified_evaluations: usize,
     pub refused_actions: usize,
+    pub abstentions: usize,
     pub commits: usize,
     pub commit_rejections: usize,
     pub usage: Usage,
@@ -1441,6 +1446,7 @@ impl<'a> State<'a> {
 
     fn phase(&mut self, learner: &mut dyn Learner, index: usize, phase: Phase) {
         let max = self.manifest.budgets.max_turns_per_phase;
+        let attempts_before = self.counters.attempts;
         for turn in 0..max {
             let view = self.view(index, phase, max - turn);
             let (action, usage) = learner.act(&view);
@@ -1459,7 +1465,25 @@ impl<'a> State<'a> {
                 ),
             );
             let result = match action {
-                LearnerAction::EndPhase => {
+                LearnerAction::EndPhase { abstention } => {
+                    let proposed = self.counters.attempts > attempts_before;
+                    let stated = abstention
+                        .map(|a| a.trim().to_string())
+                        .filter(|a| !a.is_empty());
+                    if phase == Phase::Explore && !proposed {
+                        if let Some(reason) = stated {
+                            self.counters.abstentions += 1;
+                            self.log(index, Some(phase), "abstention", reason);
+                        } else {
+                            self.counters.refused_actions += 1;
+                            let refusal = "refused: an explore phase ends only after a proposal \
+                                           in this phase or with a stated abstention"
+                                .to_string();
+                            self.log(index, Some(phase), "end_refused", refusal.clone());
+                            self.last_result = Some(refusal);
+                            continue;
+                        }
+                    }
                     self.last_result = None;
                     return;
                 }
@@ -1476,7 +1500,12 @@ impl<'a> State<'a> {
             };
             self.last_result = Some(result);
         }
-        self.log(index, Some(phase), "phase", "turn limit reached".into());
+        let detail = if phase == Phase::Explore && self.counters.attempts == attempts_before {
+            "turn limit reached without proposal or abstention"
+        } else {
+            "turn limit reached"
+        };
+        self.log(index, Some(phase), "phase", detail.into());
         self.last_result = None;
     }
 

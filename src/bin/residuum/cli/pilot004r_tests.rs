@@ -348,7 +348,9 @@ impl Learner for Scripted {
             .queue
             .get_mut(&key)
             .and_then(|q| q.pop_front())
-            .unwrap_or(LearnerAction::EndPhase);
+            .unwrap_or(LearnerAction::EndPhase {
+                abstention: Some("scripted: no further actions".into()),
+            });
         (action, self.usage)
     }
 }
@@ -833,5 +835,260 @@ fn pilot004r_synthetic_refutation_is_delivered_and_revised_without_the_solution(
             valuations: vec!["X2b".into()]
         }),
         "{ch1:?}"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Checks added after run-001: silent explore ends, installation with chained
+// consequences inside a trajectory, and revision on an early discrepancy.
+
+fn end(abstention: Option<&str>) -> LearnerAction {
+    LearnerAction::EndPhase {
+        abstention: abstention.map(str::to_string),
+    }
+}
+
+fn kinds(report: &TrajectoryReport, dossier: &str, phase: Phase) -> Vec<String> {
+    report
+        .ledger
+        .iter()
+        .filter(|e| e.dossier == dossier && e.phase == Some(phase))
+        .map(|e| e.kind.clone())
+        .collect()
+}
+
+#[test]
+fn pilot004r_explore_does_not_end_silently() {
+    let m = manifest("silent", Condition::Feedback, corpus_order());
+    let mut learner = Scripted::new()
+        // Bare end refused, then a stated abstention accepted.
+        .at(
+            "casaFiesta",
+            Phase::Explore,
+            vec![end(None), end(Some("  ")), end(Some("nothing to add"))],
+        )
+        // A proposal in the phase allows a bare end.
+        .at(
+            "flowers",
+            Phase::Explore,
+            vec![propose(CORR, None), end(None)],
+        )
+        // Only bare ends: the turn limit closes the phase and says so.
+        .at(
+            "brookside",
+            Phase::Explore,
+            (0..budgets().max_turns_per_phase)
+                .map(|_| end(None))
+                .collect(),
+        )
+        // Revise phases end freely.
+        .at("casaFiesta", Phase::Revise, vec![end(None)]);
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    let cf = kinds(&report, "casaFiesta", Phase::Explore);
+    assert_eq!(
+        cf.iter().filter(|k| *k == "end_refused").count(),
+        2,
+        "{cf:?}"
+    );
+    assert_eq!(cf.last().map(String::as_str), Some("abstention"));
+    let abstention = report
+        .ledger
+        .iter()
+        .find(|e| e.kind == "abstention")
+        .unwrap();
+    assert_eq!(abstention.detail, "nothing to add");
+    // The learner saw why its end was refused.
+    let refused_view = learner
+        .views
+        .iter()
+        .find(|v| v.dossier == "casaFiesta" && v.phase == Phase::Explore && v.last_result.is_some())
+        .unwrap();
+    assert!(
+        refused_view
+            .last_result
+            .as_deref()
+            .unwrap()
+            .starts_with("refused: an explore phase ends only after a proposal")
+    );
+
+    let fl = kinds(&report, "flowers", Phase::Explore);
+    assert!(!fl.contains(&"end_refused".to_string()), "{fl:?}");
+    assert!(!fl.contains(&"abstention".to_string()), "{fl:?}");
+
+    let br: Vec<_> = report
+        .ledger
+        .iter()
+        .filter(|e| e.dossier == "brookside" && e.phase == Some(Phase::Explore))
+        .collect();
+    assert_eq!(
+        br.iter().filter(|e| e.kind == "end_refused").count(),
+        budgets().max_turns_per_phase
+    );
+    assert_eq!(
+        br.last().unwrap().detail,
+        "turn limit reached without proposal or abstention"
+    );
+
+    assert!(!kinds(&report, "casaFiesta", Phase::Revise).contains(&"end_refused".to_string()));
+    assert_eq!(report.counters.abstentions, 1);
+    assert_eq!(
+        report.counters.refused_actions,
+        2 + budgets().max_turns_per_phase
+    );
+    // Scoring still happens on every dossier.
+    assert_eq!(report.prequential.len(), 3);
+}
+
+#[test]
+fn pilot004r_valid_proposal_installs_runs_and_chains_through_legal_general() {
+    // Brookside plus one documented non-performance: a synthetic fixture so
+    // that `rightEnforceability` of LegalGeneral can fire on a learned right.
+    let order = vec![DossierInput {
+        id: "brookside".into(),
+        seeds: brookside_with_non_performance(),
+    }];
+    let m = manifest("chained", Condition::Feedback, order);
+    let mut learner = Scripted::new().at(
+        "brookside",
+        Phase::Explore,
+        vec![
+            propose(CORR, None),
+            evaluate("h1", "brookside"),
+            commit(&["h1"]),
+            end(None),
+        ],
+    );
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    let h1 = &report.hypotheses[0];
+    assert_eq!(h1.admission, "admitted");
+    assert_eq!(h1.evaluations.len(), 1);
+    let ev = &h1.evaluations[0];
+    assert!(ev.certified, "{}", ev.status);
+    let count = |verb: &str| ev.new_events.iter().filter(|e| e.verb == verb).count();
+    assert_eq!(count("right"), 5);
+    assert_eq!(count("enforceability"), 1);
+    assert!(ev.activated_base_rules.contains("rightEnforceability"));
+    assert_eq!(ev.positions.iter().filter(|p| p.head == "right").count(), 5);
+    assert_eq!(report.counters.commits, 1);
+
+    // After the commit the presented closure carries both, with provenance:
+    // the right owned by h1, the enforceability by O.
+    let revise = learner
+        .views
+        .iter()
+        .find(|v| v.phase == Phase::Revise)
+        .unwrap();
+    let dossier = &revise.dossiers[0];
+    let origin = |verb: &str| -> BTreeSet<String> {
+        dossier
+            .justifications
+            .iter()
+            .filter(|j| j.event.verb == verb)
+            .map(|j| j.origin.clone())
+            .collect()
+    };
+    assert_eq!(origin("right"), BTreeSet::from(["h1".to_string()]));
+    assert_eq!(origin("enforceability"), BTreeSet::from(["O".to_string()]));
+    assert!(dossier.known.iter().any(|e| e.verb == "enforceability"));
+
+    assert_eq!(report.prequential[0].loss, 0);
+    assert!(report.prequential[0].missed.is_empty());
+}
+
+const CORR_POST: &str = "rule corrPost(id, s, o, b, au, e, t) =
+    obligation(id, s, post, o, b, au, e) @ t
+    <= right(id, s, post, o, b, au, e) @ t
+";
+
+#[test]
+fn pilot004r_early_discrepancy_allows_revision_and_reevaluation() {
+    // Brookside first, so its discrepancy arrives before the end.
+    let order = vec![
+        DossierInput {
+            id: "brookside".into(),
+            seeds: brookside(),
+        },
+        DossierInput {
+            id: "casaFiesta".into(),
+            seeds: casa_fiesta(),
+        },
+    ];
+    let m = manifest("early", Condition::Feedback, order);
+    let mut learner = Scripted::new().at(
+        "brookside",
+        Phase::Explore,
+        vec![
+            propose(CORR_POST, None),
+            evaluate("h1", "brookside"),
+            commit(&["h1"]),
+            end(None),
+        ],
+    );
+    learner.react = Some(Box::new(|view: &LearnerView| {
+        let missed_rights = view.feedback.iter().any(|f| {
+            matches!(f, FeedbackView::Discrepancies { missed, .. }
+                if missed.iter().any(|p| p.head == "right"))
+        });
+        (view.phase == Phase::Revise && missed_rights && view.committed == ["h1"]).then(|| {
+            vec![
+                propose(CORR, Some("h1")),
+                evaluate("h2", "brookside"),
+                commit(&["h2"]),
+                end(None),
+            ]
+        })
+    }));
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    // h1 covers the two `post` stipulations only.
+    assert_eq!(report.prequential[0].loss, 3);
+    let missed: Vec<&str> = report.prequential[0]
+        .missed
+        .iter()
+        .map(|v| v.id.as_str())
+        .collect();
+    assert_eq!(missed, vec!["B7", "B8", "B10"]);
+
+    // The discrepancy reached the revise phase of the same dossier, with a
+    // dossier still to come.
+    let revise = learner
+        .views
+        .iter()
+        .find(|v| v.dossier == "brookside" && v.phase == Phase::Revise)
+        .unwrap();
+    match &revise.feedback[0] {
+        FeedbackView::Discrepancies {
+            dossier,
+            missed,
+            discrepant,
+            ..
+        } => {
+            assert_eq!(dossier, "brookside");
+            assert_eq!(*discrepant, 3);
+            assert_eq!(missed.len(), 3);
+        }
+        other => panic!("{other:?}"),
+    }
+
+    let h2 = report.hypotheses.iter().find(|h| h.id == "h2").unwrap();
+    assert_eq!(h2.parent.as_deref(), Some("h1"));
+    assert_eq!(h2.evaluations.len(), 1);
+    assert_eq!(h2.evaluations[0].dossier, "brookside");
+    assert!(h2.evaluations[0].certified, "{}", h2.evaluations[0].status);
+    assert_eq!(h2.evaluations[0].positions.len(), 5);
+    assert_eq!(report.counters.verified_evaluations, 2);
+    assert_eq!(report.counters.commits, 2);
+
+    // Rescored after the revision, Brookside is compatible; the prequential
+    // record keeps the loss of the original commitment.
+    assert_eq!(report.compatibility[0][0].loss, 0);
+    assert_eq!(report.prequential[0].loss, 3);
+    assert_eq!(report.prequential[1].committed, vec!["h2".to_string()]);
+    assert!(
+        statuses(&report, "h1").contains(&HypothesisStatus::SupersededBy("h2".into())),
+        "{:?}",
+        statuses(&report, "h1")
     );
 }

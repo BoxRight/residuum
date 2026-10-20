@@ -145,7 +145,9 @@ fn parse_action(v: &Value) -> Result<LearnerAction, String> {
                 .filter_map(|h| h.as_str().map(str::to_string))
                 .collect(),
         },
-        "end_phase" => LearnerAction::EndPhase,
+        "end_phase" => LearnerAction::EndPhase {
+            abstention: s("abstention"),
+        },
         other => return Err(format!("unknown tool `{other}`")),
     })
 }
@@ -153,7 +155,10 @@ fn parse_action(v: &Value) -> Result<LearnerAction, String> {
 impl Learner for LineLearner {
     fn act(&mut self, view: &LearnerView) -> (LearnerAction, Usage) {
         if self.eof {
-            return (LearnerAction::EndPhase, Usage::default());
+            return (
+                LearnerAction::EndPhase { abstention: None },
+                Usage::default(),
+            );
         }
         let mut out = std::io::stdout().lock();
         writeln!(out, "{}", json!({ "view": view_json(view) })).unwrap();
@@ -161,7 +166,10 @@ impl Learner for LineLearner {
         let mut line = String::new();
         if self.input.read_line(&mut line).unwrap_or(0) == 0 {
             self.eof = true;
-            return (LearnerAction::EndPhase, Usage::default());
+            return (
+                LearnerAction::EndPhase { abstention: None },
+                Usage::default(),
+            );
         }
         let msg: Value = serde_json::from_str(&line).unwrap_or(Value::Null);
         let u = &msg["usage"];
@@ -174,7 +182,7 @@ impl Learner for LineLearner {
         let action = match parse_action(&msg["action"]) {
             Ok(a) => a,
             // A malformed action ends the phase; the driver records why.
-            Err(_) => LearnerAction::EndPhase,
+            Err(_) => LearnerAction::EndPhase { abstention: None },
         };
         (action, usage)
     }
@@ -229,6 +237,7 @@ fn report_json(r: &TrajectoryReport) -> Value {
         "counters": {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
+            "abstentions": k.abstentions,
             "commits": k.commits, "commit_rejections": k.commit_rejections,
             "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
             "output_tokens": k.usage.output_tokens, "cost_microusd": k.usage.cost_microusd,

@@ -93,6 +93,24 @@
             "h1"
           ]
         }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "local check: abstain on flowers"
+        }
       }
     ]
   }

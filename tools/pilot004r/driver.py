@@ -68,8 +68,13 @@ TOOLS = [
     {
         "name": "end_phase",
         "description": "End the current phase. Ending an explore phase triggers the scoring of the current dossier "
-                       "with the committed set.",
-        "input_schema": {"type": "object", "properties": {}},
+                       "with the committed set. An explore phase ends only after at least one proposal in that "
+                       "phase or with a stated abstention.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"abstention": {"type": "string",
+                                          "description": "Why you end this explore phase without proposing."}},
+        },
     },
 ]
 
@@ -105,7 +110,8 @@ Each dossier has two phases.
 - explore: you see the dossier and the closure Residuum computes for LegalGeneral plus your committed
   hypotheses, with justifications. You may propose rules, evaluate them on presented dossiers and commit a
   set of hypotheses. When you end the phase, the committed set is scored on this dossier: loss = required
-  positions not derived + excluded positions derived.
+  positions not derived + excluded positions derived. The phase ends only after at least one proposal in it
+  or with a stated abstention.
 - revise: {feedback} You may propose, evaluate and commit again; changes apply to the following dossiers.
 
 Your task: keep the loss low on the dossiers you have not seen yet.

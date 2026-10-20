@@ -646,3 +646,198 @@ fn pilot004r_contrast_h1_h2_divergence_map() {
     assert_eq!(s12.loss, 0);
     assert!(s2.excess.is_empty() && s12.excess.is_empty());
 }
+
+// ---------------------------------------------------------------------------
+// Role signatures: which body argument fills each head argument, read from
+// the rule's syntax tree (no model, no closure). The operational gloss of
+// `right` and `obligation` is read the same way from the LegalGeneral rules
+// that consume them.
+
+fn atoms(a: &residuum::typed::Antecedent, out: &mut Vec<Event>) {
+    use residuum::typed::Antecedent;
+    match a {
+        Antecedent::Unit => {}
+        Antecedent::Event(e) => out.push(e.clone()),
+        Antecedent::And(l, r) => {
+            atoms(l, out);
+            atoms(r, out);
+        }
+    }
+}
+
+fn parameter_names(module: &Module, verb: &str) -> Vec<String> {
+    module
+        .declarations
+        .iter()
+        .find_map(|d| match d {
+            Declaration::Verb(v) if v.name == verb => {
+                Some(v.args.iter().map(|a| a.name.clone()).collect())
+            }
+            _ => None,
+        })
+        .unwrap_or_else(|| panic!("verb {verb}"))
+}
+
+/// `head.param <- body.param` for every head argument, or `= constant`.
+/// Several body positions sharing the variable are all listed.
+fn role_signature(module: &Module, rule: &Rule) -> Vec<String> {
+    let residuum::typed::RuleBody::HornClause(c) = &rule.body else {
+        panic!("{} is not a Horn rule", rule.name)
+    };
+    let mut body = Vec::new();
+    atoms(&c.antecedent, &mut body);
+    let head = &c.consequent;
+    let head_names = parameter_names(module, &head.verb);
+    let mut out = Vec::new();
+    for (i, t) in head.args.iter().enumerate() {
+        let sources: Vec<String> = match t {
+            Term::Var(x) => body
+                .iter()
+                .flat_map(|b| {
+                    let names = parameter_names(module, &b.verb);
+                    let neg = if b.polarity == Polarity::EvidentialNot {
+                        "~"
+                    } else {
+                        ""
+                    };
+                    b.args
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, u)| matches!(u, Term::Var(y) if y == x))
+                        .map(|(j, _)| format!("{neg}{}.{}", b.verb, names[j]))
+                        .collect::<Vec<_>>()
+                })
+                .collect(),
+            other => vec![format!("= {}", term(other))],
+        };
+        out.push(format!(
+            "{}.{} <- {}",
+            head.verb,
+            head_names[i],
+            sources.join(" = ")
+        ));
+    }
+    out
+}
+
+/// For every LegalGeneral rule whose body reads `verb`, the positions of
+/// other atoms (body or head) that share each of `verb`'s arguments.
+fn operational_gloss(module: &Module, verb: &str) -> Vec<String> {
+    let names = parameter_names(module, verb);
+    let mut out = Vec::new();
+    for d in &module.declarations {
+        let Declaration::Rule(r) = d else { continue };
+        if module.origin(&r.name).map(|o| o.module.as_str()) != Some("LegalGeneral") {
+            continue;
+        }
+        let residuum::typed::RuleBody::HornClause(c) = &r.body else {
+            continue;
+        };
+        let mut body = Vec::new();
+        atoms(&c.antecedent, &mut body);
+        let Some(reader) = body.iter().find(|b| b.verb == verb) else {
+            continue;
+        };
+        let mut others: Vec<(&Event, &str)> = body
+            .iter()
+            .filter(|b| !std::ptr::eq(*b, reader))
+            .map(|b| (b, "body"))
+            .collect();
+        others.push((&c.consequent, "head"));
+        let mut links = Vec::new();
+        for (i, t) in reader.args.iter().enumerate() {
+            let Term::Var(x) = t else { continue };
+            let shared: Vec<String> = others
+                .iter()
+                .flat_map(|(o, place)| {
+                    let onames = parameter_names(module, &o.verb);
+                    let neg = if o.polarity == Polarity::EvidentialNot {
+                        "~"
+                    } else {
+                        ""
+                    };
+                    o.args
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, u)| matches!(u, Term::Var(y) if y == x))
+                        .map(|(j, _)| format!("{place} {neg}{}.{}", o.verb, onames[j]))
+                        .collect::<Vec<_>>()
+                })
+                .collect();
+            if ["subject", "beneficiary"].contains(&names[i].as_str()) {
+                links.push(format!("{verb}.{} = {}", names[i], shared.join(", ")));
+            }
+        }
+        out.push(format!("{}: {}", r.name, links.join("; ")));
+    }
+    out
+}
+
+#[test]
+fn pilot004r_role_signatures_h1_h2() {
+    let base = baseline();
+    let h1 = rule("RoleH1", H1);
+    let h2 = rule("RoleH2", H2);
+    let s1 = role_signature(&base, &h1);
+    let s2 = role_signature(&base, &h2);
+    let right_gloss = operational_gloss(&base, "right");
+    let obligation_gloss = operational_gloss(&base, "obligation");
+
+    let mut text = String::new();
+    writeln!(text, "# Role signatures of run-003 h1 and h2\n").unwrap();
+    for (name, rule, sig) in [("h1", &h1, &s1), ("h2", &h2, &s2)] {
+        writeln!(text, "## {name} `{}`", rule.name).unwrap();
+        for line in sig {
+            writeln!(text, "- {line}").unwrap();
+        }
+        writeln!(text).unwrap();
+    }
+    writeln!(
+        text,
+        "## Operational gloss read from LegalGeneral (rules whose body reads the verb)\n"
+    )
+    .unwrap();
+    for (verb, gloss) in [("right", &right_gloss), ("obligation", &obligation_gloss)] {
+        writeln!(text, "### `{verb}`").unwrap();
+        for line in gloss {
+            writeln!(text, "- {line}").unwrap();
+        }
+        writeln!(text).unwrap();
+    }
+    let out = scratch("roles");
+    std::fs::write(out.join("role-signatures.md"), &text).unwrap();
+    println!("{text}");
+
+    let has = |sig: &[String], line: &str| sig.iter().any(|l| l == line);
+    assert!(has(&s1, "right.subject <- obligation.subject"), "{s1:?}");
+    assert!(
+        has(&s1, "right.beneficiary <- obligation.beneficiary"),
+        "{s1:?}"
+    );
+    assert!(
+        has(&s2, "right.subject <- obligation.beneficiary"),
+        "{s2:?}"
+    );
+    assert!(
+        has(&s2, "right.beneficiary <- obligation.subject"),
+        "{s2:?}"
+    );
+    // The two signatures differ exactly in subject and beneficiary.
+    let differing: Vec<_> = s1.iter().zip(&s2).filter(|(a, b)| a != b).collect();
+    assert_eq!(differing.len(), 2, "{differing:?}");
+    // In LegalGeneral, the subject of `right` is the one whose Act counts.
+    assert!(
+        right_gloss
+            .iter()
+            .any(|l| l.starts_with("rightCompliance:")
+                && l.contains("right.subject = body Act.subject")),
+        "{right_gloss:?}"
+    );
+    assert!(
+        right_gloss
+            .iter()
+            .any(|l| l.starts_with("rightEnforceability:")
+                && l.contains("right.subject = body ~Act.subject")),
+        "{right_gloss:?}"
+    );
+}

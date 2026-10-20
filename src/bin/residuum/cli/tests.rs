@@ -310,6 +310,8 @@ mod temporal_constructors;
 mod pilot004;
 #[path = "pilot004r_tests.rs"]
 mod pilot004r;
+#[path = "pilot004r_contrast_tests.rs"]
+mod pilot004r_contrast;
 #[path = "semantic_domain_tests.rs"]
 mod semantic_domain;
 #[path = "temporal_history_tests.rs"]

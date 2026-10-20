@@ -1,0 +1,99 @@
+{
+  "trajectory": {
+    "trajectory_id": "pilot004r-local-check",
+    "condition": "feedback",
+    "imports": [
+      "../../vocabulary.res"
+    ],
+    "dossiers_module": "../../dossiers.res",
+    "reserved": "../../reserved/valuations.tsv",
+    "workdir": "../../../../../target/pilot004r/local-check/work",
+    "order": [
+      {
+        "id": "casaFiesta",
+        "experiment": "casa_fiesta"
+      },
+      {
+        "id": "flowers",
+        "experiment": null
+      },
+      {
+        "id": "brookside",
+        "experiment": "brookside"
+      }
+    ],
+    "budgets": {
+      "max_verified_evaluations": 8,
+      "max_proposals": 12,
+      "max_turns_per_phase": 8,
+      "max_clauses": 2
+    },
+    "base_module": "LegalGeneral"
+  },
+  "driver": {
+    "ontology": "../../../../../examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+    "vocabulary": "../../vocabulary.res",
+    "profile": {
+      "heads": [
+        "obligation",
+        "permission",
+        "prohibition",
+        "omissionProhibition",
+        "right",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialLiability"
+      ],
+      "body_verbs": [
+        "Act",
+        "right",
+        "obligationFiled",
+        "prohibition",
+        "omissionProhibition",
+        "permissionFiled",
+        "patrimonialHolding",
+        "powerGranted",
+        "legislationText",
+        "obligation",
+        "permission",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialAsset",
+        "patrimonialLiability",
+        "transferred",
+        "owns",
+        "capacity",
+        "law"
+      ],
+      "max_atoms": 4
+    },
+    "provider": "scripted",
+    "script": [
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corr(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n",
+          "parent": null,
+          "rationale": "local check"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h1",
+          "dossier": "casaFiesta"
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h1"
+          ]
+        }
+      }
+    ]
+  }
+}

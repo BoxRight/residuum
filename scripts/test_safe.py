@@ -355,6 +355,26 @@ def build_worker_binary(report, rows):
     return binaries[0]
 
 
+def build_trajectory_binary(report, rows):
+    """Compile residuum-trajectory with the existing cargo controls (own scope, 45 s)."""
+    output = run_bounded(report, rows, 'compile', 'compile residuum-trajectory',
+                         ['cargo', 'build', '--offline', '--locked', '-p', 'residuum-boundary',
+                          '--bin', 'residuum-trajectory', '--jobs', '1', '--message-format=json'], 45)
+    binaries = []
+    for line in output.read_text().splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if (message.get('reason') == 'compiler-artifact' and message.get('executable')
+                and message.get('target', {}).get('name') == 'residuum-trajectory'
+                and 'bin' in message.get('target', {}).get('kind', [])):
+            binaries.append(Path(message['executable']))
+    if len(binaries) != 1:
+        raise RuntimeError('Expected one compiled residuum-trajectory binary; refusing execution')
+    return binaries[0]
+
+
 def save_report(report, rows):
     (report / 'results.json').write_text(json.dumps(rows, indent=2) + '\n')
     lines = ['| Nombre | Exit status | Tiempo (s) | Pico RSS (MiB) | Resultado |',
@@ -414,6 +434,13 @@ def main():
                              'required for a real provider, refused for the simulated one (fixed at 15 s)')
     parser.add_argument('--interactive-policy',
                         help='Scripted policy of the simulated provider; refused for a real provider')
+    parser.add_argument('--trajectory-manifest', type=Path,
+                        help='Pilot 004-R trajectory manifest (trajectory and driver sections) for one bounded '
+                             'driver+trajectory run; requires --trajectory-ledger')
+    parser.add_argument('--trajectory-ledger', type=Path,
+                        help='Empty or absent directory under target/ for the trajectory ledger')
+    parser.add_argument('--trajectory-deadline', type=int,
+                        help='Whole-run deadline in seconds for a real provider, 1..1500; refused for the scripted one (60 s)')
     args = parser.parse_args()
     if (args.steps is not None or args.trace) and not args.cli:
         parser.error('--steps and --trace require --cli')
@@ -461,6 +488,16 @@ def main():
         parser.error('the interactive mode takes only its own options')
     if args.interactive_policy is not None and not args.interactive_policy.isidentifier():
         parser.error('--interactive-policy must be an identifier')
+    trajectory = (args.trajectory_manifest, args.trajectory_ledger)
+    if any(trajectory) and not all(trajectory):
+        parser.error('--trajectory-manifest and --trajectory-ledger go together')
+    if args.trajectory_deadline is not None and not all(trajectory):
+        parser.error('--trajectory-deadline belongs to the trajectory mode')
+    if all(trajectory) and (args.fixture or args.test or args.compile_only or args.binary or args.test_target
+                            or args.fmt_check or args.format or args.cli or args.steps is not None or args.trace
+                            or args.incremental or args.forward or args.library or args.worker_manifest
+                            or args.python_test or args.interactive_manifest):
+        parser.error('the trajectory mode takes only its own options')
     if args.test_target is None:
         args.test_target = 'lib'
     if args.fixture and (args.test or args.binary or args.compile_only or args.fmt_check or args.format):
@@ -511,6 +548,34 @@ def main():
                 emit_output(report / f'{len(rows):02d}.output.txt', sys.stderr)
             raise
         emit_output(output, sys.stdout)
+        return 0
+    if args.trajectory_manifest:
+        manifest = args.trajectory_manifest.resolve()
+        ledger_dir = args.trajectory_ledger.resolve()
+        if not manifest.is_file() or manifest.stat().st_size > 4 * 1024 * 1024:
+            raise RuntimeError('Expected one regular trajectory manifest of at most 4 MiB')
+        if not ledger_dir.is_relative_to(ROOT / 'target'):
+            raise RuntimeError('The trajectory ledger must live under target/')
+        if ledger_dir.exists() and any(ledger_dir.iterdir()):
+            raise RuntimeError('The trajectory ledger directory must be empty or absent; ledgers are never reused')
+        provider = json.loads(manifest.read_text())['driver']['provider']
+        if provider == 'scripted':
+            if args.trajectory_deadline is not None:
+                raise RuntimeError('--trajectory-deadline is only for a real provider; the scripted run keeps 60 s')
+            deadline = 60
+        else:
+            if args.trajectory_deadline is None or not 1 <= args.trajectory_deadline <= REMOTE_EXCHANGE_MAX_SECONDS:
+                raise RuntimeError(f'a real provider needs --trajectory-deadline within 1..{REMOTE_EXCHANGE_MAX_SECONDS} s')
+            deadline = args.trajectory_deadline
+        ledger_dir.mkdir(parents=True, exist_ok=True)
+        binary = build_trajectory_binary(report, rows)
+        bootstrap = (f'import sys; sys.path.insert(0, {str(ROOT)!r}); '
+                     f'from tools.pilot004r import driver; sys.exit(driver.main(sys.argv[1:]))')
+        # Driver and trajectory process share one scope with the usual controls.
+        run_bounded(report, rows, 'trajectory', 'pilot004r driver+trajectory',
+                    [sys.executable, '-I', '-c', bootstrap, '--manifest', str(manifest),
+                     '--ledger', str(ledger_dir), '--binary', str(binary)], deadline)
+        print(f'trajectory ledger: {ledger_dir}', flush=True)
         return 0
     if args.interactive_manifest:
         manifest = args.interactive_manifest.resolve()

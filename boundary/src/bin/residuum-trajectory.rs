@@ -1,0 +1,319 @@
+//! Pilot 004-R trajectory process: runs `generative::run_trajectory` with a
+//! learner reached over line-delimited JSON. Each turn it writes one
+//! `{"view": …}` line to stdout and reads one `{"action": …, "usage": …}` line
+//! from stdin; at the end it writes `{"report": …}` and the same report to
+//! `<ledger>/trajectory-report.json`. The reserved valuations are read here
+//! and only appear in the final report, after the learner has finished.
+use residuum::experiments::generative::{
+    Condition, DossierInput, FeedbackView, HypothesisRecord, Learner, LearnerAction, LearnerView,
+    Phase, ReservedValuations, Scoring, TrajectoryBudgets, TrajectoryManifest, TrajectoryReport,
+    Usage, profile_004r, run_trajectory,
+};
+use residuum::load_formal_module;
+use residuum::typed::{Declaration, Event, Polarity, SubstitutionValue, Term, TimeExpr};
+use serde_json::{Value, json};
+use std::io::{BufRead, Write};
+use std::path::{Path, PathBuf};
+
+fn term(t: &Term) -> String {
+    match t {
+        Term::Const(c) | Term::Var(c) => c.clone(),
+        Term::None => "none".into(),
+        Term::Constructor { argument, .. } => format!("after {}", term(argument)),
+        other => format!("{other:?}"),
+    }
+}
+
+fn time(t: &TimeExpr) -> String {
+    match t {
+        TimeExpr::At(c) | TimeExpr::Var(c) => c.clone(),
+        TimeExpr::After(inner) => format!("after {}", time(inner)),
+    }
+}
+
+fn event(e: &Event) -> String {
+    let neg = if e.polarity == Polarity::EvidentialNot {
+        "~"
+    } else {
+        ""
+    };
+    let args: Vec<String> = e.args.iter().map(term).collect();
+    format!(
+        "{neg}{}({}) @ {}",
+        e.verb,
+        args.join(", "),
+        time(&e.proposition.time)
+    )
+}
+
+fn events(es: &[Event]) -> Value {
+    json!(es.iter().map(event).collect::<Vec<_>>())
+}
+
+fn phase(p: Phase) -> &'static str {
+    match p {
+        Phase::Explore => "explore",
+        Phase::Revise => "revise",
+    }
+}
+
+fn position(p: &residuum::experiments::generative::Position) -> String {
+    format!(
+        "{}({}, {}, {}, {})",
+        p.head, p.subject, p.conduct, p.object, p.beneficiary
+    )
+}
+
+fn view_json(v: &LearnerView) -> Value {
+    json!({
+        "phase": phase(v.phase),
+        "dossier": v.dossier,
+        "dossiers": v.dossiers.iter().map(|d| json!({
+            "id": d.id,
+            "seeds": events(&d.seeds),
+            "closure_of_O_plus_committed": events(&d.known),
+            "justifications": d.justifications.iter().map(|j| json!({
+                "event": event(&j.event),
+                "rule": j.rule,
+                "origin": j.origin,
+                "antecedents": events(&j.antecedents),
+                "substitution": j.substitution.bindings.iter().map(|b| format!("{}={}", b.parameter, match &b.value {
+                    SubstitutionValue::Term(t) => term(t),
+                    SubstitutionValue::Time(t) => time(t),
+                })).collect::<Vec<_>>(),
+            })).collect::<Vec<_>>(),
+        })).collect::<Vec<_>>(),
+        "hypotheses": v.hypotheses.iter().map(|h| json!({
+            "id": h.id,
+            "parent": h.parent,
+            "text": h.text,
+            "rules": h.rules,
+            "admission": h.admission,
+            "committed": h.committed,
+            "evaluations": h.evaluations.iter().map(|e| json!({
+                "dossier": e.dossier,
+                "status": e.status,
+                "certified": e.certified,
+                "new_events": events(&e.new_events),
+                "activated_base_rules": e.activated_base_rules,
+                "positions_contributed": e.positions.iter().map(position).collect::<Vec<_>>(),
+            })).collect::<Vec<_>>(),
+        })).collect::<Vec<_>>(),
+        "committed": v.committed,
+        "feedback": v.feedback.iter().map(|f| match f {
+            FeedbackView::Discrepancies { dossier, missed, excess, valued_total, discrepant } => json!({
+                "dossier": dossier,
+                "documented_positions_not_derived": missed.iter().map(position).collect::<Vec<_>>(),
+                "excluded_positions_derived": excess.iter().map(|(p, owners)| json!({
+                    "position": position(p), "by_hypotheses": owners })).collect::<Vec<_>>(),
+                "valued_positions": valued_total,
+                "discrepancies": discrepant,
+            }),
+            FeedbackView::Evaluated { dossier } => json!({ "dossier": dossier, "evaluated": true }),
+        }).collect::<Vec<_>>(),
+        "verified_evaluations_left": v.verified_evaluations_left,
+        "proposals_left": v.proposals_left,
+        "turns_left_in_phase": v.turns_left,
+        "last_result": v.last_result,
+    })
+}
+
+struct LineLearner {
+    input: std::io::StdinLock<'static>,
+    eof: bool,
+}
+
+fn parse_action(v: &Value) -> Result<LearnerAction, String> {
+    let tool = v["tool"].as_str().ok_or("action without tool")?;
+    let a = &v["arguments"];
+    let s = |k: &str| a[k].as_str().map(str::to_string);
+    Ok(match tool {
+        "propose_rule" => LearnerAction::Propose {
+            text: s("text").ok_or("propose_rule needs text")?,
+            parent: s("parent"),
+            rationale: s("rationale").unwrap_or_default(),
+        },
+        "evaluate_rule" => LearnerAction::Evaluate {
+            hypothesis: s("hypothesis").ok_or("evaluate_rule needs hypothesis")?,
+            dossier: s("dossier").ok_or("evaluate_rule needs dossier")?,
+        },
+        "commit" => LearnerAction::Commit {
+            hypotheses: a["hypotheses"]
+                .as_array()
+                .ok_or("commit needs hypotheses")?
+                .iter()
+                .filter_map(|h| h.as_str().map(str::to_string))
+                .collect(),
+        },
+        "end_phase" => LearnerAction::EndPhase,
+        other => return Err(format!("unknown tool `{other}`")),
+    })
+}
+
+impl Learner for LineLearner {
+    fn act(&mut self, view: &LearnerView) -> (LearnerAction, Usage) {
+        if self.eof {
+            return (LearnerAction::EndPhase, Usage::default());
+        }
+        let mut out = std::io::stdout().lock();
+        writeln!(out, "{}", json!({ "view": view_json(view) })).unwrap();
+        out.flush().unwrap();
+        let mut line = String::new();
+        if self.input.read_line(&mut line).unwrap_or(0) == 0 {
+            self.eof = true;
+            return (LearnerAction::EndPhase, Usage::default());
+        }
+        let msg: Value = serde_json::from_str(&line).unwrap_or(Value::Null);
+        let u = &msg["usage"];
+        let usage = Usage {
+            calls: u["calls"].as_u64().unwrap_or(0),
+            input_tokens: u["input_tokens"].as_u64().unwrap_or(0),
+            output_tokens: u["output_tokens"].as_u64().unwrap_or(0),
+            cost_microusd: u["cost_microusd"].as_u64().unwrap_or(0),
+        };
+        let action = match parse_action(&msg["action"]) {
+            Ok(a) => a,
+            // A malformed action ends the phase; the driver records why.
+            Err(_) => LearnerAction::EndPhase,
+        };
+        (action, usage)
+    }
+}
+
+fn scoring_json(s: &Scoring) -> Value {
+    json!({
+        "dossier": s.dossier,
+        "committed": s.committed,
+        "loss": s.loss,
+        "valued": s.valued,
+        "unvalued_derived": s.unvalued_derived,
+        "missed": s.missed.iter().map(|v| v.id.clone()).collect::<Vec<_>>(),
+        "excess": s.excess.iter().map(|(v, o)| json!({"valuation": v.id, "by": o})).collect::<Vec<_>>(),
+        "exposures": s.exposures.iter().map(|(h, e)| json!({
+            "hypothesis": h, "valuation": e.valuation, "prequential": e.prequential, "correct": e.correct
+        })).collect::<Vec<_>>(),
+    })
+}
+
+fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport) -> Value {
+    json!({
+        "id": h.id,
+        "parent": h.parent,
+        "text": h.text,
+        "rationale": h.rationale,
+        "origin": {"dossier": r.order[h.origin.0], "phase": phase(h.origin.1)},
+        "admission": h.admission,
+        "case_specific": h.case_specific,
+        "certified_evaluations": h.certified_evaluations,
+        "committed_ok": h.committed_ok,
+        "retired_at": h.retired_at.map(|i| r.order[i].clone()),
+        "statuses": r.statuses.get(&h.id).map(|s| s.iter().map(|x| format!("{x:?}")).collect::<Vec<_>>()),
+        "evaluations": h.evaluations.iter().map(|e| json!({
+            "dossier": e.dossier, "status": e.status, "certified": e.certified,
+            "positions_contributed": e.positions.iter().map(position).collect::<Vec<_>>(),
+        })).collect::<Vec<_>>(),
+    })
+}
+
+fn report_json(r: &TrajectoryReport) -> Value {
+    let k = &r.counters;
+    json!({
+        "trajectory_id": r.trajectory_id,
+        "condition": format!("{:?}", r.condition),
+        "order": r.order,
+        "prequential_loss": r.prequential_loss(),
+        "prequential": r.prequential.iter().map(scoring_json).collect::<Vec<_>>(),
+        "compatibility_after_each_revision": r.compatibility.iter()
+            .map(|c| c.iter().map(scoring_json).collect::<Vec<_>>()).collect::<Vec<_>>(),
+        "hypotheses": r.hypotheses.iter().map(|h| hypothesis_json(h, r)).collect::<Vec<_>>(),
+        "counters": {
+            "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
+            "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
+            "commits": k.commits, "commit_rejections": k.commit_rejections,
+            "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
+            "output_tokens": k.usage.output_tokens, "cost_microusd": k.usage.cost_microusd,
+        },
+        "ledger": r.ledger.iter().map(|e| json!({
+            "seq": e.seq, "dossier": e.dossier, "phase": e.phase.map(phase),
+            "kind": e.kind, "detail": e.detail,
+        })).collect::<Vec<_>>(),
+    })
+}
+
+fn seeds(module: &residuum::typed::Module, name: &str) -> Vec<Event> {
+    module
+        .declarations
+        .iter()
+        .find_map(|d| match d {
+            Declaration::Experiment(e) if e.name == name => Some(e.input.clone()),
+            _ => None,
+        })
+        .unwrap_or_else(|| panic!("experiment {name}"))
+}
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let get = |flag: &str| {
+        args.iter()
+            .position(|a| a == flag)
+            .and_then(|i| args.get(i + 1))
+            .cloned()
+            .unwrap_or_else(|| panic!("{flag} is required"))
+    };
+    let manifest_path = PathBuf::from(get("--manifest"));
+    let ledger = PathBuf::from(get("--ledger"));
+    let base = manifest_path.parent().unwrap().to_path_buf();
+    let doc: Value =
+        serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
+    let t = &doc["trajectory"];
+    let rel = |v: &Value| -> PathBuf { base.join(v.as_str().unwrap()) };
+    let dossiers = load_formal_module(rel(&t["dossiers_module"])).unwrap();
+    let order = t["order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| DossierInput {
+            id: d["id"].as_str().unwrap().into(),
+            seeds: match d["experiment"].as_str() {
+                Some(name) => seeds(&dossiers, name),
+                None => Vec::new(),
+            },
+        })
+        .collect();
+    let b = &t["budgets"];
+    let n = |k: &str| b[k].as_u64().unwrap() as usize;
+    let manifest = TrajectoryManifest {
+        trajectory_id: t["trajectory_id"].as_str().unwrap().into(),
+        condition: match t["condition"].as_str().unwrap() {
+            "feedback" => Condition::Feedback,
+            "no_feedback" => Condition::NoFeedback,
+            other => panic!("condition {other}"),
+        },
+        imports: t["imports"].as_array().unwrap().iter().map(rel).collect(),
+        workdir: rel(&t["workdir"]),
+        profile: profile_004r(),
+        order,
+        budgets: TrajectoryBudgets {
+            max_verified_evaluations: n("max_verified_evaluations"),
+            max_proposals: n("max_proposals"),
+            max_turns_per_phase: n("max_turns_per_phase"),
+            max_clauses: n("max_clauses"),
+        },
+        base_module: t["base_module"].as_str().unwrap().into(),
+    };
+    let reserved = ReservedValuations::load_tsv(Path::new(&rel(&t["reserved"]))).unwrap();
+    let mut learner = LineLearner {
+        input: std::io::stdin().lock(),
+        eof: false,
+    };
+    let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
+    let value = report_json(&report);
+    std::fs::write(
+        ledger.join("trajectory-report.json"),
+        serde_json::to_string_pretty(&value).unwrap() + "\n",
+    )
+    .unwrap();
+    let mut out = std::io::stdout().lock();
+    writeln!(out, "{}", json!({ "report": value })).unwrap();
+    out.flush().unwrap();
+}

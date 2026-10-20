@@ -19,6 +19,7 @@ pub use default_steps::{DefaultPhase, DefaultSession, DefaultStep};
 mod four;
 pub use four::{FourSession, FourStep};
 pub mod exploration;
+pub mod generative;
 mod incremental;
 pub mod proposal;
 pub mod worker;

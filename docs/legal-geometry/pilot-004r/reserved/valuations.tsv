@@ -1,0 +1,22 @@
+dossier	id	head	subject	conduct	object	beneficiary	label	status	source
+brookside	B1	obligation	jant	adoptPolicy	policyA	usa	required	control	SA "Service Animal Policy" (a)
+brookside	B2	obligation	jant	distribute	policyA	usa	required	control	SA "Service Animal Policy" (b)
+brookside	B3	obligation	jant	post	policyA	usa	required	control	SA "Service Animal Policy" (d)
+brookside	B4	obligation	jant	keepAvailable	policyA	usa	required	control	SA "Service Animal Policy" (e)
+brookside	B5	obligation	jant	post	signB	usa	required	control	SA "Signage"
+brookside	B6	prohibition	usa	sue	premisesB	jant	required	control	SA "refrain from filing a civil suit"
+brookside	B7	right	jant	adoptPolicy	policyA	usa	required	provisional	SA non-waiver clause + enforcement clause; see contract §3.5
+brookside	B8	right	jant	distribute	policyA	usa	required	provisional	SA non-waiver clause + enforcement clause; see contract §3.5
+brookside	B9	right	jant	post	policyA	usa	required	provisional	SA non-waiver clause + enforcement clause; see contract §3.5
+brookside	B10	right	jant	keepAvailable	policyA	usa	required	provisional	SA non-waiver clause + enforcement clause; see contract §3.5
+brookside	B11	right	jant	post	signB	usa	required	provisional	SA non-waiver clause + enforcement clause; see contract §3.5
+flowers	F1	obligation	bPrasad	transfer	feesF	john	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F2	obligation	bPrasad	transfer	feesF	seth	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F3	obligation	vic	transfer	feesF	john	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F4	obligation	vic	transfer	feesF	seth	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F5	obligation	rPrasad	transfer	feesF	john	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F6	obligation	rPrasad	transfer	feesF	seth	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F7	obligation	sappaniapillai	transfer	feesF	john	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F8	obligation	sappaniapillai	transfer	feesF	seth	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F9	obligation	abraham	transfer	feesF	john	excluded	documented	Opinion fn. 12 "we reject it"
+flowers	F10	obligation	abraham	transfer	feesF	seth	excluded	documented	Opinion fn. 12 "we reject it"

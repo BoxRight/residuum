@@ -1,12 +1,20 @@
-# Piloto 004-R: aprendizaje generativo de reglas sobre LegalGeneral (contrato v1, propuesta)
+# Piloto 004-R: aprendizaje generativo de reglas sobre LegalGeneral (contrato v1.1)
 
-Estado: **propuesta, no congelada**.
+Estado: **marco aprobado; implementación local hecha**. Las valoraciones
+B7–B11 están aprobadas provisionalmente, pendientes de las reservas de
+`docs/pilot-004r-implementation.md` §2.
 - Rama: `experiment-pilot004-documentary`.
 - Sustituye al contrato mínimo (`docs/pilot-004-documentary-minimal-contract.md`) en el espacio de hipótesis y el protocolo. Conserva de él las reglas de representación R1–R8 (§1) y las configuraciones de §2, con el cambio en Brookside que se explica en §3.1.
 - El Piloto 004 v2 sigue congelado y queda como ablación separada (§9).
 
-Nada de esto está implementado. No se ha ejecutado el explorador ni se han
-hecho llamadas pagadas.
+**Cambios respecto de v1:**
+- Exposición: §1.
+- Contrato de certificación: §4.
+- Presupuesto de 8 evaluaciones verificadas: §5.
+- Decisiones: §10.
+
+La implementación y sus pruebas están en `docs/pilot-004r-implementation.md`.
+No se ha ejecutado ningún LLM ni se han hecho llamadas pagadas.
 
 ## 0. Criterio del piloto
 
@@ -48,13 +56,17 @@ $$T_k = O \cup R_k$$
 `n` es el número de expedientes y `e` el número de posiciones valoradas
 expuestas.
 
-**Exposición:** una regla $r\in R_k$ está expuesta en la posición valorada
-$p$ del expediente $i$ si se cumple una de estas dos condiciones:
-- $p\in N_k(S_i)$ y alguna derivación de $p$ usa $r$, según la provenance;
-- $p\in P_i^+$ falta, y $r$ tiene cabeza del mismo verbo y argumentos compatibles con $p$.
+**Exposición** (v1.1): una hipótesis está expuesta en la posición valorada
+$p$ del expediente $i$ si $p\in N_k(S_i)$ y alguna derivación de $p$ usa,
+directa o encadenadamente según la provenance, una regla de esa hipótesis.
 
-La segunda condición se fija como predicado mecánico sobre la cabeza
-canónica: la regla «podía» producir $p$ y no lo hizo.
+La exposición es correcta si $p$ es `required` e incorrecta (refutación) si
+$p$ es `excluded`.
+
+Una posición `required` que no se deriva cuenta en la pérdida de la teoría
+comprometida, pero no se atribuye a ninguna hipótesis. Una regla que calla
+no queda refutada. Esto sustituye a la segunda condición de exposición de v1
+(«podía producirla y no lo hizo»).
 
 ## 2. Lenguaje de hipótesis admisibles $\mathcal L_{adm}$
 
@@ -154,9 +166,10 @@ información útil. La diferencia entre ambas es nula por construcción.
 **Consecuencia:** las composiciones de varios pasos a través de $O$, que son
 justamente lo que el piloto quiere permitir, hoy no se certifican.
 
-**Modo de verificación propuesto, `attributed_extension`** (pendiente de implementar):
+**Modo de verificación `attributed_extension`** (implementado en v1.1: `certify_attributed`, con el verificador independiente `check_closure`; véase `docs/pilot-004r-implementation.md` §3.2):
 1. La clausura de $O\cup R_k$ sobre $S_i$ se completa dentro del presupuesto. Si no, el estado es `pending` y no hay veredicto.
-2. Monotonía: todo evento de la clausura de referencia está en la extendida.
+2. Monotonía: todo evento y toda justificación de la clausura de referencia están en la extendida.
+2b. Corrección: las dos clausuras pasan `check_closure`. Toda justificación es una instancia exacta y fundada de su regla, todo evento está sostenido, y ninguna instancia sobre Known falta, ni como evento ni como justificación. La atribución por provenance es necesaria, pero no sustituye esta comprobación.
 3. Atribución: cada evento nuevo, y cada justificación nueva de un evento existente, tiene al menos una derivación que usa alguna regla de $R_k$. Se registra qué regla y con qué testigos y sustituciones.
 4. Se informan aparte:
    - las justificaciones redundantes de eventos que $O$ ya derivaba;
@@ -306,18 +319,26 @@ presupuesto.
 - Su función es aislar el efecto de las descripciones revisables y los embeddings en la ordenación.
 - **No restringe al explorador principal**: el espacio de 004-R es $\mathcal L_{adm}$, no el catálogo.
 
-## 10. Decisiones pendientes
+## 10. Decisiones (v1.1)
 
-1. Revisar y aprobar las valoraciones B7–B11 (`right`) y la entrada del contenido del acuerdo en $S_B$.
-2. Orden de los expedientes: el principal propuesto, el secundario o ambos.
-3. Presupuestos $n$ y $m$ y el perfil A7.
-4. Autorizar la implementación de A3, A4, A6, `attributed_extension`, `view_dossier`, `explain`, `commit_hypotheses` y `DiscrepancyView`. Antes conviene decidir si merece la pena con un corpus que no puede medir la revisión (§3.4).
-5. Corpus: buscar experiencias del tipo O1–O3 cuando lo autorices.
+**Tomadas:**
+- Marco generativo aprobado.
+- Contenido del acuerdo en $S_B$, distinguido de las posiciones derivadas.
+- B7–B11: aprobación provisional, condicionada a la verificación individual (`docs/pilot-004r-implementation.md` §2).
+- Orden Casa Fiesta → Flowers → Brookside.
+- 8 evaluaciones verificadas por trayectoria, con llamadas, tokens y coste aparte.
+- Implementación local sin llamadas pagadas.
+- O1–O3 se buscan después de certificar el circuito.
+
+**Pendientes:**
+- Aprobar las reservas R-a y R-b, y el paso de formalización de la verificación de B7–B11.
+- Autorizar el puente con el proveedor real y su presupuesto.
+- Autorizar la búsqueda de O1–O3.
 
 ## 11. Lo que no se ha hecho
 
-- No hay implementación ni fixtures.
-- No se ha ejecutado el elaborador ni el explorador. La comprobación de V para `obligation ⇒ right` es solo lectura del código.
+- La implementación es local y en proceso; véase `docs/pilot-004r-implementation.md`. No hay puente con proveedores reales.
+- La comprobación de V para `obligation ⇒ right` está ahora probada (tests `pilot004r_*`).
 - No hay llamadas pagadas.
 - No se han tocado el motor, LegalGeneral, las 534 candidatas ni los cuatro expedientes.
 - No hay merge ni push.

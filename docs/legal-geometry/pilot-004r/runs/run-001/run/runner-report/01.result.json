@@ -1,0 +1,17 @@
+{
+  "name": "compile residuum-trajectory",
+  "stage": "compile",
+  "exit_status": 0,
+  "elapsed_seconds": 0.2264708539878484,
+  "peak_rss_bytes": 28454912,
+  "cgroup_peak_bytes": 55717888,
+  "memory_events": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0"
+  },
+  "stop_reason": null
+}

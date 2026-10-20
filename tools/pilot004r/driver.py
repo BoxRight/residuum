@@ -78,6 +78,85 @@ TOOLS = [
     },
 ]
 
+GOAL = {"type": "string", "description": "One event in Formal, e.g. verb(arg, ...) @ time; ~Act(...) @ time for a negative Act."}
+HYPOTHESIS = {"type": ["string", "null"], "description": "Id of an admitted hypothesis: the theory is LegalGeneral plus "
+                                                         "that hypothesis. Null or absent: LegalGeneral alone."}
+DOSSIER = {"type": "string", "description": "Id of a presented dossier."}
+NAVIGATION_TOOLS = [
+    {
+        "name": "inspect_theory",
+        "description": "Inventory of the theory: rules with their bodies, verbs with signatures and kinds, entities, "
+                       "constants and the presented dossiers.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "begin_forward",
+        "description": "Open a forward session: the closure of a dossier under a theory, advanced round by round "
+                       "with advance_session (each round lists added events and their derivations).",
+        "input_schema": {"type": "object", "properties": {"dossier": DOSSIER, "hypothesis": HYPOTHESIS},
+                         "required": ["dossier"]},
+    },
+    {
+        "name": "begin_residual",
+        "description": "Open a residual (backward) query session for a goal on a dossier under a theory: what is "
+                       "missing for the goal to hold, as search trees and residual conditions. Advance it with "
+                       "advance_session.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "dossier": DOSSIER, "hypothesis": HYPOTHESIS, "goal": GOAL,
+                "scope": {"type": ["object", "null"],
+                          "description": "Optional: {\"rules\": [rule names]} or {\"program\": name}."},
+                "allowed": {"type": ["array", "null"],
+                            "description": "Optional abducibles: [{\"verb\": name, \"polarity\": "
+                                           "\"positive\" | \"evidential_not\"}]."},
+                "limits": {"type": ["object", "null"],
+                           "description": "Optional: {\"max_depth\", \"max_nodes\", \"max_branches\"}."},
+                "bindings": {"type": ["array", "null"],
+                             "description": "Optional typed parameter bindings in the worker wire format."},
+            },
+            "required": ["dossier", "goal"],
+        },
+    },
+    {
+        "name": "begin_active_residual",
+        "description": "As begin_residual, over the active (program) residual search.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "dossier": DOSSIER, "hypothesis": HYPOTHESIS, "goal": GOAL,
+                "scope": {"type": ["object", "null"]}, "allowed": {"type": ["array", "null"]},
+                "limits": {"type": ["object", "null"]}, "bindings": {"type": ["array", "null"]},
+            },
+            "required": ["dossier", "goal"],
+        },
+    },
+    {
+        "name": "advance_session",
+        "description": "Advance an open forward or residual session by at most max_steps engine steps.",
+        "input_schema": {"type": "object", "properties": {
+            "session": {"type": "string"}, "max_steps": {"type": "integer", "minimum": 1}},
+            "required": ["session", "max_steps"]},
+    },
+    {
+        "name": "minimal_supports",
+        "description": "Minimal sets of seeded facts, over the presented dossiers, from which LegalGeneral plus "
+                       "the hypothesis derives the goal.",
+        "input_schema": {"type": "object", "properties": {
+            "hypothesis": {"type": "string"}, "goal": GOAL}, "required": ["hypothesis", "goal"]},
+    },
+    {
+        "name": "compare_partition",
+        "description": "Compare two or more hypotheses on a goal: the pool of minimal supports, which hypotheses "
+                       "derive the goal from each (signatures), the supports that discriminate them, and "
+                       "inclusion between their regions.",
+        "input_schema": {"type": "object", "properties": {
+            "hypotheses": {"type": "array", "items": {"type": "string"}, "minItems": 2}, "goal": GOAL},
+            "required": ["hypotheses", "goal"]},
+    },
+]
+
+
 SYNTAX = """Formal rule syntax accepted by propose_rule (rules only: no module, import, verb, const,
 entity or experiment declarations):
 
@@ -98,6 +177,14 @@ def instructions(condition: str, budgets: dict, n_dossiers: int) -> str:
                 "positions your committed theory did not derive, and excluded positions it derived with the "
                 "hypotheses responsible." if condition == "feedback" else
                 "After each scoring you are only told that the dossier was evaluated.")
+    navigation = ""
+    if budgets.get("max_navigation_actions", 0) > 0:
+        navigation = (f"\n\nNavigation tools give access to Residuum's own operations on the presented dossiers and "
+                      f"your admitted hypotheses (theory inventory, forward and residual sessions, minimal supports, "
+                      f"partition comparison). They never return valuations or loss. Budget: "
+                      f"{budgets['max_navigation_actions']} navigation calls and "
+                      f"{budgets['max_navigation_steps']} engine steps for the whole trajectory. Sessions do not "
+                      f"survive the presentation of a new dossier.")
     return f"""You are the learner in an experiment run with a formal evaluator, Residuum.
 
 The theory LegalGeneral (Formal source below) is fixed; you cannot change it. You may add rules over its
@@ -122,7 +209,7 @@ Each dossier has two phases.
 Your task: explore and test generalisations, and keep the loss low on the dossiers you have not seen yet.
 
 Budgets for the whole trajectory: {budgets['max_verified_evaluations']} verified evaluations, {budgets['max_proposals']}
-proposals, {budgets['max_turns_per_phase']} turns per phase. Every turn is exactly one tool call."""
+proposals, {budgets['max_turns_per_phase']} turns per phase. Every turn is exactly one tool call.{navigation}"""
 
 
 class CeilingReached(Exception):
@@ -153,10 +240,11 @@ def api_key() -> str:
 
 
 class AnthropicProvider:
-    def __init__(self, cfg: dict, system: str, ledger: Ledger):
+    def __init__(self, cfg: dict, system: str, ledger: Ledger, tools: list[dict]):
         self.cfg = cfg
         self.system = system
         self.ledger = ledger
+        self.tools = tools
         self.key = api_key()
         self.messages: list[dict] = []
         self.cost = 0.0
@@ -180,7 +268,7 @@ class AnthropicProvider:
             last[-1]["cache_control"] = {"type": "ephemeral"}
         body = {"model": self.cfg["model_id"], "max_tokens": self.cfg["max_tokens"],
                 "system": [{"type": "text", "text": self.system, "cache_control": {"type": "ephemeral"}}],
-                "tools": TOOLS, "messages": messages}
+                "tools": self.tools, "messages": messages}
         body.update(self.cfg.get("parameters") or {})
         headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
         # Keys not scoped to a workspace must name one.
@@ -279,9 +367,10 @@ def main(argv: list[str]) -> int:
     ledger = Ledger(args.ledger)
     system = instructions(t["condition"], t["budgets"], len(t["order"]))
     first = opening(manifest, base)
-    ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": TOOLS})
+    tools = TOOLS + (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
+    ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": tools})
     if d["provider"] == "anthropic":
-        provider = AnthropicProvider(d["model"], system, ledger)
+        provider = AnthropicProvider(d["model"], system, ledger, tools)
     elif d["provider"] == "scripted":
         provider = ScriptedProvider(d["script"], ledger)
     else:

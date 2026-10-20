@@ -16,6 +16,14 @@
 //! The learner never receives `ReservedValuations`: it sees seeds, closures,
 //! derivations, its own hypotheses and, only under `Condition::Feedback`,
 //! the discrepancy view computed after each commitment.
+//!
+//! Navigation: the learner may also send the existing worker requests
+//! (`worker::Request`: theory inventory, forward and residual sessions,
+//! minimal supports, partition comparison) to a `worker::Worker` that the
+//! harness rebuilds at each new dossier over the presented dossiers only and
+//! over the admitted hypotheses (each as its own `O ∪ h` theory). The worker
+//! never sees the reserved valuations. Hypothesis identifiers are translated
+//! to and from the worker's candidate identifiers.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -28,7 +36,10 @@ use crate::typed::{
 
 use super::Clock;
 use super::exploration::{Criterion, Decision, Profile, install, theory_preserved};
-use super::proposal::{Episode, ProposalContext, SourceProposal, admit, status_label};
+use super::proposal::{
+    Episode, ProposalContext, SourceProposal, admit, compose, relative, status_label,
+};
+use super::worker;
 
 // ---------------------------------------------------------------------------
 // Independent checker of a completed closure.
@@ -739,6 +750,16 @@ pub enum LearnerAction {
     Commit {
         hypotheses: Vec<String>,
     },
+    /// One existing worker request; hypothesis identifiers stand for the
+    /// worker's candidates. Proposal and candidate evaluation go through
+    /// `Propose` and `Evaluate` instead.
+    Navigate {
+        request: worker::Request,
+    },
+    /// An action the transport could not decode; refused with its reason.
+    Malformed {
+        message: String,
+    },
     /// An explore phase ends only after a proposal in that phase or with a
     /// stated abstention; a revise phase ends freely.
     EndPhase {
@@ -822,6 +843,10 @@ pub struct LearnerView {
     pub proposals_left: usize,
     pub turns_left: usize,
     pub last_result: Option<String>,
+    pub navigation_actions_left: usize,
+    pub navigation_steps_left: usize,
+    /// The worker's complete response to the previous navigation request.
+    pub last_navigation: Option<worker::Response>,
 }
 
 pub trait Learner {
@@ -838,6 +863,10 @@ pub struct TrajectoryBudgets {
     pub max_proposals: usize,
     pub max_turns_per_phase: usize,
     pub max_clauses: usize,
+    /// Worker requests per trajectory; 0 disables navigation.
+    pub max_navigation_actions: usize,
+    /// Engine steps over all navigation sessions of the trajectory.
+    pub max_navigation_steps: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -863,6 +892,69 @@ pub struct TrajectoryManifest {
 
 /// The admissible language of contract §2: A3 heads, a body vocabulary over
 /// `O`, `~Act` as the only negative literal.
+const NAVIGATION_HASH: &str = "pilot004r-navigation";
+const NAVIGATION_STEPS_PER_ACTION: usize = 64;
+const NAVIGATION_SESSIONS: usize = 64;
+
+fn navigation_kind(r: &worker::Request) -> &'static str {
+    use worker::Request as R;
+    match r {
+        R::InspectTheory => "inspect_theory",
+        R::BeginForward { .. } => "begin_forward",
+        R::BeginResidual { .. } => "begin_residual",
+        R::BeginActiveResidual { .. } => "begin_active_residual",
+        R::AdvanceSession { .. } => "advance_session",
+        R::ProposeCandidate { .. } => "propose_candidate",
+        R::BeginCandidateEvaluation { .. } => "begin_candidate_evaluation",
+        R::MinimalSupports { .. } => "minimal_supports",
+        R::ComparePartition { .. } => "compare_partition",
+    }
+}
+
+/// Elaborate one event written in Formal (`verb(args) @ time`, `~Act(...)`)
+/// against the trajectory imports, as the goal of a navigation request. The
+/// event is the query of a throwaway experiment with no seeds.
+pub fn parse_event(
+    imports: &[PathBuf],
+    workdir: &std::path::Path,
+    serial: usize,
+    text: &str,
+) -> Result<Event, Error> {
+    let dir = workdir.join("goals");
+    std::fs::create_dir_all(&dir)
+        .map_err(|e| Error::new(format!("cannot create `{}`: {e}", dir.display())))?;
+    let dir = dir
+        .canonicalize()
+        .map_err(|e| Error::new(format!("cannot resolve `{}`: {e}", dir.display())))?;
+    let mut relative_imports = Vec::new();
+    for import in imports {
+        let target = import.canonicalize().map_err(|e| {
+            Error::new(format!("cannot resolve import `{}`: {e}", import.display()))
+        })?;
+        relative_imports.push(relative(&dir, &target)?);
+    }
+    if text.contains('}') || text.contains('{') {
+        return Err(Error::new("an event contains no braces"));
+    }
+    let name = format!("Goal{serial}");
+    let body = format!(
+        "experiment goal {{\n    seeds {{\n    }}\n    query residual\n    {}\n}}\n",
+        text.trim()
+    );
+    let file = dir.join(format!("{name}.res"));
+    std::fs::write(&file, compose(&name, &relative_imports, &body))
+        .map_err(|e| Error::new(format!("cannot write `{}`: {e}", file.display())))?;
+    let module = crate::load_formal_module(&file)?;
+    module
+        .declarations
+        .iter()
+        .find_map(|d| match d {
+            Declaration::Experiment(e) if e.name == "goal" => Some(e.goal.clone()),
+            _ => None,
+        })
+        .ok_or_else(|| Error::new("the goal did not elaborate to an event"))
+}
+
 pub fn profile_004r() -> Profile {
     let heads = [
         "obligation",
@@ -955,6 +1047,8 @@ pub struct Counters {
     pub verified_evaluations: usize,
     pub refused_actions: usize,
     pub abstentions: usize,
+    pub navigation_actions: usize,
+    pub navigation_steps: usize,
     pub commits: usize,
     pub commit_rejections: usize,
     pub usage: Usage,
@@ -1046,6 +1140,11 @@ struct State<'a> {
     prequential: Vec<Scoring>,
     compatibility: Vec<Vec<Scoring>>,
     last_result: Option<String>,
+    navigator: Option<worker::Worker>,
+    /// Hypothesis id → worker candidate id, for the current navigator.
+    navigation_ids: BTreeMap<String, String>,
+    navigation_serial: usize,
+    last_navigation: Option<worker::Response>,
 }
 
 fn event_constants(e: &Event, out: &mut BTreeSet<String>) {
@@ -1210,6 +1309,13 @@ impl<'a> State<'a> {
             proposals_left: b.max_proposals.saturating_sub(self.counters.attempts),
             turns_left,
             last_result: self.last_result.clone(),
+            navigation_actions_left: b
+                .max_navigation_actions
+                .saturating_sub(self.counters.navigation_actions),
+            navigation_steps_left: b
+                .max_navigation_steps
+                .saturating_sub(self.counters.navigation_steps),
+            last_navigation: self.last_navigation.clone(),
         }
     }
 
@@ -1298,9 +1404,240 @@ impl<'a> State<'a> {
         if record.admitted {
             self.counters.admitted += 1;
         }
-        let result = format!("{id}: {}", record.admission);
+        let registered = if record.admitted {
+            self.register(&record.id, &record.text)
+        } else {
+            Ok(())
+        };
+        let mut result = format!("{id}: {}", record.admission);
+        if let Err(e) = registered {
+            result.push_str(&format!(" (not available to navigation: {e})"));
+        }
         self.log(index, Some(phase), "propose", result.clone());
         self.hypotheses.push(record);
+        result
+    }
+
+    // -- navigation over the existing worker -------------------------------
+
+    /// Rebuild the navigator over the dossiers presented so far, registering
+    /// every admitted hypothesis as a worker candidate. Sessions do not
+    /// survive a new dossier; hypothesis identifiers do.
+    fn open_navigator(&mut self, index: usize) -> Result<(), Error> {
+        self.navigator = None;
+        self.navigation_ids.clear();
+        if self.manifest.budgets.max_navigation_actions == 0 {
+            return Ok(());
+        }
+        let dossiers: BTreeMap<String, Vec<Event>> = self.manifest.order[..=index]
+            .iter()
+            .map(|d| (d.id.clone(), d.seeds.clone()))
+            .collect();
+        let navigator = worker::Worker::new(worker::Manifest {
+            episode_id: self.manifest.trajectory_id.clone(),
+            manifest_hash: NAVIGATION_HASH.into(),
+            imports: self.manifest.imports.clone(),
+            workdir: self.manifest.workdir.join(format!("navigator-{index}")),
+            profile: self.manifest.profile.clone(),
+            decision: self.placeholder.clone(),
+            dossiers,
+            budgets: worker::Budgets {
+                // The trajectory budgets are enforced here, not by the worker.
+                max_actions: usize::MAX,
+                max_steps_per_action: NAVIGATION_STEPS_PER_ACTION,
+                max_steps_total: usize::MAX,
+                max_sessions: NAVIGATION_SESSIONS,
+                max_candidates: usize::MAX,
+                max_clauses: self.manifest.budgets.max_clauses,
+                search_limits: crate::SearchLimits::default(),
+            },
+        })?;
+        self.navigator = Some(navigator);
+        let admitted: Vec<(String, String)> = self
+            .hypotheses
+            .iter()
+            .filter(|h| h.admitted)
+            .map(|h| (h.id.clone(), h.text.clone()))
+            .collect();
+        for (id, text) in admitted {
+            if let Err(e) = self.register(&id, &text) {
+                self.log(
+                    index,
+                    None,
+                    "navigator",
+                    format!("{id} not registered: {e}"),
+                );
+            }
+        }
+        Ok(())
+    }
+
+    fn send(&mut self, request: worker::Request) -> Option<worker::Response> {
+        let navigator = self.navigator.as_mut()?;
+        self.navigation_serial += 1;
+        Some(navigator.handle(worker::Envelope {
+            protocol_version: worker::PROTOCOL_VERSION.into(),
+            episode_id: self.manifest.trajectory_id.clone(),
+            action_id: format!("n{}", self.navigation_serial),
+            manifest_hash: NAVIGATION_HASH.into(),
+            request,
+        }))
+    }
+
+    fn register(&mut self, id: &str, text: &str) -> Result<(), String> {
+        if self.navigator.is_none() {
+            return Ok(());
+        }
+        match self.send(worker::Request::ProposeCandidate { text: text.into() }) {
+            Some(worker::Response {
+                payload:
+                    worker::Payload::Candidate {
+                        candidate: Some(cid),
+                        ..
+                    },
+                ..
+            }) => {
+                self.navigation_ids.insert(id.into(), cid);
+                Ok(())
+            }
+            Some(other) => Err(format!("{:?}: {:?}", other.status, other.payload)),
+            None => Ok(()),
+        }
+    }
+
+    fn candidate(&self, id: &str) -> Result<String, String> {
+        self.navigation_ids
+            .get(id)
+            .cloned()
+            .ok_or_else(|| format!("`{id}` is not an admitted hypothesis"))
+    }
+
+    fn navigate(&mut self, index: usize, phase: Phase, request: worker::Request) -> String {
+        use worker::Request as R;
+        if self.navigator.is_none() {
+            self.counters.refused_actions += 1;
+            return "refused: navigation is not available in this trajectory".into();
+        }
+        if self.counters.navigation_actions >= self.manifest.budgets.max_navigation_actions {
+            self.counters.refused_actions += 1;
+            return "refused: navigation budget exhausted".into();
+        }
+        let theory = |s: &Self, t: Option<String>| t.map(|h| s.candidate(&h)).transpose();
+        let translated = match request {
+            R::ProposeCandidate { .. } | R::BeginCandidateEvaluation { .. } => Err(
+                "proposals and their evaluation go through propose_rule and evaluate_rule".into(),
+            ),
+            R::InspectTheory => Ok(R::InspectTheory),
+            R::BeginForward { dossier, theory: t } => {
+                theory(self, t).map(|theory| R::BeginForward { dossier, theory })
+            }
+            R::BeginResidual {
+                dossier,
+                theory: t,
+                goal,
+                scope,
+                bindings,
+                allowed,
+                limits,
+            } => theory(self, t).map(|theory| R::BeginResidual {
+                dossier,
+                theory,
+                goal,
+                scope,
+                bindings,
+                allowed,
+                limits,
+            }),
+            R::BeginActiveResidual {
+                dossier,
+                theory: t,
+                goal,
+                scope,
+                bindings,
+                allowed,
+                limits,
+            } => theory(self, t).map(|theory| R::BeginActiveResidual {
+                dossier,
+                theory,
+                goal,
+                scope,
+                bindings,
+                allowed,
+                limits,
+            }),
+            R::AdvanceSession { session, max_steps } => {
+                let left = self
+                    .manifest
+                    .budgets
+                    .max_navigation_steps
+                    .saturating_sub(self.counters.navigation_steps);
+                if left == 0 {
+                    Err("navigation step budget exhausted".into())
+                } else {
+                    Ok(R::AdvanceSession {
+                        session,
+                        max_steps: max_steps.min(left),
+                    })
+                }
+            }
+            R::MinimalSupports { candidate, goal } => self
+                .candidate(&candidate)
+                .map(|candidate| R::MinimalSupports { candidate, goal }),
+            R::ComparePartition { candidates, goal } => candidates
+                .iter()
+                .map(|h| self.candidate(h))
+                .collect::<Result<Vec<_>, _>>()
+                .map(|candidates| R::ComparePartition { candidates, goal }),
+        };
+        let request = match translated {
+            Ok(r) => r,
+            Err(reason) => {
+                self.counters.refused_actions += 1;
+                let refusal = format!("refused: {reason}");
+                self.log(index, Some(phase), "navigate_refused", refusal.clone());
+                return refusal;
+            }
+        };
+        let kind = navigation_kind(&request);
+        let Some(mut response) = self.send(request) else {
+            self.counters.refused_actions += 1;
+            return "refused: navigation is not available in this trajectory".into();
+        };
+        self.counters.navigation_actions += 1;
+        self.counters.navigation_steps += response.steps_consumed;
+        // The worker's own budgets are unbounded here; report the trajectory's.
+        let b = &self.manifest.budgets;
+        response.budget.actions_remaining = b
+            .max_navigation_actions
+            .saturating_sub(self.counters.navigation_actions);
+        response.budget.steps_remaining = b
+            .max_navigation_steps
+            .saturating_sub(self.counters.navigation_steps);
+        response.budget.candidates_remaining =
+            b.max_proposals.saturating_sub(self.counters.attempts);
+        // Back to hypothesis identifiers.
+        let back: BTreeMap<String, String> = self
+            .navigation_ids
+            .iter()
+            .map(|(h, c)| (c.clone(), h.clone()))
+            .collect();
+        let name = |c: &String| back.get(c).cloned().unwrap_or_else(|| c.clone());
+        match &mut response.payload {
+            worker::Payload::Supports { candidate, .. } => *candidate = name(candidate),
+            worker::Payload::Partition {
+                partition, covers, ..
+            } => {
+                partition.hypotheses = partition.hypotheses.iter().map(name).collect();
+                *covers = covers.iter().map(|(a, b)| (name(a), name(b))).collect();
+            }
+            _ => {}
+        }
+        let result = format!(
+            "{kind}: {:?} (steps {})",
+            response.status, response.steps_consumed
+        );
+        self.log(index, Some(phase), "navigate", result.clone());
+        self.last_navigation = Some(response);
         result
     }
 
@@ -1464,6 +1801,8 @@ impl<'a> State<'a> {
                     usage.calls, usage.input_tokens, usage.output_tokens, usage.cost_microusd
                 ),
             );
+            // A navigation response is shown once, right after its request.
+            self.last_navigation = None;
             let result = match action {
                 LearnerAction::EndPhase { abstention } => {
                     let proposed = self.counters.attempts > attempts_before;
@@ -1497,6 +1836,13 @@ impl<'a> State<'a> {
                     dossier,
                 } => self.evaluate(index, phase, hypothesis, dossier),
                 LearnerAction::Commit { hypotheses } => self.commit(index, phase, hypotheses),
+                LearnerAction::Navigate { request } => self.navigate(index, phase, request),
+                LearnerAction::Malformed { message } => {
+                    self.counters.refused_actions += 1;
+                    let refusal = format!("refused: malformed action: {message}");
+                    self.log(index, Some(phase), "malformed", refusal.clone());
+                    refusal
+                }
             };
             self.last_result = Some(result);
         }
@@ -1714,8 +2060,13 @@ pub fn run_trajectory(
         prequential: Vec::new(),
         compatibility: Vec::new(),
         last_result: None,
+        navigator: None,
+        navigation_ids: BTreeMap::new(),
+        navigation_serial: 0,
+        last_navigation: None,
     };
     for index in 0..manifest.order.len() {
+        state.open_navigator(index)?;
         state.phase(learner, index, Phase::Explore);
         let scoring = state.score(index, true)?;
         state.log(

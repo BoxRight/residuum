@@ -382,6 +382,8 @@ fn budgets() -> TrajectoryBudgets {
         max_proposals: 12,
         max_turns_per_phase: 12,
         max_clauses: 2,
+        max_navigation_actions: 0,
+        max_navigation_steps: 0,
     }
 }
 
@@ -1091,4 +1093,244 @@ fn pilot004r_early_discrepancy_allows_revision_and_reevaluation() {
         "{:?}",
         statuses(&report, "h1")
     );
+}
+
+// ---------------------------------------------------------------------------
+// Navigation through the existing worker operations.
+
+const CORR_CREDITOR: &str = "rule corrCreditor(id, s, c, o, b, au, e, t) =
+    obligation(id, s, c, o, b, au, e) @ t
+    <= right(id, b, c, o, s, au, e) @ t
+";
+
+fn nav(request: residuum::experiments::worker::Request) -> LearnerAction {
+    LearnerAction::Navigate { request }
+}
+
+fn navigation_order() -> Vec<DossierInput> {
+    vec![
+        DossierInput {
+            id: "brookside".into(),
+            seeds: brookside(),
+        },
+        DossierInput {
+            id: "casaFiesta".into(),
+            seeds: casa_fiesta(),
+        },
+    ]
+}
+
+fn right_of_jant() -> Event {
+    let extended = install(&baseline(), &[], &[rule_from("NavGoal", CORR)], "learned").unwrap();
+    close(&extended, &brookside())
+        .known
+        .into_iter()
+        .find(|e| e.verb == "right" && matches!(&e.args[2], Term::Const(c) if c == "adoptPolicy"))
+        .unwrap()
+}
+
+#[test]
+fn pilot004r_navigation_reaches_existing_worker_operations() {
+    use residuum::experiments::worker::{Payload, Request, Status};
+    let goal = right_of_jant();
+    let mut m = manifest("navigation", Condition::Feedback, navigation_order());
+    m.budgets.max_turns_per_phase = 20;
+    m.budgets.max_navigation_actions = 40;
+    m.budgets.max_navigation_steps = 2_000;
+    let mut learner = Scripted::new()
+        .at(
+            "brookside",
+            Phase::Explore,
+            vec![
+                nav(Request::InspectTheory),
+                propose(CORR, None),
+                propose(CORR_CREDITOR, None),
+                nav(Request::BeginForward {
+                    dossier: "brookside".into(),
+                    theory: Some("h1".into()),
+                }),
+                nav(Request::AdvanceSession {
+                    session: "s1".into(),
+                    max_steps: 16,
+                }),
+                nav(Request::MinimalSupports {
+                    candidate: "h1".into(),
+                    goal: goal.clone(),
+                }),
+                nav(Request::ComparePartition {
+                    candidates: vec!["h1".into(), "h2".into()],
+                    goal: goal.clone(),
+                }),
+                nav(Request::BeginResidual {
+                    dossier: "brookside".into(),
+                    theory: Some("h2".into()),
+                    goal: goal.clone(),
+                    scope: None,
+                    bindings: Vec::new(),
+                    allowed: None,
+                    limits: None,
+                }),
+                nav(Request::AdvanceSession {
+                    session: "s2".into(),
+                    max_steps: 16,
+                }),
+                // Refused by the harness: proposals have their own action.
+                nav(Request::ProposeCandidate { text: CORR.into() }),
+                // Refused: not a hypothesis of this trajectory.
+                nav(Request::MinimalSupports {
+                    candidate: "h9".into(),
+                    goal: goal.clone(),
+                }),
+                // The worker only knows presented dossiers.
+                nav(Request::BeginForward {
+                    dossier: "casaFiesta".into(),
+                    theory: None,
+                }),
+                LearnerAction::Malformed {
+                    message: "unknown tool `teleport`".into(),
+                },
+                commit(&["h1"]),
+            ],
+        )
+        .at(
+            "casaFiesta",
+            Phase::Explore,
+            vec![
+                // Rebuilt navigator: same hypothesis identifiers.
+                nav(Request::MinimalSupports {
+                    candidate: "h1".into(),
+                    goal: goal.clone(),
+                }),
+                nav(Request::BeginForward {
+                    dossier: "casaFiesta".into(),
+                    theory: Some("h2".into()),
+                }),
+            ],
+        );
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    // Each navigation response is in the view right after its request.
+    let responses: Vec<_> = learner
+        .views
+        .iter()
+        .filter_map(|v| v.last_navigation.clone().map(|r| (v.dossier.clone(), r)))
+        .collect();
+    let payload = |i: usize| &responses[i].1.payload;
+    match payload(0) {
+        Payload::Theory(inventory) => assert_eq!(inventory.dossiers, vec!["brookside"]),
+        other => panic!("{other:?}"),
+    }
+    assert!(matches!(payload(1), Payload::SessionOpened { session, .. } if session == "s1"));
+    match payload(2) {
+        Payload::Forward { known, .. } => {
+            assert!(known.iter().any(|e| e == &goal), "h1 derives the right")
+        }
+        other => panic!("{other:?}"),
+    }
+    match payload(3) {
+        Payload::Supports {
+            candidate,
+            goal_in_universe,
+            frontier,
+        } => {
+            assert_eq!(candidate, "h1");
+            assert!(goal_in_universe);
+            assert!(
+                frontier
+                    .iter()
+                    .any(|s| s.len() == 1 && s[0].verb == "obligationFiled")
+            );
+        }
+        other => panic!("{other:?}"),
+    }
+    match payload(4) {
+        Payload::Partition {
+            partition,
+            discriminants,
+            covers,
+            ..
+        } => {
+            assert_eq!(partition.hypotheses, vec!["h1", "h2"]);
+            assert!(!discriminants.is_empty());
+            assert!(
+                covers
+                    .iter()
+                    .all(|(a, b)| a.starts_with('h') && b.starts_with('h'))
+            );
+        }
+        other => panic!("{other:?}"),
+    }
+    assert!(matches!(payload(5), Payload::SessionOpened { session, .. } if session == "s2"));
+    assert!(
+        matches!(payload(6), Payload::Residual { .. }),
+        "{:?}",
+        payload(6)
+    );
+    // casaFiesta was not yet presented: the worker answers with an error.
+    assert_eq!(responses[7].1.status, Status::Error);
+    // Second dossier, rebuilt navigator.
+    assert_eq!(responses[8].0, "casaFiesta");
+    assert!(matches!(payload(8), Payload::Supports { candidate, .. } if candidate == "h1"));
+    assert!(matches!(payload(9), Payload::SessionOpened { .. }));
+    assert_eq!(responses.len(), 10);
+
+    // Budgets shown are the trajectory's, not the worker's internal ones.
+    assert_eq!(responses[0].1.budget.actions_remaining, 39);
+    assert_eq!(responses[9].1.budget.actions_remaining, 30);
+    let k = &report.counters;
+    assert_eq!(k.navigation_actions, 10);
+    assert!(k.navigation_steps > 0);
+    // ProposeCandidate, unknown h9, malformed.
+    assert_eq!(k.refused_actions, 3, "{:#?}", report.ledger);
+    let refused: Vec<_> = report
+        .ledger
+        .iter()
+        .filter(|e| e.kind == "navigate_refused" || e.kind == "malformed")
+        .map(|e| e.detail.clone())
+        .collect();
+    assert_eq!(refused.len(), 3, "{refused:?}");
+    // A navigation response is not repeated after a different action.
+    let after_propose = learner
+        .views
+        .iter()
+        .find(|v| v.last_result.as_deref() == Some("h1: admitted"))
+        .unwrap();
+    assert!(after_propose.last_navigation.is_none());
+    // No reserved valuation reaches any view.
+    let text = format!("{:?}", learner.views);
+    for marker in [
+        "\"B7\"",
+        "\"F1\"",
+        "Required",
+        "Excluded",
+        "provisional",
+        "documented",
+    ] {
+        assert!(!text.contains(marker), "{marker}");
+    }
+}
+
+#[test]
+fn pilot004r_navigation_budget_and_disabled_navigation() {
+    use residuum::experiments::worker::Request;
+    let mut m = manifest("navigation-budget", Condition::Feedback, navigation_order());
+    m.budgets.max_navigation_actions = 2;
+    m.budgets.max_navigation_steps = 2_000;
+    let actions = vec![
+        nav(Request::InspectTheory),
+        nav(Request::InspectTheory),
+        nav(Request::InspectTheory),
+    ];
+    let mut learner = Scripted::new().at("brookside", Phase::Explore, actions.clone());
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+    assert_eq!(report.counters.navigation_actions, 2);
+    assert_eq!(report.counters.refused_actions, 1);
+
+    // Run-001 to run-003 manifests: navigation disabled.
+    let m = manifest("navigation-off", Condition::Feedback, navigation_order());
+    let mut learner = Scripted::new().at("brookside", Phase::Explore, actions);
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+    assert_eq!(report.counters.navigation_actions, 0);
+    assert_eq!(report.counters.refused_actions, 3);
+    assert!(learner.views.iter().all(|v| v.last_navigation.is_none()));
 }

@@ -118,7 +118,7 @@ fn module_name(id: &str) -> Result<String, Error> {
 }
 
 /// Relative path from directory `from` to file `to`, both canonical.
-fn relative(from: &Path, to: &Path) -> Result<String, Error> {
+pub(super) fn relative(from: &Path, to: &Path) -> Result<String, Error> {
     let from: Vec<Component> = from.components().collect();
     let to: Vec<Component> = to.components().collect();
     let common = from.iter().zip(&to).take_while(|(a, b)| a == b).count();
@@ -140,7 +140,7 @@ fn relative(from: &Path, to: &Path) -> Result<String, Error> {
     Ok(joined)
 }
 
-fn compose(name: &str, imports: &[String], text: &str) -> String {
+pub(super) fn compose(name: &str, imports: &[String], text: &str) -> String {
     let mut source = format!("module {name}\n\n");
     for import in imports {
         source.push_str(&format!("import \"{import}\"\n"));

@@ -400,6 +400,8 @@ fn score_brookside(texts: &[&str]) -> Scoring {
             max_proposals: 2,
             max_turns_per_phase: 8,
             max_clauses: 2,
+            max_navigation_actions: 0,
+            max_navigation_steps: 0,
         },
         base_module: "LegalGeneral".into(),
     };

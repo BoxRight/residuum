@@ -7,10 +7,12 @@
 use residuum::experiments::generative::{
     Condition, DossierInput, FeedbackView, HypothesisRecord, Learner, LearnerAction, LearnerView,
     Phase, ReservedValuations, Scoring, TrajectoryBudgets, TrajectoryManifest, TrajectoryReport,
-    Usage, profile_004r, run_trajectory,
+    Usage, parse_event, profile_004r, run_trajectory,
 };
+use residuum::experiments::worker::{Request, Response};
 use residuum::load_formal_module;
 use residuum::typed::{Declaration, Event, Polarity, SubstitutionValue, Term, TimeExpr};
+use residuum_boundary::wire::{WireEvent, WireRequest, encode_response};
 use serde_json::{Value, json};
 use std::io::{BufRead, Write};
 use std::path::{Path, PathBuf};
@@ -115,17 +117,130 @@ fn view_json(v: &LearnerView) -> Value {
         "proposals_left": v.proposals_left,
         "turns_left_in_phase": v.turns_left,
         "last_result": v.last_result,
+        "navigation_actions_left": v.navigation_actions_left,
+        "navigation_steps_left": v.navigation_steps_left,
+        "last_navigation": v.last_navigation.as_ref().map(navigation_json),
+    })
+}
+
+/// Largest rendered navigation response passed to the learner; the full
+/// response stays in the harness ledger's view of the driver.
+const NAVIGATION_CHARS: usize = 40_000;
+
+/// The worker's wire encoding with every event rendered as Formal text.
+fn navigation_json(r: &Response) -> Value {
+    fn render(v: Value) -> Value {
+        match v {
+            Value::Object(map) => {
+                let keys: Vec<&str> = map.keys().map(String::as_str).collect();
+                let mut sorted = keys.clone();
+                sorted.sort_unstable();
+                if sorted == ["args", "kind", "polarity", "time", "transition", "verb"] {
+                    let value = Value::Object(map.clone());
+                    if let Ok(w) = serde_json::from_value::<WireEvent>(value) {
+                        if let Ok(e) = Event::try_from(w) {
+                            return Value::String(event(&e));
+                        }
+                    }
+                }
+                Value::Object(map.into_iter().map(|(k, v)| (k, render(v))).collect())
+            }
+            Value::Array(items) => Value::Array(items.into_iter().map(render).collect()),
+            other => other,
+        }
+    }
+    let encoded = match encode_response(r) {
+        Ok(text) => text,
+        Err(e) => return json!({ "error": format!("cannot encode the response: {e:?}") }),
+    };
+    let rendered = render(serde_json::from_str(&encoded).unwrap_or(Value::Null));
+    let text = rendered.to_string();
+    if text.len() <= NAVIGATION_CHARS {
+        return rendered;
+    }
+    let mut cut = NAVIGATION_CHARS;
+    while !text.is_char_boundary(cut) {
+        cut -= 1;
+    }
+    json!({
+        "truncated": true,
+        "characters": text.len(),
+        "head": &text[..cut],
     })
 }
 
 struct LineLearner {
     input: std::io::StdinLock<'static>,
     eof: bool,
+    imports: Vec<PathBuf>,
+    workdir: PathBuf,
+    goals: usize,
 }
 
-fn parse_action(v: &Value) -> Result<LearnerAction, String> {
+/// A navigation tool call as the wire request of the existing worker, with
+/// the goal written in Formal and hypothesis identifiers as theories.
+fn navigation(
+    learner: &mut LineLearner,
+    tool: &str,
+    a: &Value,
+) -> Result<Option<LearnerAction>, String> {
+    let s = |k: &str| a[k].as_str().map(str::to_string);
+    let mut goal = || -> Result<Value, String> {
+        let text = s("goal").ok_or(format!("{tool} needs goal"))?;
+        learner.goals += 1;
+        let e = parse_event(&learner.imports, &learner.workdir, learner.goals, &text)
+            .map_err(|e| format!("goal `{text}`: {e}"))?;
+        serde_json::to_value(WireEvent::from(&e)).map_err(|e| e.to_string())
+    };
+    let optional = |k: &str| match &a[k] {
+        Value::Null => Value::Null,
+        v => v.clone(),
+    };
+    let wire = match tool {
+        "inspect_theory" => json!("inspect_theory"),
+        "begin_forward" => json!({ "begin_forward": {
+            "dossier": s("dossier").ok_or("begin_forward needs dossier")?,
+            "theory": s("hypothesis"),
+        }}),
+        "begin_residual" | "begin_active_residual" => {
+            let query = json!({
+                "dossier": s("dossier").ok_or(format!("{tool} needs dossier"))?,
+                "theory": s("hypothesis"),
+                "goal": goal()?,
+                "scope": optional("scope"),
+                "bindings": match &a["bindings"] { Value::Null => json!([]), v => v.clone() },
+                "allowed": optional("allowed"),
+                "limits": optional("limits"),
+            });
+            let mut wrapper = serde_json::Map::new();
+            wrapper.insert(tool.to_string(), query);
+            Value::Object(wrapper)
+        }
+        "advance_session" => json!({ "advance_session": {
+            "session": s("session").ok_or("advance_session needs session")?,
+            "max_steps": a["max_steps"].as_u64().ok_or("advance_session needs max_steps")?,
+        }}),
+        "minimal_supports" => json!({ "minimal_supports": {
+            "candidate": s("hypothesis").ok_or("minimal_supports needs hypothesis")?,
+            "goal": goal()?,
+        }}),
+        "compare_partition" => json!({ "compare_partition": {
+            "candidates": a["hypotheses"].clone(),
+            "goal": goal()?,
+        }}),
+        _ => return Ok(None),
+    };
+    let wire: WireRequest = serde_json::from_value(wire).map_err(|e| e.to_string())?;
+    let request = Request::try_from(wire).map_err(|e| format!("{e:?}"))?;
+    Ok(Some(LearnerAction::Navigate { request }))
+}
+
+fn parse_action(learner: &mut LineLearner, v: &Value) -> Result<LearnerAction, String> {
     let tool = v["tool"].as_str().ok_or("action without tool")?;
     let a = &v["arguments"];
+    if let Some(action) = navigation(learner, tool, a)? {
+        return Ok(action);
+    }
     let s = |k: &str| a[k].as_str().map(str::to_string);
     Ok(match tool {
         "propose_rule" => LearnerAction::Propose {
@@ -179,10 +294,9 @@ impl Learner for LineLearner {
             output_tokens: u["output_tokens"].as_u64().unwrap_or(0),
             cost_microusd: u["cost_microusd"].as_u64().unwrap_or(0),
         };
-        let action = match parse_action(&msg["action"]) {
+        let action = match parse_action(self, &msg["action"]) {
             Ok(a) => a,
-            // A malformed action ends the phase; the driver records why.
-            Err(_) => LearnerAction::EndPhase { abstention: None },
+            Err(message) => LearnerAction::Malformed { message },
         };
         (action, usage)
     }
@@ -238,6 +352,7 @@ fn report_json(r: &TrajectoryReport) -> Value {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
             "abstentions": k.abstentions,
+            "navigation_actions": k.navigation_actions, "navigation_steps": k.navigation_steps,
             "commits": k.commits, "commit_rejections": k.commit_rejections,
             "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
             "output_tokens": k.usage.output_tokens, "cost_microusd": k.usage.cost_microusd,
@@ -307,6 +422,9 @@ fn main() {
             max_proposals: n("max_proposals"),
             max_turns_per_phase: n("max_turns_per_phase"),
             max_clauses: n("max_clauses"),
+            // Absent in run-001 to run-003: navigation disabled.
+            max_navigation_actions: b["max_navigation_actions"].as_u64().unwrap_or(0) as usize,
+            max_navigation_steps: b["max_navigation_steps"].as_u64().unwrap_or(0) as usize,
         },
         base_module: t["base_module"].as_str().unwrap().into(),
     };
@@ -314,6 +432,9 @@ fn main() {
     let mut learner = LineLearner {
         input: std::io::stdin().lock(),
         eof: false,
+        imports: manifest.imports.clone(),
+        workdir: manifest.workdir.clone(),
+        goals: 0,
     };
     let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
     let value = report_json(&report);

@@ -171,8 +171,12 @@ class AnthropicProvider:
                 "system": [{"type": "text", "text": self.system, "cache_control": {"type": "ephemeral"}}],
                 "tools": TOOLS, "messages": messages}
         body.update(self.cfg.get("parameters") or {})
-        request = urllib.request.Request(API_URL, data=json.dumps(body).encode(), method="POST", headers={
-            "x-api-key": self.key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+        headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+        # Keys not scoped to a workspace must name one.
+        workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID", "").strip()
+        if workspace:
+            headers["anthropic-workspace-id"] = workspace
+        request = urllib.request.Request(API_URL, data=json.dumps(body).encode(), method="POST", headers=headers)
         self.requests += 1
         self.ledger.append("request", {"n": self.requests, "new_message": self.messages[-1]})
         try:

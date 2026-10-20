@@ -1,0 +1,36 @@
+[
+  {
+    "name": "compile residuum-trajectory",
+    "stage": "compile",
+    "exit_status": 0,
+    "elapsed_seconds": 0.0830601129855495,
+    "peak_rss_bytes": 28471296,
+    "cgroup_peak_bytes": 25980928,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  },
+  {
+    "name": "pilot004r driver+trajectory",
+    "stage": "trajectory",
+    "exit_status": 0,
+    "elapsed_seconds": 47.36308943098993,
+    "peak_rss_bytes": 31166464,
+    "cgroup_peak_bytes": 28942336,
+    "memory_events": {
+      "low": "0",
+      "high": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "stop_reason": null
+  }
+]

@@ -1,0 +1,176 @@
+{
+  "trajectory": {
+    "trajectory_id": "pilot004r-run-003-local-check",
+    "condition": "feedback",
+    "imports": [
+      "../../vocabulary.res"
+    ],
+    "dossiers_module": "../../dossiers.res",
+    "reserved": "../../reserved/valuations.tsv",
+    "workdir": "../../../../../target/pilot004r/run-003-local-check/work",
+    "order": [
+      {
+        "id": "brookside",
+        "experiment": "brookside"
+      },
+      {
+        "id": "casaFiesta",
+        "experiment": "casa_fiesta"
+      },
+      {
+        "id": "flowers",
+        "experiment": null
+      }
+    ],
+    "budgets": {
+      "max_verified_evaluations": 40,
+      "max_proposals": 40,
+      "max_turns_per_phase": 30,
+      "max_clauses": 2
+    },
+    "base_module": "LegalGeneral"
+  },
+  "driver": {
+    "ontology": "../../../../../examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+    "vocabulary": "../../vocabulary.res",
+    "profile": {
+      "heads": [
+        "obligation",
+        "permission",
+        "prohibition",
+        "omissionProhibition",
+        "right",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialLiability"
+      ],
+      "body_verbs": [
+        "Act",
+        "right",
+        "obligationFiled",
+        "prohibition",
+        "omissionProhibition",
+        "permissionFiled",
+        "patrimonialHolding",
+        "powerGranted",
+        "legislationText",
+        "obligation",
+        "permission",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialAsset",
+        "patrimonialLiability",
+        "transferred",
+        "owns",
+        "capacity",
+        "law"
+      ],
+      "max_atoms": 4
+    },
+    "provider": "scripted",
+    "script": [
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corrPost(id, s, o, b, au, e, t) =\n    obligation(id, s, post, o, b, au, e) @ t\n    <= right(id, s, post, o, b, au, e) @ t\n",
+          "parent": null,
+          "rationale": "scripted check"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h1",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h1"
+          ]
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corr(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n",
+          "parent": "h1",
+          "rationale": "scripted check"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h2",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h2"
+          ]
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corrAgreed(id, s, c, o, b, au, e, t, d) =\n    obligation(id, s, c, o, b, au, e) @ t & Act(id, s, agree, d, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n",
+          "parent": "h2",
+          "rationale": "scripted check"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h3",
+          "dossier": "casaFiesta"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h2",
+          "dossier": "casaFiesta"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: abstain on flowers"
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": []
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      }
+    ]
+  }
+}

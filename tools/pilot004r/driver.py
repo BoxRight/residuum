@@ -108,13 +108,18 @@ beneficiary), marked as required or excluded. They are not shown to you.
 
 Each dossier has two phases.
 - explore: you see the dossier and the closure Residuum computes for LegalGeneral plus your committed
-  hypotheses, with justifications. You may propose rules, evaluate them on presented dossiers and commit a
-  set of hypotheses. When you end the phase, the committed set is scored on this dossier: loss = required
-  positions not derived + excluded positions derived. The phase ends only after at least one proposal in it
-  or with a stated abstention.
-- revise: {feedback} You may propose, evaluate and commit again; changes apply to the following dossiers.
+  hypotheses, with justifications. Investigate the relations you can observe there and propose provisional
+  generalisations about them as rules, then verify their consequences by evaluating them. Do this even when
+  LegalGeneral shows no discrepancy yet: the task is to explore hypotheses and test what they entail, not to
+  wait for a signal of error. You may propose rules, evaluate them on presented dossiers and commit a set of
+  hypotheses. When you end the phase, the committed set is scored on this dossier: loss = required
+  positions not derived + excluded positions derived. That prequential score is final and is never revised.
+  The phase ends only after at least one proposal in it or with a stated abstention.
+- revise: {feedback} You may revise, keep or discard hypotheses (propose, evaluate and commit again), also
+  when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
+  rescored with the new committed set, recorded separately as a retrospective adjustment.
 
-Your task: keep the loss low on the dossiers you have not seen yet.
+Your task: explore and test generalisations, and keep the loss low on the dossiers you have not seen yet.
 
 Budgets for the whole trajectory: {budgets['max_verified_evaluations']} verified evaluations, {budgets['max_proposals']}
 proposals, {budgets['max_turns_per_phase']} turns per phase. Every turn is exactly one tool call."""

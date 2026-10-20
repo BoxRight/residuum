@@ -1,0 +1,223 @@
+{
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ],
+    [
+      {
+        "committed": [],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      },
+      {
+        "committed": [],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [],
+        "loss": 5,
+        "missed": [
+          "B7",
+          "B8",
+          "B9",
+          "B10",
+          "B11"
+        ],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 3,
+    "admitted": 0,
+    "attempts": 0,
+    "calls": 6,
+    "commit_rejections": 0,
+    "commits": 0,
+    "cost_microusd": 55651,
+    "input_tokens": 74896,
+    "output_tokens": 351,
+    "refused_actions": 0,
+    "turns": 6,
+    "verified_evaluations": 0
+  },
+  "hypotheses": [],
+  "ledger": [
+    {
+      "detail": "calls=1 input=9424 output=66 cost_microusd=24218",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "No information on documented positions; abstain to see feedback.",
+      "dossier": "casaFiesta",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "committed=[] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 2
+    },
+    {
+      "detail": "calls=1 input=10027 output=34 cost_microusd=2798",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 3
+    },
+    {
+      "detail": "calls=1 input=10635 output=63 cost_microusd=3156",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "Empty dossier; nothing to derive.",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "committed=[] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 6
+    },
+    {
+      "detail": "calls=1 input=11331 output=59 cost_microusd=3397",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 7
+    },
+    {
+      "detail": "calls=1 input=14883 output=69 cost_microusd=10707",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 8
+    },
+    {
+      "detail": "Closure already derives obligations; no evidence for additional rules.",
+      "dossier": "brookside",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 9
+    },
+    {
+      "detail": "committed=[] loss=5",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 10
+    },
+    {
+      "detail": "calls=1 input=18596 output=60 cost_microusd=11375",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 11
+    }
+  ],
+  "order": [
+    "casaFiesta",
+    "flowers",
+    "brookside"
+  ],
+  "prequential": [
+    {
+      "committed": [],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 0
+    },
+    {
+      "committed": [],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    },
+    {
+      "committed": [],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [],
+      "loss": 5,
+      "missed": [
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11"
+      ],
+      "unvalued_derived": 0,
+      "valued": 11
+    }
+  ],
+  "prequential_loss": 5,
+  "trajectory_id": "pilot004r-run-002"
+}

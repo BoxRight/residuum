@@ -350,7 +350,7 @@ class AnthropicProvider:
                 + usage.get("cache_read_input_tokens", 0) * p["cache_read_per_mtok"]
                 + usage.get("output_tokens", 0) * p["output_per_mtok"]) / 1e6
 
-    def _call(self) -> dict:
+    def _call(self, extra: dict | None = None) -> dict:
         if self.requests >= self.cfg["max_model_requests"] or self.cost >= self.cfg["max_cost_usd"]:
             raise CeilingReached(f"requests={self.requests} cost={self.cost:.4f}")
         # One rolling cache breakpoint on the newest message keeps the shared
@@ -363,6 +363,7 @@ class AnthropicProvider:
                 "system": [{"type": "text", "text": self.system, "cache_control": {"type": "ephemeral"}}],
                 "tools": self.tools, "messages": messages}
         body.update(self.cfg.get("parameters") or {})
+        body.update(extra or {})
         headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
         # Keys not scoped to a workspace must name one.
         workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID", "").strip()
@@ -370,7 +371,10 @@ class AnthropicProvider:
             headers["anthropic-workspace-id"] = workspace
         request = urllib.request.Request(API_URL, data=json.dumps(body).encode(), method="POST", headers=headers)
         self.requests += 1
-        self.ledger.append("request", {"n": self.requests, "new_message": self.messages[-1]})
+        entry = {"n": self.requests, "new_message": self.messages[-1]}
+        if extra:
+            entry["request_options"] = extra
+        self.ledger.append("request", entry)
         try:
             with urllib.request.urlopen(request, timeout=self.cfg.get("timeout_seconds", 180)) as r:
                 response = json.loads(r.read())
@@ -385,6 +389,29 @@ class AnthropicProvider:
                                         "cumulative_cost_usd": self.cost})
         response["_cost"] = cost
         return response
+
+    def plan(self, view_text: str, pending_tool_ids: list[str]) -> tuple[str, dict]:
+        """Planning step: the same view, one planning request appended, tool calls disabled. The plan stays in
+        the conversation, so the execution turns that follow receive it."""
+        content = self._content(view_text, pending_tool_ids) + [{"type": "text", "text": PLAN_REQUEST}]
+        self.messages.append({"role": "user", "content": content})
+        response = self._call({"tool_choice": {"type": "none"}})
+        self.messages.append({"role": "assistant", "content": response["content"]})
+        u = response.get("usage", {})
+        usage = {"calls": 1, "input_tokens": u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0)
+                 + u.get("cache_read_input_tokens", 0), "output_tokens": u.get("output_tokens", 0),
+                 "cost_microusd": round(response["_cost"] * 1e6)}
+        text = "\n".join(b.get("text", "") for b in response["content"] if b.get("type") == "text")
+        return text, usage
+
+    @staticmethod
+    def _content(view_text: str, pending_tool_ids: list[str]) -> list[dict]:
+        if pending_tool_ids:
+            content = [{"type": "tool_result", "tool_use_id": pending_tool_ids[0], "content": view_text}]
+            content += [{"type": "tool_result", "tool_use_id": i,
+                         "content": "Not executed: one tool call per turn."} for i in pending_tool_ids[1:]]
+            return content
+        return [{"type": "text", "text": view_text}]
 
     def turn(self, view_text: str, pending_tool_ids: list[str]) -> tuple[dict | None, dict]:
         if pending_tool_ids:
@@ -423,12 +450,95 @@ class ScriptedProvider:
         self.cost = 0.0
         self.requests = 0
 
+    def plan(self, view_text: str, pending_tool_ids: list[str]) -> tuple[str, dict]:
+        self.requests += 1
+        entry = self.script.pop(0) if self.script and "plan" in self.script[0] else {"plan": {}}
+        text = json.dumps(entry["plan"])
+        self.ledger.append("response", {"n": self.requests, "scripted_plan": entry["plan"]})
+        return text, {"calls": 1, "input_tokens": 0, "output_tokens": 0, "cost_microusd": 0}
+
     def turn(self, view_text: str, pending_tool_ids: list[str]):
         self.requests += 1
         action = self.script.pop(0) if self.script else {"tool": "end_phase", "arguments": {}}
         action = dict(action, _ids=[f"s{self.requests}"])
         self.ledger.append("response", {"n": self.requests, "scripted": action})
         return action, {"calls": 1, "input_tokens": 0, "output_tokens": 0, "cost_microusd": 0}
+
+
+PLAN_REQUEST = (
+    "Planning step: no action is taken now. Before this explore phase, write a provisional investigation plan "
+    "from the information in the current view. Reply with one JSON object with these fields: "
+    "\"uncertainties\" (the uncertainties or relations you consider investigable now), "
+    "\"operations\" (a list of {\"tool\", \"purpose\"} with the available tools that could inform them), "
+    "\"distinguishing_results\" (results that would tell alternatives apart), and "
+    "\"conditions\" (when you would continue, change the plan or abstain). The plan does not change the "
+    "committed set, is not scored and does not oblige you to commit anything. Do not call any tool now.")
+
+EXECUTE_REQUEST = ("Your plan is recorded. Now carry out the explore phase with the tools. You may follow the "
+                   "plan, change it or abandon it in light of the results.")
+
+
+def parse_plan(text: str):
+    """The first JSON object in the plan text, or None; the raw text is always kept."""
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        value = json.loads(text[start:end + 1])
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+# The harness's evaluate result: "<hypothesis> on <dossier>: <status>".
+EVALUATION_RESULT = re.compile(r"^h\d+ on \S+: (.*)$")
+
+
+class PlanTrace:
+    """Planned against executed actions of one explore phase. A deviation is an executed tool absent from the
+    plan's operations; what preceded it (the last result and navigation reference in the view) is recorded as
+    an observable antecedent, not as a motive. A consultation has a result when it is an evaluation or a
+    navigation response other than an opened session or an error."""
+
+    def __init__(self, dossier: str, plan: dict | None):
+        self.dossier = dossier
+        operations = (plan or {}).get("operations") or []
+        self.planned = [o.get("tool") for o in operations if isinstance(o, dict) and o.get("tool")]
+        self.executed: list[str] = []
+        self.deviations: list[dict] = []
+        self.consultations_with_result = 0
+        self.consultations_without_result = 0
+
+    def action(self, tool: str, view: dict) -> None:
+        self.executed.append(tool)
+        if tool not in self.planned and tool != "end_phase":
+            nav = view.get("last_navigation") or {}
+            self.deviations.append({"tool": tool, "preceded_by_result": view.get("last_result"),
+                                    "preceded_by_navigation": nav.get("action_id")})
+
+    def result(self, view: dict) -> None:
+        nav = view.get("last_navigation")
+        if nav is not None:
+            kind = next(iter(nav.get("payload") or {}), None)
+            if kind in ("session_opened", "error") or nav.get("status") == "error":
+                self.consultations_without_result += 1
+            else:
+                self.consultations_with_result += 1
+            return
+        evaluated = EVALUATION_RESULT.match(view.get("last_result") or "")
+        if evaluated:
+            if evaluated.group(1).startswith("pending"):
+                self.consultations_without_result += 1
+            else:
+                self.consultations_with_result += 1
+
+    def summary(self) -> dict:
+        return {"dossier": self.dossier, "planned_tools": self.planned, "executed_tools": self.executed,
+                "planned_not_executed": [t for t in self.planned if t not in self.executed],
+                "executed_not_planned": sorted({t for t in self.executed if t not in self.planned} - {"end_phase"}),
+                "deviations": self.deviations,
+                "consultations_with_result": self.consultations_with_result,
+                "consultations_without_result": self.consultations_without_result}
 
 
 FINDINGS_PARAGRAPH = """
@@ -573,6 +683,10 @@ def main(argv: list[str]) -> int:
     tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \
         (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
     memory = Findings() if findings_report else None
+    planning = bool(t.get("planning", False))
+    planned_phase = None
+    trace: PlanTrace | None = None
+    carried_usage = None
     ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": tools})
     if d["provider"] == "anthropic":
         provider = AnthropicProvider(d["model"], system, ledger, tools)
@@ -603,6 +717,26 @@ def main(argv: list[str]) -> int:
         if not opened:
             text = first + text
             opened = True
+        key = (view["dossier"], view["phase"])
+        if trace is not None:
+            if key == (trace.dossier, "explore"):
+                trace.result(view)
+            else:
+                ledger.append("plan_trace", trace.summary())
+                trace = None
+        if planning and view["phase"] == "explore" and key != planned_phase and ceiling is None:
+            # Planning step before the explore phase: the same view, no action, not scored.
+            planned_phase = key
+            try:
+                plan_text, carried_usage = provider.plan(text, pending)
+                pending = []
+                plan = parse_plan(plan_text)
+                ledger.append("plan", {"dossier": view["dossier"], "text": plan_text, "parsed": plan})
+                trace = PlanTrace(view["dossier"], plan)
+                text = EXECUTE_REQUEST
+            except CeilingReached as e:
+                ceiling = str(e)
+                ledger.append("ceiling", {"reason": ceiling})
         action, usage = None, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_microusd": 0}
         if ceiling is None:
             try:
@@ -613,6 +747,12 @@ def main(argv: list[str]) -> int:
         if action is None:
             action = {"tool": "end_phase", "arguments": {}, "_ids": []}
             ledger.append("forced_end_phase", {"reason": ceiling or "no tool call"})
+        if carried_usage is not None:
+            # The planning call is charged with the first execution turn of the phase.
+            usage = {k: usage.get(k, 0) + carried_usage.get(k, 0) for k in usage}
+            carried_usage = None
+        if trace is not None:
+            trace.action(action.get("tool", ""), view)
         pending = action.pop("_ids", [])
         if memory is not None and action.get("tool") == "end_phase":
             arguments = dict(action.get("arguments") or {})
@@ -629,6 +769,8 @@ def main(argv: list[str]) -> int:
         ledger.append("action", action)
         process.stdin.write(json.dumps({"action": action, "usage": usage}) + "\n")
         process.stdin.flush()
+    if trace is not None:
+        ledger.append("plan_trace", trace.summary())
     process.stdin.close()
     code = process.wait()
     summary = {"exit": code, "ceiling": ceiling, "model_requests": provider.requests,

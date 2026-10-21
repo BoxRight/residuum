@@ -1,0 +1,724 @@
+{
+  "commit_traces": [
+    {
+      "before": [],
+      "dossier": "brookside",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "Test mirror-right hypothesis against feedback.",
+      "requested": [
+        "h1"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": [
+          "e1"
+        ]
+      },
+      "result": "committed [\"h1\"]"
+    }
+  ],
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 1,
+    "admitted": 2,
+    "attempts": 2,
+    "calls": 13,
+    "commit_rejections": 0,
+    "commits": 1,
+    "cost_microusd": 276755,
+    "discards": 1,
+    "findings": 0,
+    "findings_verified": 0,
+    "input_tokens": 569879,
+    "navigation_actions": 0,
+    "navigation_steps": 0,
+    "output_tokens": 3407,
+    "questions": 0,
+    "refused_actions": 0,
+    "reports": 0,
+    "turns": 12,
+    "verified_evaluations": 2
+  },
+  "findings": [],
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "obligationMirrorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "obligationMirrorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=distribute",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "obligationMirrorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "obligationMirrorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=keepAvailable",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "obligationMirrorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=signB",
+                "subject=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e1",
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Beneficiary's right mirrors the obligation; test consequences.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Prospective { dossiers: 1, exposures: 5 }",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule obligationMirrorRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": false,
+      "discarded": "Contributes no positions; speculative.",
+      "evaluations": [
+        {
+          "added_events": [
+            "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+            "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+            "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+            "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF"
+          ],
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "actComplies",
+              "substitution": [
+                "act=saCF_c",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "object=saDocCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "actComplies",
+              "substitution": [
+                "act=saCF_u",
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "object=saDocCF",
+                "subject=usa",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "actComplies",
+              "substitution": [
+                "act=cfA1",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "actComplies",
+              "substitution": [
+                "act=cfA2",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            }
+          ],
+          "dossier": "casaFiesta",
+          "id": "e2",
+          "positions_contributed": [],
+          "status": "certified"
+        }
+      ],
+      "id": "h2",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Probe: performed acts as compliance in casaFiesta.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule actComplies(act, subject, conduct, object, beneficiary, authority, effective, t) =\n    Act(act, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= compliance(act, act, subject, object, beneficiary, authority, effective) @ t"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=2 input=31481 output=1062 cost_microusd=52649",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "h1 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "calls=1 input=20905 output=229 cost_microusd=15686",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "committed [\"h1\"] reason: Test mirror-right hypothesis against feedback.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "calls=1 input=26755 output=27 cost_microusd=16989",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 7
+    },
+    {
+      "detail": "calls=1 input=32371 output=43 cost_microusd=17149",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 8
+    },
+    {
+      "detail": "calls=2 input=77992 output=1278 cost_microusd=37516",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 9
+    },
+    {
+      "detail": "h2: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 10
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 11
+    },
+    {
+      "detail": "h2 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 12
+    },
+    {
+      "detail": "calls=1 input=47141 output=171 cost_microusd=24954",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 13
+    },
+    {
+      "detail": "h2: Contributes no positions; speculative.",
+      "dossier": "casaFiesta",
+      "kind": "discard",
+      "phase": "explore",
+      "seq": 14
+    },
+    {
+      "detail": "calls=1 input=54629 output=27 cost_microusd=23708",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 15
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 16
+    },
+    {
+      "detail": "calls=1 input=61927 output=27 cost_microusd=23982",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 17
+    },
+    {
+      "detail": "calls=2 input=139332 output=476 cost_microusd=37786",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 18
+    },
+    {
+      "detail": "Flowers has no seeds and an empty closure, so no rule can act on it. I have no evidence for a new rule. h1 stays committed because it caused no loss.",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 20
+    },
+    {
+      "detail": "calls=1 input=77346 output=67 cost_microusd=26336",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 21
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B7"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B8"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B9"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B10"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B11"
+        }
+      ],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 0,
+  "trajectory_id": "pilot004r-run-011"
+}

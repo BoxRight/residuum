@@ -1,0 +1,21 @@
+{
+  "stage": "compile",
+  "name": "compile residuum-trajectory",
+  "command": [
+    "cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "residuum-boundary",
+    "--bin",
+    "residuum-trajectory",
+    "--jobs",
+    "1",
+    "--message-format=json"
+  ],
+  "timeout": 45,
+  "stdin": null,
+  "stdout": false,
+  "supervise": null
+}

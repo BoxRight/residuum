@@ -85,3 +85,59 @@ justifications are `origin: h2` with `event_already_in_baseline: true`.
   exactly. Run-006 reproduces its ledger; its report differs only by the
   findings fields that run-007 added.
 - The 21 pilot004r tests pass individually.
+
+## Result (paid run, `run/`)
+
+13 requests, US$0.277. Prequential loss 0 on all three dossiers. This is the
+first zero-loss trajectory of the pilot, and it does not come from the change
+under test (see the reading below). There were 2 drafts, both admitted and
+both evaluated automatically. There was 1 commit, 1 discard and 1 abstention,
+with no navigation, no learner-requested `evaluate_rule`, no comparison and
+no findings.
+
+### Brookside explore: the correct form, committed before feedback
+
+The learner's first draft is the same-subject form (`obligationMirrorRight`,
+`obligation(…) <= right(…)` with the same arguments): *"Beneficiary's right
+mirrors the obligation; test consequences."* Its automatic evaluation `e1`
+has baseline `O`, five `added_events` `right(saB_j, jant, …, usa, …)`, and
+five justifications `origin: h1`. The learner commits h1 at once: *"Test
+mirror-right hypothesis against feedback."* The commit trace records
+`feedback_on_this_dossier_seen: false` and `e1` as the only evaluation. B7–B11
+are hit (loss 0). In revise, the learner reads the feedback (*"Zero
+discrepancies. Keep h1."*) and ends the phase.
+
+### Casa Fiesta explore: a probe discarded from its attribution
+
+The learner drafts h2 (`actComplies`: an `Act` gives its own `compliance`),
+*"Probe: performed acts as compliance in casaFiesta."* `e2` has baseline
+`O, h1`, four `compliance` events added, four justifications `origin: h2`, and
+`positions_contributed: []` (compliance is not a projected position). The
+learner discards it: *"Contributes no positions; speculative."* This is the
+first `discard` in the pilot. No commit follows; h1 stays committed.
+
+### Flowers
+
+The learner plans an `inspect_theory` and an `evaluate_rule`, then abstains
+without either: *"Flowers has no seeds and an empty closure, so no rule can
+act on it."*
+
+### Reading
+
+- **The zero loss is not evidence for the change.** Brookside explore is the
+  decisive step. There, the first evaluation has baseline `O` alone, so the
+  attribution fields carry the same events as run-010's `new_events`. The first
+  request is identical to run-010's; only the `evaluate_rule` description
+  differs. The learner drafted the same-subject form first, where run-010
+  drafted the swapped one first. That is a different sample, not a different
+  reading of the results.
+- **Where the change was visible**, in Casa Fiesta, the learner read the
+  attribution correctly. The added events were its own compliance events, it
+  saw no positions depending on them, and it discarded the draft instead of
+  leaving it uncommitted as h4 was in run-010.
+- **The exploration pattern is unchanged.** One draft per dossier, committed
+  or discarded on its automatic evaluation alone. No alternative was drafted
+  and nothing was compared. Planned consultations went unexecuted in all three
+  dossiers. There were no findings.
+- **The commit trace answers criterion 4 directly.** The only commit was made
+  before feedback, with a single evaluation.

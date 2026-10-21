@@ -1,0 +1,656 @@
+{
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h2"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 4,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 4,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 1,
+    "admitted": 4,
+    "attempts": 5,
+    "calls": 18,
+    "commit_rejections": 0,
+    "commits": 3,
+    "cost_microusd": 427270,
+    "discards": 0,
+    "findings": 0,
+    "findings_verified": 0,
+    "input_tokens": 999058,
+    "navigation_actions": 0,
+    "navigation_steps": 0,
+    "output_tokens": 5268,
+    "questions": 0,
+    "refused_actions": 0,
+    "reports": 0,
+    "turns": 18,
+    "verified_evaluations": 4
+  },
+  "findings": [],
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "certified": true,
+          "dossier": "brookside",
+          "positions_contributed": [
+            "right(usa, adoptPolicy, policyA, jant)",
+            "right(usa, distribute, policyA, jant)",
+            "right(usa, keepAvailable, policyA, jant)",
+            "right(usa, post, policyA, jant)",
+            "right(usa, post, signB, jant)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Obligations of debtor yield a mirror right for the creditor.",
+      "retired_at": "brookside",
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule creditorRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, beneficiary, conduct, object, subject, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "certified": true,
+          "dossier": "brookside",
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h2",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "revise"
+      },
+      "parent": null,
+      "rationale": "Documented rights have the obligor as subject.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule obligationRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "S_ELABORATION Elaboration(\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-010/work/Candidateh3.res: could not infer type for rule parameter `saU`\")",
+      "case_specific": false,
+      "certified_evaluations": 0,
+      "committed_ok": false,
+      "discarded": null,
+      "evaluations": [],
+      "id": "h3",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire.",
+      "retired_at": null,
+      "statuses": [
+        "Pending(\"S_ELABORATION Elaboration(\\\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-010/work/Candidateh3.res: could not infer type for rule parameter `saU`\\\")\")"
+      ],
+      "text": "rule agreedDuty(sa, saU, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": false,
+      "discarded": null,
+      "evaluations": [
+        {
+          "certified": true,
+          "dossier": "casaFiesta",
+          "positions_contributed": [
+            "obligation(casaFiesta, adoptPolicy, policyCF, usa)",
+            "obligation(casaFiesta, agree, saDocCF, usa)",
+            "obligation(casaFiesta, post, signCF, usa)",
+            "obligation(usa, agree, saDocCF, casaFiesta)",
+            "right(casaFiesta, adoptPolicy, policyCF, usa)",
+            "right(casaFiesta, agree, saDocCF, usa)",
+            "right(casaFiesta, post, signCF, usa)",
+            "right(usa, agree, saDocCF, casaFiesta)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h4",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule agreedDuty(sa, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "certified": true,
+          "dossier": "casaFiesta",
+          "positions_contributed": [
+            "obligation(casaFiesta, adoptPolicy, policyCF, usa)",
+            "obligation(casaFiesta, post, signCF, usa)",
+            "right(casaFiesta, adoptPolicy, policyCF, usa)",
+            "right(casaFiesta, post, signCF, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h5",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Narrow version avoiding obligations to agree.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule agreedAdopt(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n\nrule agreedPost(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, post, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, post, thing, beneficiary, authority, effective) @ t"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=2 input=31297 output=1011 cost_microusd=51845",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "h1 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "calls=1 input=19817 output=161 cost_microusd=12562",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "committed [\"h1\"] reason: Creditor right mirrors obligation; plausible documented positions.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "calls=1 input=24611 output=27 cost_microusd=14240",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=5",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 7
+    },
+    {
+      "detail": "calls=1 input=29331 output=298 cost_microusd=17245",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 8
+    },
+    {
+      "detail": "h2: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "revise",
+      "seq": 9
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 10
+    },
+    {
+      "detail": "h2 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "revise",
+      "seq": 11
+    },
+    {
+      "detail": "calls=1 input=35035 output=167 cost_microusd=18867",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 12
+    },
+    {
+      "detail": "committed [\"h2\"] reason: Derives the missing documented rights with obligor as subject; drop h1 whose rights were not documented.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "revise",
+      "seq": 13
+    },
+    {
+      "detail": "calls=2 input=81597 output=423 cost_microusd=26729",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 14
+    },
+    {
+      "detail": "calls=2 input=95032 output=1562 cost_microusd=42092",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 15
+    },
+    {
+      "detail": "h3: S_ELABORATION Elaboration(\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-010/work/Candidateh3.res: could not infer type for rule parameter `saU`\")",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 16
+    },
+    {
+      "detail": "calls=1 input=54758 output=255 cost_microusd=24083",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 17
+    },
+    {
+      "detail": "h4: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 18
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "h4 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 20
+    },
+    {
+      "detail": "calls=1 input=62203 output=470 cost_microusd=28792",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 21
+    },
+    {
+      "detail": "h5: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 22
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 23
+    },
+    {
+      "detail": "h5 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 24
+    },
+    {
+      "detail": "calls=1 input=70725 output=142 cost_microusd=28949",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 25
+    },
+    {
+      "detail": "committed [\"h2\", \"h5\"] reason: h5 derives obligations/compliance for performed policy and sign acts under an agreement, and h2 gives the obligor rights.",
+      "dossier": "casaFiesta",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 26
+    },
+    {
+      "detail": "calls=1 input=81472 output=27 cost_microusd=34214",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 27
+    },
+    {
+      "detail": "committed=[\"h2\", \"h5\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 28
+    },
+    {
+      "detail": "calls=1 input=92129 output=63 cost_microusd=35424",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 29
+    },
+    {
+      "detail": "calls=2 input=206637 output=588 cost_microusd=54051",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 30
+    },
+    {
+      "detail": "The flowers dossier has no seeds and its closure is empty, so there is nothing to derive or test. I am keeping the committed set h2 and h5 unchanged.",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 31
+    },
+    {
+      "detail": "committed=[\"h2\", \"h5\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 32
+    },
+    {
+      "detail": "calls=1 input=114414 output=74 cost_microusd=38177",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 33
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [],
+      "loss": 5,
+      "missed": [
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11"
+      ],
+      "unvalued_derived": 5,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h2",
+        "h5"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 4,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h2",
+        "h5"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 5,
+  "trajectory_id": "pilot004r-run-010"
+}

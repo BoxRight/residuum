@@ -1,0 +1,17 @@
+{
+  "name": "pilot004r driver+trajectory",
+  "stage": "trajectory",
+  "exit_status": 0,
+  "elapsed_seconds": 38.02575533599884,
+  "peak_rss_bytes": 31084544,
+  "cgroup_peak_bytes": 37339136,
+  "memory_events": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0"
+  },
+  "stop_reason": null
+}

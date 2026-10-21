@@ -1,0 +1,13 @@
+--- run-008 system
++++ run-009 system
+@@ -19,6 +19,10 @@
+   excluded positions derived. Drafts you did not commit play no part in it. That prequential score is
+   final and is never revised. The phase ends only after at least one draft in it or with a stated
+   abstention; you are never required to produce a rule.
++  During explore, judge hypotheses by how much they can tell you about formal consequences and differences.
++  The normative loss does not apply to drafts or to their evaluations. Decide separately, at the end of the
++  phase, whether to commit any hypothesis; you may commit none. Uncertainty about whether a hypothesis is
++  correct is a reason to test it, not a reason to skip the test.
+ - revise: After each scoring you receive the list of discrepancies for that dossier: documented positions your committed theory did not derive, and excluded positions it derived with the hypotheses responsible. You may revise, keep or discard hypotheses (draft, test, discard and commit again),
+   also when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
+   rescored with the new committed set, recorded separately as a retrospective adjustment.

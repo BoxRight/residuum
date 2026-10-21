@@ -240,9 +240,24 @@ you have reason to expect to hold. The evaluator contrasts your committed hypoth
 positions through the loss."""
 
 
+INVESTIGATION_PARAGRAPH = """
+  During explore, judge hypotheses by how much they can tell you about formal consequences and differences.
+  The normative loss does not apply to drafts or to their evaluations. Decide separately, at the end of the
+  phase, whether to commit any hypothesis; you may commit none. Uncertainty about whether a hypothesis is
+  correct is a reason to test it, not a reason to skip the test."""
+
+DRAFT_EXPLORE_END = "you are never required to produce a rule."
+
+
 def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False,
-                 draft_contract: bool = False, findings_report: bool = False) -> str:
+                 draft_contract: bool = False, findings_report: bool = False,
+                 investigation_split: bool = False) -> str:
     text = _contract(condition, budgets, n_dossiers, question_first, draft_contract)
+    if investigation_split:
+        # Run-009: investigating and committing are separate decisions; only with the draft contract.
+        if not draft_contract or text.count(DRAFT_EXPLORE_END) != 1:
+            raise SystemExit("investigation_split needs the draft contract")
+        text = text.replace(DRAFT_EXPLORE_END, DRAFT_EXPLORE_END + INVESTIGATION_PARAGRAPH)
     return text + FINDINGS_PARAGRAPH if findings_report else text
 
 
@@ -674,8 +689,9 @@ def main(argv: list[str]) -> int:
     question_first = bool(t.get("question_first", False))
     draft_contract = bool(t.get("draft_contract", False))
     findings_report = bool(t.get("findings_report", False))
+    investigation_split = bool(t.get("investigation_split", False))
     system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract,
-                          findings_report)
+                          findings_report, investigation_split)
     first = opening(manifest, base)
     base_tools = draft_tools(TOOLS) if draft_contract else TOOLS
     if findings_report:

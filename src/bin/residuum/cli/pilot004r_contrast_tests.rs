@@ -384,7 +384,10 @@ fn score_brookside(texts: &[&str]) -> Scoring {
             rationale: "contrast scoring".into(),
         })
         .collect();
-    actions.push_back(LearnerAction::Commit { hypotheses: ids });
+    actions.push_back(LearnerAction::Commit {
+        hypotheses: ids,
+        reason: None,
+    });
     let manifest = TrajectoryManifest {
         trajectory_id: format!("contrast-{}", texts.len()),
         condition: Condition::NoFeedback,

@@ -373,6 +373,7 @@ fn evaluate(h: &str, d: &str) -> LearnerAction {
 fn commit(hs: &[&str]) -> LearnerAction {
     LearnerAction::Commit {
         hypotheses: hs.iter().map(|s| s.to_string()).collect(),
+        reason: None,
     }
 }
 
@@ -1434,4 +1435,80 @@ fn pilot004r_question_first_gates_proposals_and_abstentions() {
     );
     bad.question_first = true;
     assert!(run_trajectory(&bad, &reserved(), &mut Scripted::new()).is_err());
+}
+
+// ---------------------------------------------------------------------------
+// Draft contract (run-006): drafts, discards and commit reasons.
+
+#[test]
+fn pilot004r_drafts_are_never_scored_discard_and_reason_are_traced() {
+    let m = manifest("drafts", Condition::Feedback, navigation_order());
+    let mut learner = Scripted::new()
+        .at(
+            "brookside",
+            Phase::Explore,
+            vec![
+                // Two drafts tested; neither is committed before scoring.
+                propose(CORR, None),
+                propose(CORR_CREDITOR, None),
+                evaluate("h1", "brookside"),
+                evaluate("h2", "brookside"),
+                LearnerAction::Discard {
+                    hypothesis: "h2".into(),
+                    reason: "reverses the parties".into(),
+                },
+                LearnerAction::Discard {
+                    hypothesis: "h9".into(),
+                    reason: "no such draft".into(),
+                },
+                end(Some("no reason yet to commit")),
+            ],
+        )
+        .at(
+            "brookside",
+            Phase::Revise,
+            vec![
+                LearnerAction::Commit {
+                    hypotheses: vec!["h1".into()],
+                    reason: Some("derives the positions reported missing".into()),
+                },
+                end(None),
+            ],
+        );
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    // Uncommitted drafts take no part in the prequential score.
+    let brookside = &report.prequential[0];
+    assert!(brookside.committed.is_empty());
+    assert_eq!(brookside.loss, 5);
+    assert!(brookside.exposures.is_empty());
+    // The commit applies afterwards; h2 stays a discarded draft.
+    assert_eq!(report.compatibility[0][0].loss, 0);
+    assert_eq!(report.prequential[1].committed, vec!["h1".to_string()]);
+    let h2 = report.hypotheses.iter().find(|h| h.id == "h2").unwrap();
+    assert_eq!(h2.discarded.as_deref(), Some("reverses the parties"));
+    assert_eq!(h2.evaluations.len(), 1);
+
+    let k = &report.counters;
+    assert_eq!(k.discards, 1);
+    assert_eq!(k.refused_actions, 1);
+    assert_eq!(k.verified_evaluations, 2);
+    let detail = |kind: &str| -> Vec<String> {
+        report
+            .ledger
+            .iter()
+            .filter(|e| e.kind == kind)
+            .map(|e| e.detail.clone())
+            .collect()
+    };
+    assert_eq!(detail("discard"), vec!["h2: reverses the parties"]);
+    assert_eq!(
+        detail("commit"),
+        vec!["committed [\"h1\"] reason: derives the positions reported missing"]
+    );
+    // The view marks the discarded draft.
+    let last = learner.views.last().unwrap();
+    let view_h2 = last.hypotheses.iter().find(|h| h.id == "h2").unwrap();
+    assert_eq!(view_h2.discarded.as_deref(), Some("reverses the parties"));
+    assert!(!view_h2.committed);
 }

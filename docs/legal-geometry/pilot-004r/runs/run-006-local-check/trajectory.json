@@ -1,0 +1,172 @@
+{
+  "trajectory": {
+    "trajectory_id": "pilot004r-run-006-local-check",
+    "condition": "feedback",
+    "imports": [
+      "../../vocabulary.res"
+    ],
+    "dossiers_module": "../../dossiers.res",
+    "reserved": "../../reserved/valuations.tsv",
+    "workdir": "../../../../../target/pilot004r/run-006-local-check/work",
+    "order": [
+      {
+        "id": "brookside",
+        "experiment": "brookside"
+      },
+      {
+        "id": "casaFiesta",
+        "experiment": "casa_fiesta"
+      },
+      {
+        "id": "flowers",
+        "experiment": null
+      }
+    ],
+    "budgets": {
+      "max_verified_evaluations": 40,
+      "max_proposals": 40,
+      "max_turns_per_phase": 30,
+      "max_clauses": 2,
+      "max_navigation_actions": 60,
+      "max_navigation_steps": 4000
+    },
+    "base_module": "LegalGeneral",
+    "draft_contract": true
+  },
+  "driver": {
+    "ontology": "../../../../../examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+    "vocabulary": "../../vocabulary.res",
+    "profile": {
+      "heads": [
+        "obligation",
+        "permission",
+        "prohibition",
+        "omissionProhibition",
+        "right",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialLiability"
+      ],
+      "body_verbs": [
+        "Act",
+        "right",
+        "obligationFiled",
+        "prohibition",
+        "omissionProhibition",
+        "permissionFiled",
+        "patrimonialHolding",
+        "powerGranted",
+        "legislationText",
+        "obligation",
+        "permission",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialAsset",
+        "patrimonialLiability",
+        "transferred",
+        "owns",
+        "capacity",
+        "law"
+      ],
+      "max_atoms": 4
+    },
+    "provider": "scripted",
+    "script": [
+      {
+        "tool": "pose_question",
+        "arguments": {
+          "question": "Which relation could link the obligations to rights?",
+          "tool": "compare_partition"
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corr(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n",
+          "parent": null,
+          "rationale": "draft A"
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corrCreditor(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, b, c, o, s, au, e) @ t\n",
+          "parent": null,
+          "rationale": "draft B"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h1",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h2",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "compare_partition",
+        "arguments": {
+          "hypotheses": [
+            "h1",
+            "h2"
+          ],
+          "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+        }
+      },
+      {
+        "tool": "discard",
+        "arguments": {
+          "hypothesis": "h2",
+          "reason": "scripted: set aside"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: no reason yet to commit"
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h1"
+          ],
+          "reason": "scripted: derives the reported positions"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: casaFiesta"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: flowers"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      }
+    ]
+  }
+}

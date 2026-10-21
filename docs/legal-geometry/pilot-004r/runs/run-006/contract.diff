@@ -1,0 +1,37 @@
+--- run-004 contract
++++ run-006 contract
+@@ -8,18 +8,24 @@
+ 
+ Each dossier has two phases.
+ - explore: you see the dossier and the closure Residuum computes for LegalGeneral plus your committed
+-  hypotheses, with justifications. Investigate the relations you can observe there and propose provisional
+-  generalisations about them as rules, then verify their consequences by evaluating them. Do this even when
+-  LegalGeneral shows no discrepancy yet: the task is to explore hypotheses and test what they entail, not to
+-  wait for a signal of error. You may propose rules, evaluate them on presented dossiers and commit a set of
+-  hypotheses. When you end the phase, the committed set is scored on this dossier: loss = required
+-  positions not derived + excluded positions derived. That prequential score is final and is never revised.
+-  The phase ends only after at least one proposal in it or with a stated abstention.
+-- revise: After each scoring you receive the list of discrepancies for that dossier: documented positions your committed theory did not derive, and excluded positions it derived with the hypotheses responsible. You may revise, keep or discard hypotheses (propose, evaluate and commit again), also
+-  when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
++  hypotheses, with justifications. This phase is for investigating the dossier: which relations it contains,
++  what consequences possible generalisations would have, and how alternative hypotheses differ.
++  propose_rule creates a draft hypothesis: a draft has no effect on your committed set R_k and is never
++  scored. evaluate_rule tests a hypothesis hypothetically on a presented dossier, without penalty. You may
++  draft, test, compare and discard as many alternatives as the budgets allow; discard records that you set a
++  draft aside and why, and pose_question records a question if that helps you. commit is the decision to
++  incorporate hypotheses into R_k so that they are contrasted with later experience; give its reason. When
++  you end the phase, the committed set is scored on this dossier: loss = required positions not derived +
++  excluded positions derived. Drafts you did not commit play no part in it. That prequential score is
++  final and is never revised. The phase ends only after at least one draft in it or with a stated
++  abstention; you are never required to produce a rule.
++- revise: After each scoring you receive the list of discrepancies for that dossier: documented positions your committed theory did not derive, and excluded positions it derived with the hypotheses responsible. You may revise, keep or discard hypotheses (draft, test, discard and commit again),
++  also when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
+   rescored with the new committed set, recorded separately as a retrospective adjustment.
+ 
+-Your task: explore and test generalisations, and keep the loss low on the dossiers you have not seen yet.
++Your task: build and test hypotheses that could explain how the dossiers are treated, and commit those
++you have reason to expect to hold. The evaluator contrasts your committed hypotheses with the documented
++positions through the loss.
+ 
+ Budgets for the whole trajectory: 40 verified evaluations, 40
+ proposals, 30 turns per phase. Every turn is exactly one tool call.

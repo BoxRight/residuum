@@ -749,6 +749,14 @@ pub enum LearnerAction {
     },
     Commit {
         hypotheses: Vec<String>,
+        /// Traceability only: recorded, never checked.
+        reason: Option<String>,
+    },
+    /// Record that a hypothesis is set aside and why. Traceability only:
+    /// it executes nothing and does not change the committed set.
+    Discard {
+        hypothesis: String,
+        reason: String,
     },
     /// One existing worker request; hypothesis identifiers stand for the
     /// worker's candidates. Proposal and candidate evaluation go through
@@ -821,6 +829,8 @@ pub struct HypothesisView {
     pub admission: String,
     pub evaluations: Vec<EvaluationView>,
     pub committed: bool,
+    /// Reason of the latest `Discard`, if any.
+    pub discarded: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1026,6 +1036,8 @@ pub struct HypothesisRecord {
     pub committed_ok: bool,
     pub retired_at: Option<usize>,
     pub evaluations: Vec<EvaluationView>,
+    /// Reason of the latest `Discard`, if any (traceability only).
+    pub discarded: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1058,6 +1070,7 @@ pub struct Counters {
     pub refused_actions: usize,
     pub abstentions: usize,
     pub questions: usize,
+    pub discards: usize,
     pub navigation_actions: usize,
     pub navigation_steps: usize,
     pub commits: usize,
@@ -1310,6 +1323,7 @@ impl<'a> State<'a> {
                     admission: h.admission.clone(),
                     evaluations: h.evaluations.clone(),
                     committed: self.committed.contains(&h.id),
+                    discarded: h.discarded.clone(),
                 })
                 .collect(),
             committed: self.committed.clone(),
@@ -1379,6 +1393,7 @@ impl<'a> State<'a> {
             committed_ok: false,
             retired_at: None,
             evaluations: Vec::new(),
+            discarded: None,
         };
         if record.admitted {
             let taken: BTreeSet<&str> = self
@@ -1739,7 +1754,25 @@ impl<'a> State<'a> {
         result
     }
 
-    fn commit(&mut self, index: usize, phase: Phase, ids: Vec<String>) -> String {
+    fn discard(&mut self, index: usize, phase: Phase, id: String, reason: String) -> String {
+        let Some(h) = self.hypotheses.iter_mut().find(|h| h.id == id) else {
+            self.counters.refused_actions += 1;
+            return format!("refused: `{id}` is not a hypothesis of this trajectory");
+        };
+        h.discarded = Some(reason.clone());
+        self.counters.discards += 1;
+        let detail = format!("{id}: {reason}");
+        self.log(index, Some(phase), "discard", detail.clone());
+        format!("discarded {detail}")
+    }
+
+    fn commit(
+        &mut self,
+        index: usize,
+        phase: Phase,
+        ids: Vec<String>,
+        reason: Option<String>,
+    ) -> String {
         let mut unique = Vec::new();
         for id in ids {
             if !unique.contains(&id) {
@@ -1788,7 +1821,11 @@ impl<'a> State<'a> {
                 format!("committed {unique:?}")
             }
         };
-        self.log(index, Some(phase), "commit", result.clone());
+        let detail = match &reason {
+            Some(r) => format!("{result} reason: {r}"),
+            None => result.clone(),
+        };
+        self.log(index, Some(phase), "commit", detail);
         result
     }
 
@@ -1874,7 +1911,12 @@ impl<'a> State<'a> {
                     hypothesis,
                     dossier,
                 } => self.evaluate(index, phase, hypothesis, dossier),
-                LearnerAction::Commit { hypotheses } => self.commit(index, phase, hypotheses),
+                LearnerAction::Commit { hypotheses, reason } => {
+                    self.commit(index, phase, hypotheses, reason)
+                }
+                LearnerAction::Discard { hypothesis, reason } => {
+                    self.discard(index, phase, hypothesis, reason)
+                }
                 LearnerAction::Navigate { request } => self.navigate(index, phase, request),
                 LearnerAction::Malformed { message } => {
                     self.counters.refused_actions += 1;

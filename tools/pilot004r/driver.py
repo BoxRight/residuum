@@ -82,6 +82,42 @@ GOAL = {"type": "string", "description": "One event in Formal, e.g. verb(arg, ..
 HYPOTHESIS = {"type": ["string", "null"], "description": "Id of an admitted hypothesis: the theory is LegalGeneral plus "
                                                          "that hypothesis. Null or absent: LegalGeneral alone."}
 DOSSIER = {"type": "string", "description": "Id of a presented dossier."}
+def draft_tools(tools: list[dict]) -> list[dict]:
+    """The run-006 catalogue: same tools, described as drafting, hypothetical testing and commitment, plus
+    discard and a reason on commit (both recorded only)."""
+    descriptions = {
+        "propose_rule": "Create a draft hypothesis from Formal rule declarations. Residuum parses, elaborates and "
+                        "admits it or reports why not. A draft has no effect on the committed set R_k and is "
+                        "never scored.",
+        "evaluate_rule": "Test a hypothesis hypothetically: the closure of LegalGeneral plus the committed "
+                         "hypotheses plus this one on a presented dossier, with Residuum's independent "
+                         "certificate. No penalty; uses one verified evaluation from the budget. Returns "
+                         "certificate status, new events and positions the hypothesis contributes; never "
+                         "valuations or loss.",
+        "commit": "Decide which hypotheses form the committed set R_k (it replaces the current one). Committed "
+                  "hypotheses are scored and contrasted with later dossiers. The new theory must certify on "
+                  "every presented dossier.",
+    }
+    out = []
+    for tool in tools:
+        tool = json.loads(json.dumps(tool))
+        if tool["name"] in descriptions:
+            tool["description"] = descriptions[tool["name"]]
+        if tool["name"] == "commit":
+            tool["input_schema"]["properties"]["reason"] = {
+                "type": "string", "description": "Why you commit this set (recorded only)."}
+        out.append(tool)
+    out.append({
+        "name": "discard",
+        "description": "Record that you set a hypothesis aside and why. It executes nothing and does not change "
+                       "the committed set.",
+        "input_schema": {"type": "object", "properties": {
+            "hypothesis": {"type": "string"}, "reason": {"type": "string"}},
+            "required": ["hypothesis", "reason"]},
+    })
+    return out
+
+
 QUESTION_TOOL = {
     "name": "pose_question",
     "description": "Record an investigable question about the presented dossiers and the theory, and the tool "
@@ -182,7 +218,30 @@ Head verbs allowed: {heads}. Body verbs allowed: {body}. At most {atoms} body at
 already presented."""
 
 
-def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False) -> str:
+DRAFT_EXPLORE = """- explore: you see the dossier and the closure Residuum computes for LegalGeneral plus your committed
+  hypotheses, with justifications. This phase is for investigating the dossier: which relations it contains,
+  what consequences possible generalisations would have, and how alternative hypotheses differ.
+  propose_rule creates a draft hypothesis: a draft has no effect on your committed set R_k and is never
+  scored. evaluate_rule tests a hypothesis hypothetically on a presented dossier, without penalty. You may
+  draft, test, compare and discard as many alternatives as the budgets allow; discard records that you set a
+  draft aside and why, and pose_question records a question if that helps you. commit is the decision to
+  incorporate hypotheses into R_k so that they are contrasted with later experience; give its reason. When
+  you end the phase, the committed set is scored on this dossier: loss = required positions not derived +
+  excluded positions derived. Drafts you did not commit play no part in it. That prequential score is
+  final and is never revised. The phase ends only after at least one draft in it or with a stated
+  abstention; you are never required to produce a rule."""
+
+DRAFT_REVISE = """- revise: {feedback} You may revise, keep or discard hypotheses (draft, test, discard and commit again),
+  also when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
+  rescored with the new committed set, recorded separately as a retrospective adjustment."""
+
+DRAFT_TASK = """Your task: build and test hypotheses that could explain how the dossiers are treated, and commit those
+you have reason to expect to hold. The evaluator contrasts your committed hypotheses with the documented
+positions through the loss."""
+
+
+def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False,
+                 draft_contract: bool = False) -> str:
     feedback = ("After each scoring you receive the list of discrepancies for that dossier: documented "
                 "positions your committed theory did not derive, and excluded positions it derived with the "
                 "hypotheses responsible." if condition == "feedback" else
@@ -201,6 +260,18 @@ def instructions(condition: str, budgets: dict, n_dossiers: int, question_first:
                       f"{budgets['max_navigation_actions']} navigation calls and "
                       f"{budgets['max_navigation_steps']} engine steps for the whole trajectory. Sessions do not "
                       f"survive the presentation of a new dossier.")
+    text = _instructions(condition, budgets, n_dossiers, feedback, question, navigation)
+    if not draft_contract:
+        return text
+    # Draft contract (run-006): explore, revise and task paragraphs replaced.
+    start = text.index("- explore:")
+    budgets_at = text.index("Budgets for the whole trajectory:")
+    return (text[:start] + DRAFT_EXPLORE + "\n" + DRAFT_REVISE.format(feedback=feedback) + "\n\n"
+            + DRAFT_TASK + "\n\n" + text[budgets_at:])
+
+
+def _instructions(condition: str, budgets: dict, n_dossiers: int, feedback: str, question: str,
+                  navigation: str) -> str:
     return f"""You are the learner in an experiment run with a formal evaluator, Residuum.
 
 The theory LegalGeneral (Formal source below) is fixed; you cannot change it. You may add rules over its
@@ -382,9 +453,11 @@ def main(argv: list[str]) -> int:
     args.ledger.mkdir(parents=True, exist_ok=True)
     ledger = Ledger(args.ledger)
     question_first = bool(t.get("question_first", False))
-    system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first)
+    draft_contract = bool(t.get("draft_contract", False))
+    system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract)
     first = opening(manifest, base)
-    tools = TOOLS + ([QUESTION_TOOL] if question_first else []) + \
+    base_tools = draft_tools(TOOLS) if draft_contract else TOOLS
+    tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \
         (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
     ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": tools})
     if d["provider"] == "anthropic":

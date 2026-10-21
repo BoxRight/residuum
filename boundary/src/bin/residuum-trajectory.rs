@@ -66,8 +66,8 @@ fn position(p: &residuum::experiments::generative::Position) -> String {
     )
 }
 
-fn view_json(v: &LearnerView) -> Value {
-    json!({
+fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool) -> Value {
+    let mut view = json!({
         "phase": phase(v.phase),
         "dossier": v.dossier,
         "dossiers": v.dossiers.iter().map(|d| json!({
@@ -120,7 +120,40 @@ fn view_json(v: &LearnerView) -> Value {
         "navigation_actions_left": v.navigation_actions_left,
         "navigation_steps_left": v.navigation_steps_left,
         "last_navigation": v.last_navigation.as_ref().map(navigation_json),
-    })
+    });
+    // Navigation fields only where navigation exists (run-004 onwards), so
+    // earlier manifests show exactly their original views.
+    if !navigation {
+        if let Some(map) = view.as_object_mut() {
+            for key in [
+                "navigation_actions_left",
+                "navigation_steps_left",
+                "last_navigation",
+            ] {
+                map.remove(key);
+            }
+        }
+    }
+    // Draft contract (run-006): each hypothesis is shown as a draft, committed
+    // or discarded; earlier manifests keep their views unchanged.
+    if draft_contract {
+        for (h, rendered) in v
+            .hypotheses
+            .iter()
+            .zip(view["hypotheses"].as_array_mut().into_iter().flatten())
+        {
+            let status = if h.committed {
+                "committed"
+            } else if h.discarded.is_some() {
+                "discarded"
+            } else {
+                "draft"
+            };
+            rendered["status"] = json!(status);
+            rendered["discard_reason"] = json!(h.discarded);
+        }
+    }
+    view
 }
 
 /// Largest rendered navigation response passed to the learner; the full
@@ -175,6 +208,8 @@ struct LineLearner {
     imports: Vec<PathBuf>,
     workdir: PathBuf,
     goals: usize,
+    draft_contract: bool,
+    navigation: bool,
 }
 
 /// A navigation tool call as the wire request of the existing worker, with
@@ -259,6 +294,11 @@ fn parse_action(learner: &mut LineLearner, v: &Value) -> Result<LearnerAction, S
                 .iter()
                 .filter_map(|h| h.as_str().map(str::to_string))
                 .collect(),
+            reason: s("reason"),
+        },
+        "discard" => LearnerAction::Discard {
+            hypothesis: s("hypothesis").ok_or("discard needs hypothesis")?,
+            reason: s("reason").ok_or("discard needs reason")?,
         },
         "pose_question" => LearnerAction::Question {
             question: s("question").ok_or("pose_question needs question")?,
@@ -280,7 +320,12 @@ impl Learner for LineLearner {
             );
         }
         let mut out = std::io::stdout().lock();
-        writeln!(out, "{}", json!({ "view": view_json(view) })).unwrap();
+        writeln!(
+            out,
+            "{}",
+            json!({ "view": view_json(view, self.draft_contract, self.navigation) })
+        )
+        .unwrap();
         out.flush().unwrap();
         let mut line = String::new();
         if self.input.read_line(&mut line).unwrap_or(0) == 0 {
@@ -333,6 +378,7 @@ fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport) -> Value {
         "certified_evaluations": h.certified_evaluations,
         "committed_ok": h.committed_ok,
         "retired_at": h.retired_at.map(|i| r.order[i].clone()),
+        "discarded": h.discarded,
         "statuses": r.statuses.get(&h.id).map(|s| s.iter().map(|x| format!("{x:?}")).collect::<Vec<_>>()),
         "evaluations": h.evaluations.iter().map(|e| json!({
             "dossier": e.dossier, "status": e.status, "certified": e.certified,
@@ -356,6 +402,7 @@ fn report_json(r: &TrajectoryReport) -> Value {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
             "abstentions": k.abstentions, "questions": k.questions,
+            "discards": k.discards,
             "navigation_actions": k.navigation_actions, "navigation_steps": k.navigation_steps,
             "commits": k.commits, "commit_rejections": k.commit_rejections,
             "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
@@ -441,6 +488,8 @@ fn main() {
         imports: manifest.imports.clone(),
         workdir: manifest.workdir.clone(),
         goals: 0,
+        draft_contract: t["draft_contract"].as_bool().unwrap_or(false),
+        navigation: manifest.budgets.max_navigation_actions > 0,
     };
     let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
     let value = report_json(&report);

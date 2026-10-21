@@ -1,0 +1,75 @@
+--- run-006 system
++++ run-007 system
+@@ -30,4 +30,11 @@
+ Budgets for the whole trajectory: 40 verified evaluations, 40
+ proposals, 30 turns per phase. Every turn is exactly one tool call.
+ 
+-Navigation tools give access to Residuum's own operations on the presented dossiers and your admitted hypotheses (theory inventory, forward and residual sessions, minimal supports, partition comparison). They never return valuations or loss. Budget: 60 navigation calls and 4000 engine steps for the whole trajectory. Sessions do not survive the presentation of a new dossier.+Navigation tools give access to Residuum's own operations on the presented dossiers and your admitted hypotheses (theory inventory, forward and residual sessions, minimal supports, partition comparison). They never return valuations or loss. Budget: 60 navigation calls and 4000 engine steps for the whole trajectory. Sessions do not survive the presentation of a new dossier.
++
++Findings: when you end a phase you may report findings about the space of hypotheses (end_phase, field
++findings): what you established about relations, consequences or differences between hypotheses. Each
++finding may carry an assertion that cites a record by its reference (n... for a navigation result, e... for
++an evaluation) and is checked against that record by Residuum's existing claims verifier. Findings are
++kept with their verdicts and shown in later views. They are separate from drafts and from the committed
++set, they are never scored, and an empty report is valid.
+--- run-006 end_phase
++++ run-007 end_phase
+@@ -7,6 +7,58 @@
+    "abstention": {
+     "type": "string",
+     "description": "Why you end this explore phase without proposing."
++   },
++   "findings": {
++    "type": "array",
++    "maxItems": 8,
++    "description": "Optional report of findings (it may be empty). Each item: kind, text and assertion (null, or {ref, attribute, value}).",
++    "items": {
++     "type": "object",
++     "properties": {
++      "kind": {
++       "type": "string",
++       "enum": [
++        "residuum_result",
++        "hypothesis_change",
++        "investigation_reason"
++       ]
++      },
++      "text": {
++       "type": "string"
++      },
++      "assertion": {
++       "type": [
++        "object",
++        "null"
++       ],
++       "properties": {
++        "ref": {
++         "type": "string",
++         "description": "n... or e... reference of a record."
++        },
++        "attribute": {
++         "type": "string",
++         "enum": [
++          "status",
++          "component",
++          "contains_event",
++          "classes",
++          "compatible",
++          "differs_from"
++         ]
++        },
++        "value": {
++         "type": "string"
++        }
++       }
++      }
++     },
++     "required": [
++      "kind",
++      "text",
++      "assertion"
++     ]
++    }
+    }
+   }
+  }

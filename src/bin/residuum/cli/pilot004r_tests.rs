@@ -350,6 +350,7 @@ impl Learner for Scripted {
             .and_then(|q| q.pop_front())
             .unwrap_or(LearnerAction::EndPhase {
                 abstention: Some("scripted: no further actions".into()),
+                findings: None,
             });
         (action, self.usage)
     }
@@ -849,6 +850,7 @@ fn pilot004r_synthetic_refutation_is_delivered_and_revised_without_the_solution(
 fn end(abstention: Option<&str>) -> LearnerAction {
     LearnerAction::EndPhase {
         abstention: abstention.map(str::to_string),
+        findings: None,
     }
 }
 
@@ -1356,6 +1358,7 @@ fn pilot004r_question_first_gates_proposals_and_abstentions() {
     m.budgets.max_navigation_steps = 2_000;
     let abstain = || LearnerAction::EndPhase {
         abstention: Some("no evidence".into()),
+        findings: None,
     };
     let mut learner = Scripted::new()
         .at(
@@ -1511,4 +1514,84 @@ fn pilot004r_drafts_are_never_scored_discard_and_reason_are_traced() {
     let view_h2 = last.hypotheses.iter().find(|h| h.id == "h2").unwrap();
     assert_eq!(view_h2.discarded.as_deref(), Some("reverses the parties"));
     assert!(!view_h2.committed);
+}
+
+// ---------------------------------------------------------------------------
+// Findings reports (run-007): recorded, accumulated, separate from drafts and
+// commitments, never scored; an empty report is recorded as such.
+
+fn finding(
+    text: &str,
+    reference: Option<&str>,
+    verdict: &str,
+) -> residuum::experiments::generative::Finding {
+    residuum::experiments::generative::Finding {
+        kind: "residuum_result".into(),
+        text: text.into(),
+        reference: reference.map(str::to_string),
+        assertion: reference.map(|_| "contains_event=right".to_string()),
+        verdict: verdict.into(),
+        detail: "scripted".into(),
+        novelty: "diagnostic".into(),
+    }
+}
+
+#[test]
+fn pilot004r_findings_are_recorded_accumulated_and_never_scored() {
+    let m = manifest("findings", Condition::Feedback, navigation_order());
+    let report_end = |findings| LearnerAction::EndPhase {
+        abstention: Some("no reason yet to commit".into()),
+        findings: Some(findings),
+    };
+    let mut learner = Scripted::new()
+        .at(
+            "brookside",
+            Phase::Explore,
+            vec![
+                propose(CORR, None),
+                evaluate("h1", "brookside"),
+                report_end(vec![
+                    finding("h1 derives right on brookside", Some("e1"), "match"),
+                    finding("a reason without assertion", None, "unchecked"),
+                ]),
+            ],
+        )
+        // An empty report is valid and recorded.
+        .at("casaFiesta", Phase::Explore, vec![report_end(Vec::new())]);
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    // Evaluations carry the reference findings cite, and their closure.
+    let h1 = &report.hypotheses[0];
+    assert_eq!(h1.evaluations[0].id, "e1");
+    assert!(h1.evaluations[0].closure.iter().any(|e| e.verb == "right"));
+
+    let k = &report.counters;
+    assert_eq!(k.reports, 2);
+    assert_eq!(k.findings, 2);
+    assert_eq!(k.findings_verified, 1);
+    assert_eq!(report.findings.len(), 2);
+    assert_eq!(report.findings[0].dossier, "brookside");
+    let kinds: Vec<&str> = report
+        .ledger
+        .iter()
+        .filter(|e| e.kind == "finding" || e.kind == "findings")
+        .map(|e| e.detail.as_str())
+        .collect();
+    assert_eq!(kinds.len(), 3, "{kinds:?}");
+    assert!(kinds[0].contains("ref=e1") && kinds[0].contains("verdict=match"));
+    assert_eq!(kinds[2], "empty report");
+
+    // Findings accumulate in later views; drafts and commitments stay apart.
+    let casa = learner
+        .views
+        .iter()
+        .find(|v| v.dossier == "casaFiesta")
+        .unwrap();
+    assert_eq!(casa.findings.len(), 2);
+    assert!(casa.committed.is_empty());
+    assert!(!casa.hypotheses[0].committed);
+    // Never scored: the uncommitted draft with a verified finding leaves the
+    // Brookside loss at the baseline.
+    assert_eq!(report.prequential[0].loss, 5);
+    assert!(report.prequential[0].exposures.is_empty());
 }

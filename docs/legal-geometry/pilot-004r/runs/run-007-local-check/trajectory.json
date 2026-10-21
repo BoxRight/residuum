@@ -1,0 +1,256 @@
+{
+  "trajectory": {
+    "trajectory_id": "pilot004r-run-007-local-check",
+    "condition": "feedback",
+    "imports": [
+      "../../vocabulary.res"
+    ],
+    "dossiers_module": "../../dossiers.res",
+    "reserved": "../../reserved/valuations.tsv",
+    "workdir": "../../../../../target/pilot004r/run-007-local-check/work",
+    "order": [
+      {
+        "id": "brookside",
+        "experiment": "brookside"
+      },
+      {
+        "id": "casaFiesta",
+        "experiment": "casa_fiesta"
+      },
+      {
+        "id": "flowers",
+        "experiment": null
+      }
+    ],
+    "budgets": {
+      "max_verified_evaluations": 40,
+      "max_proposals": 40,
+      "max_turns_per_phase": 30,
+      "max_clauses": 2,
+      "max_navigation_actions": 60,
+      "max_navigation_steps": 4000
+    },
+    "base_module": "LegalGeneral",
+    "draft_contract": true,
+    "findings_report": true
+  },
+  "driver": {
+    "ontology": "../../../../../examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+    "vocabulary": "../../vocabulary.res",
+    "profile": {
+      "heads": [
+        "obligation",
+        "permission",
+        "prohibition",
+        "omissionProhibition",
+        "right",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialLiability"
+      ],
+      "body_verbs": [
+        "Act",
+        "right",
+        "obligationFiled",
+        "prohibition",
+        "omissionProhibition",
+        "permissionFiled",
+        "patrimonialHolding",
+        "powerGranted",
+        "legislationText",
+        "obligation",
+        "permission",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialAsset",
+        "patrimonialLiability",
+        "transferred",
+        "owns",
+        "capacity",
+        "law"
+      ],
+      "max_atoms": 4
+    },
+    "provider": "scripted",
+    "script": [
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corr(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n",
+          "parent": null,
+          "rationale": "draft A"
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule corrCreditor(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, b, c, o, s, au, e) @ t\n",
+          "parent": null,
+          "rationale": "draft B"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h1",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "evaluate_rule",
+        "arguments": {
+          "hypothesis": "h2",
+          "dossier": "brookside"
+        }
+      },
+      {
+        "tool": "compare_partition",
+        "arguments": {
+          "hypotheses": [
+            "h1",
+            "h2"
+          ],
+          "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+        }
+      },
+      {
+        "tool": "begin_forward",
+        "arguments": {
+          "dossier": "brookside",
+          "hypothesis": "h1"
+        }
+      },
+      {
+        "tool": "advance_session",
+        "arguments": {
+          "session": "s1",
+          "max_steps": 16
+        }
+      },
+      {
+        "tool": "discard",
+        "arguments": {
+          "hypothesis": "h2",
+          "reason": "scripted"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: no reason yet to commit",
+          "findings": [
+            {
+              "kind": "residuum_result",
+              "text": "h1 derives a right on brookside",
+              "assertion": {
+                "ref": "e1",
+                "attribute": "contains_event",
+                "value": "right"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "h2 also derives a right (verb level)",
+              "assertion": {
+                "ref": "e2",
+                "attribute": "contains_event",
+                "value": "right"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "the two closures differ",
+              "assertion": {
+                "ref": "e1",
+                "attribute": "differs_from",
+                "value": "e2"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "h1 and h2 fall in two classes on the goal",
+              "assertion": {
+                "ref": "n3",
+                "attribute": "classes",
+                "value": "2"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "h1 yields enforceability here",
+              "assertion": {
+                "ref": "e1",
+                "attribute": "contains_event",
+                "value": "enforceability"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "the forward closure under h1 contains right",
+              "assertion": {
+                "ref": "n5",
+                "attribute": "contains_event",
+                "value": "right"
+              }
+            },
+            {
+              "kind": "residuum_result",
+              "text": "cites an unknown record",
+              "assertion": {
+                "ref": "n99",
+                "attribute": "status",
+                "value": "complete"
+              }
+            },
+            {
+              "kind": "investigation_reason",
+              "text": "no assertion, only a reason",
+              "assertion": null
+            }
+          ]
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h1"
+          ],
+          "reason": "scripted"
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: casaFiesta",
+          "findings": []
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "scripted: flowers",
+          "findings": [
+            {
+              "kind": "bogus"
+            }
+          ]
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      }
+    ]
+  }
+}

@@ -368,6 +368,7 @@ impl Learner for Commit {
         (
             action.unwrap_or(LearnerAction::EndPhase {
                 abstention: Some("contrast scoring".into()),
+                findings: None,
             }),
             Usage::default(),
         )

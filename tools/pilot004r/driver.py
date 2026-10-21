@@ -241,7 +241,13 @@ positions through the loss."""
 
 
 def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False,
-                 draft_contract: bool = False) -> str:
+                 draft_contract: bool = False, findings_report: bool = False) -> str:
+    text = _contract(condition, budgets, n_dossiers, question_first, draft_contract)
+    return text + FINDINGS_PARAGRAPH if findings_report else text
+
+
+def _contract(condition: str, budgets: dict, n_dossiers: int, question_first: bool,
+              draft_contract: bool) -> str:
     feedback = ("After each scoring you receive the list of discrepancies for that dossier: documented "
                 "positions your committed theory did not derive, and excluded positions it derived with the "
                 "hypotheses responsible." if condition == "feedback" else
@@ -425,6 +431,109 @@ class ScriptedProvider:
         return action, {"calls": 1, "input_tokens": 0, "output_tokens": 0, "cost_microusd": 0}
 
 
+FINDINGS_PARAGRAPH = """
+
+Findings: when you end a phase you may report findings about the space of hypotheses (end_phase, field
+findings): what you established about relations, consequences or differences between hypotheses. Each
+finding may carry an assertion that cites a record by its reference (n... for a navigation result, e... for
+an evaluation) and is checked against that record by Residuum's existing claims verifier. Findings are
+kept with their verdicts and shown in later views. They are separate from drafts and from the committed
+set, they are never scored, and an empty report is valid."""
+
+
+def findings_tools(tools: list[dict]) -> list[dict]:
+    """end_phase with an optional findings report in the claims format of tools/normative_explorer."""
+    from tools.normative_explorer.schemas import CLAIM_ATTRIBUTES, CLAIM_KINDS, CLAIMS_MAX
+    out = json.loads(json.dumps(tools))
+    for tool in out:
+        if tool["name"] == "end_phase":
+            tool["input_schema"]["properties"]["findings"] = {
+                "type": "array", "maxItems": CLAIMS_MAX,
+                "description": "Optional report of findings (it may be empty). Each item: kind, text and "
+                               "assertion (null, or {ref, attribute, value}).",
+                "items": {"type": "object", "properties": {
+                    "kind": {"type": "string", "enum": list(CLAIM_KINDS)},
+                    "text": {"type": "string"},
+                    "assertion": {"type": ["object", "null"], "properties": {
+                        "ref": {"type": "string", "description": "n... or e... reference of a record."},
+                        "attribute": {"type": "string", "enum": list(CLAIM_ATTRIBUTES)},
+                        "value": {"type": "string"}}}},
+                    "required": ["kind", "text", "assertion"]},
+            }
+    return out
+
+
+class Findings:
+    """Records seen so far and the per-phase context needed to check a report with the existing verifier
+    (tools/normative_explorer/claims.py, condition C: provenance and partitions are delivered here). Novelty is
+    a diagnostic, never a certified property."""
+
+    def __init__(self):
+        self.records: dict[str, dict] = {}
+        self.meta: dict[str, dict] = {}
+        self.sessions: dict[str, str] = {}
+        self.phase_key = None
+        self.phase_start_verbs: dict[str, set] = {}
+        self.last_action: dict | None = None
+
+    def observe(self, message: dict) -> None:
+        view = message["view"]
+        key = (view["dossier"], view["phase"])
+        if key != self.phase_key:
+            self.phase_key = key
+            self.phase_start_verbs = {d["id"]: {e.split("(", 1)[0].lstrip("~")
+                                                for e in d["closure_of_O_plus_committed"]}
+                                      for d in view["dossiers"]}
+        args = (self.last_action or {}).get("arguments", {})
+        for record in message.get("records", []):
+            ref, line = record["ref"], record["line"]
+            dossier = record.get("dossier")
+            payload = (line.get("response") or {}).get("payload") or {}
+            if dossier is None:
+                if "session_opened" in payload:
+                    dossier = args.get("dossier")
+                    self.sessions[payload["session_opened"]["session"]] = dossier
+                elif args.get("session"):
+                    dossier = self.sessions.get(args["session"])
+                else:
+                    dossier = args.get("dossier")
+            self.records[ref] = line
+            self.meta[ref] = {"dossier": dossier, "phase": list(key)}
+
+    def check(self, raw) -> list[dict]:
+        from tools.normative_explorer import claims
+        from tools.normative_explorer.schemas import ProtocolError, _check
+        if raw is None:
+            raw = []
+        try:
+            _check("claims", raw, "findings")
+        except ProtocolError as e:
+            return [{"kind": "invalid", "text": json.dumps(raw, ensure_ascii=False)[:300], "reference": None,
+                     "assertion": None, "verdict": "malformed", "detail": str(e), "novelty": "not_assessed"}]
+        out = []
+        for claim in raw:
+            verdict = claims.check(claim, self.records, "C")
+            assertion = claim.get("assertion")
+            ref = assertion["ref"] if assertion else None
+            out.append({"kind": claim["kind"], "text": claim["text"], "reference": ref,
+                        "assertion": f"{assertion['attribute']}={assertion['value']}" if assertion else None,
+                        "verdict": verdict["verdict"], "detail": verdict["detail"],
+                        "novelty": self.novelty(assertion, verdict["verdict"])})
+        return out
+
+    def novelty(self, assertion, verdict: str) -> str:
+        if not assertion or assertion["ref"] not in self.meta:
+            return "not_assessed"
+        meta = self.meta[assertion["ref"]]
+        when = "reference_from_this_phase" if tuple(meta["phase"]) == self.phase_key else "reference_from_earlier"
+        if assertion["attribute"] == "contains_event" and verdict == "match" and meta["dossier"] is not None:
+            shown = self.phase_start_verbs.get(meta["dossier"])
+            if shown is not None:
+                seen = assertion["value"] in shown
+                return f"{when}; content_{'already_in' if seen else 'not_in'}_view_at_phase_start"
+        return f"{when}; content_not_assessed"
+
+
 def strip_comments(source: str) -> str:
     return "\n".join(line for line in (re.sub(r"//.*$", "", l).rstrip() for l in source.splitlines()) if line)
 
@@ -454,11 +563,16 @@ def main(argv: list[str]) -> int:
     ledger = Ledger(args.ledger)
     question_first = bool(t.get("question_first", False))
     draft_contract = bool(t.get("draft_contract", False))
-    system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract)
+    findings_report = bool(t.get("findings_report", False))
+    system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract,
+                          findings_report)
     first = opening(manifest, base)
     base_tools = draft_tools(TOOLS) if draft_contract else TOOLS
+    if findings_report:
+        base_tools = findings_tools(base_tools)
     tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \
         (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
+    memory = Findings() if findings_report else None
     ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": tools})
     if d["provider"] == "anthropic":
         provider = AnthropicProvider(d["model"], system, ledger, tools)
@@ -479,6 +593,10 @@ def main(argv: list[str]) -> int:
             break
         view = message["view"]
         ledger.append("view", view)
+        if memory is not None:
+            if message.get("records"):
+                ledger.append("records", message["records"])
+            memory.observe(message)
         last = view.get("last_result")
         text = (f"Result of your last action: {last}\n\n" if last else "") + \
             "Current view:\n" + json.dumps(view, ensure_ascii=False)
@@ -496,6 +614,18 @@ def main(argv: list[str]) -> int:
             action = {"tool": "end_phase", "arguments": {}, "_ids": []}
             ledger.append("forced_end_phase", {"reason": ceiling or "no tool call"})
         pending = action.pop("_ids", [])
+        if memory is not None and action.get("tool") == "end_phase":
+            arguments = dict(action.get("arguments") or {})
+            if "findings" in arguments:
+                # An explicit report, possibly empty; an omitted field is no report.
+                checked = memory.check(arguments.pop("findings"))
+                arguments["findings_checked"] = checked
+                ledger.append("findings", {"phase": list(memory.phase_key), "checked": checked})
+            else:
+                ledger.append("findings", {"phase": list(memory.phase_key), "report": "absent"})
+            action = {"tool": "end_phase", "arguments": arguments}
+        if memory is not None:
+            memory.last_action = action
         ledger.append("action", action)
         process.stdin.write(json.dumps({"action": action, "usage": usage}) + "\n")
         process.stdin.flush()

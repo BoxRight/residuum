@@ -778,6 +778,9 @@ pub enum LearnerAction {
     /// stated abstention; a revise phase ends freely.
     EndPhase {
         abstention: Option<String>,
+        /// A findings report (possibly empty); `None` when the protocol has
+        /// no report.
+        findings: Option<Vec<Finding>>,
     },
 }
 
@@ -812,12 +815,41 @@ pub struct DossierView {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvaluationView {
+    /// `e1`, `e2`, … over the trajectory: the reference a finding cites.
+    pub id: String,
     pub dossier: String,
     pub status: String,
     pub certified: bool,
     pub new_events: Vec<Event>,
     pub activated_base_rules: BTreeSet<String>,
     pub positions: Vec<Position>,
+    /// Closure of the evaluated theory: the record findings are checked
+    /// against. Not rendered in the learner's view.
+    pub closure: Vec<Event>,
+}
+
+/// One finding of a phase report, as checked by the driver with the
+/// existing claims verifier (`tools/normative_explorer/claims.py`). The
+/// harness records it; it never scores it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Finding {
+    pub kind: String,
+    pub text: String,
+    /// The cited record (`n…` navigation, `e…` evaluation), if any.
+    pub reference: Option<String>,
+    /// `attribute=value` of the assertion, if any.
+    pub assertion: Option<String>,
+    pub verdict: String,
+    pub detail: String,
+    /// Diagnostic only, never a certified property.
+    pub novelty: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FindingView {
+    pub dossier: String,
+    pub phase: Phase,
+    pub finding: Finding,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -861,6 +893,8 @@ pub struct LearnerView {
     pub last_result: Option<String>,
     pub navigation_actions_left: usize,
     pub navigation_steps_left: usize,
+    /// Every finding reported so far, with its verdict and reference.
+    pub findings: Vec<FindingView>,
     /// The worker's complete response to the previous navigation request.
     pub last_navigation: Option<worker::Response>,
 }
@@ -1071,6 +1105,11 @@ pub struct Counters {
     pub abstentions: usize,
     pub questions: usize,
     pub discards: usize,
+    /// Phase reports received (an empty report counts).
+    pub reports: usize,
+    pub findings: usize,
+    /// Findings whose assertion the verifier matched.
+    pub findings_verified: usize,
     pub navigation_actions: usize,
     pub navigation_steps: usize,
     pub commits: usize,
@@ -1099,6 +1138,7 @@ pub struct TrajectoryReport {
     pub statuses: BTreeMap<String, Vec<HypothesisStatus>>,
     pub counters: Counters,
     pub ledger: Vec<LedgerEntry>,
+    pub findings: Vec<FindingView>,
 }
 
 impl TrajectoryReport {
@@ -1169,6 +1209,7 @@ struct State<'a> {
     navigation_ids: BTreeMap<String, String>,
     navigation_serial: usize,
     last_navigation: Option<worker::Response>,
+    findings: Vec<FindingView>,
 }
 
 fn event_constants(e: &Event, out: &mut BTreeSet<String>) {
@@ -1341,6 +1382,7 @@ impl<'a> State<'a> {
                 .max_navigation_steps
                 .saturating_sub(self.counters.navigation_steps),
             last_navigation: self.last_navigation.clone(),
+            findings: self.findings.clone(),
         }
     }
 
@@ -1705,14 +1747,24 @@ impl<'a> State<'a> {
             .hypothesis(&hypothesis)
             .map(|h| h.rules.iter().map(|r| r.name.clone()).collect())
             .unwrap_or_default();
+        let evaluation_id = format!(
+            "e{}",
+            self.hypotheses
+                .iter()
+                .map(|h| h.evaluations.len())
+                .sum::<usize>()
+                + 1
+        );
         let view = match outcome {
             Err(e) => EvaluationView {
+                id: evaluation_id.clone(),
                 dossier: dossier.clone(),
                 status: format!("pending: {e}"),
                 certified: false,
                 new_events: Vec::new(),
                 activated_base_rules: BTreeSet::new(),
                 positions: Vec::new(),
+                closure: Vec::new(),
             },
             Ok((certificate, closure)) => {
                 self.counters.verified_evaluations += 1;
@@ -1726,6 +1778,7 @@ impl<'a> State<'a> {
                 positions.sort();
                 positions.dedup();
                 EvaluationView {
+                    id: evaluation_id.clone(),
                     dossier: dossier.clone(),
                     status: if certificate.holds() {
                         "certified".into()
@@ -1740,6 +1793,7 @@ impl<'a> State<'a> {
                         .collect(),
                     activated_base_rules: certificate.activated_base_rules.clone(),
                     positions,
+                    closure: closure.known.clone(),
                 }
             }
         };
@@ -1752,6 +1806,41 @@ impl<'a> State<'a> {
         }
         self.log(index, Some(phase), "evaluate", result.clone());
         result
+    }
+
+    /// Keep a phase report: each finding with its verdict, reference and
+    /// novelty diagnostic; an empty report is recorded as such.
+    fn record_findings(&mut self, index: usize, phase: Phase, findings: Vec<Finding>) {
+        self.counters.reports += 1;
+        if findings.is_empty() {
+            self.log(index, Some(phase), "findings", "empty report".into());
+        }
+        for f in findings {
+            self.counters.findings += 1;
+            if f.verdict == "match" {
+                self.counters.findings_verified += 1;
+            }
+            self.log(
+                index,
+                Some(phase),
+                "finding",
+                format!(
+                    "[{}] ref={} assertion={} verdict={} ({}) novelty={}: {}",
+                    f.kind,
+                    f.reference.as_deref().unwrap_or("-"),
+                    f.assertion.as_deref().unwrap_or("-"),
+                    f.verdict,
+                    f.detail,
+                    f.novelty,
+                    f.text
+                ),
+            );
+            self.findings.push(FindingView {
+                dossier: self.manifest.order[index].id.clone(),
+                phase,
+                finding: f,
+            });
+        }
     }
 
     fn discard(&mut self, index: usize, phase: Phase, id: String, reason: String) -> String {
@@ -1880,7 +1969,10 @@ impl<'a> State<'a> {
                     self.log(index, Some(phase), "question", detail.clone());
                     format!("recorded {detail}")
                 }
-                LearnerAction::EndPhase { abstention } => {
+                LearnerAction::EndPhase {
+                    abstention,
+                    findings,
+                } => {
                     let proposed = self.counters.attempts > attempts_before;
                     let stated = abstention
                         .map(|a| a.trim().to_string())
@@ -1898,6 +1990,9 @@ impl<'a> State<'a> {
                             self.last_result = Some(refusal);
                             continue;
                         }
+                    }
+                    if let Some(findings) = findings {
+                        self.record_findings(index, phase, findings);
                     }
                     self.last_result = None;
                     return;
@@ -2154,6 +2249,7 @@ pub fn run_trajectory(
         navigation_ids: BTreeMap::new(),
         navigation_serial: 0,
         last_navigation: None,
+        findings: Vec::new(),
     };
     for index in 0..manifest.order.len() {
         state.open_navigator(index)?;
@@ -2201,5 +2297,6 @@ pub fn run_trajectory(
         statuses,
         counters: state.counters,
         ledger: state.ledger,
+        findings: state.findings,
     })
 }

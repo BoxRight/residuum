@@ -5,9 +5,9 @@
 //! `<ledger>/trajectory-report.json`. The reserved valuations are read here
 //! and only appear in the final report, after the learner has finished.
 use residuum::experiments::generative::{
-    Condition, DossierInput, FeedbackView, HypothesisRecord, Learner, LearnerAction, LearnerView,
-    Phase, ReservedValuations, Scoring, TrajectoryBudgets, TrajectoryManifest, TrajectoryReport,
-    Usage, parse_event, profile_004r, run_trajectory,
+    Condition, DossierInput, FeedbackView, Finding, FindingView, HypothesisRecord, Learner,
+    LearnerAction, LearnerView, Phase, ReservedValuations, Scoring, TrajectoryBudgets,
+    TrajectoryManifest, TrajectoryReport, Usage, parse_event, profile_004r, run_trajectory,
 };
 use residuum::experiments::worker::{Request, Response};
 use residuum::load_formal_module;
@@ -66,7 +66,7 @@ fn position(p: &residuum::experiments::generative::Position) -> String {
     )
 }
 
-fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool) -> Value {
+fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool, findings: bool) -> Value {
     let mut view = json!({
         "phase": phase(v.phase),
         "dossier": v.dossier,
@@ -134,6 +134,24 @@ fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool) -> Value {
             }
         }
     }
+    // Findings protocol (run-007): evaluation ids to cite and the findings
+    // reported so far, with verdicts and references.
+    if findings {
+        for (h, rendered) in v
+            .hypotheses
+            .iter()
+            .zip(view["hypotheses"].as_array_mut().into_iter().flatten())
+        {
+            for (e, r) in h
+                .evaluations
+                .iter()
+                .zip(rendered["evaluations"].as_array_mut().into_iter().flatten())
+            {
+                r["id"] = json!(e.id);
+            }
+        }
+        view["findings"] = json!(v.findings.iter().map(finding_json).collect::<Vec<_>>());
+    }
     // Draft contract (run-006): each hypothesis is shown as a draft, committed
     // or discarded; earlier manifests keep their views unchanged.
     if draft_contract {
@@ -154,6 +172,53 @@ fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool) -> Value {
         }
     }
     view
+}
+
+fn finding_json(f: &FindingView) -> Value {
+    json!({
+        "dossier": f.dossier, "phase": phase(f.phase), "kind": f.finding.kind,
+        "text": f.finding.text, "reference": f.finding.reference,
+        "assertion": f.finding.assertion, "verdict": f.finding.verdict,
+        "detail": f.finding.detail, "novelty": f.finding.novelty,
+    })
+}
+
+/// Records the driver's claims verifier checks findings against, in the
+/// worker's wire form: each navigation response, and each evaluation as an
+/// `evaluation` payload whose closure is the evaluated theory's closure.
+fn records(v: &LearnerView, emitted: &mut std::collections::BTreeSet<String>) -> Vec<Value> {
+    let mut out = Vec::new();
+    if let Some(r) = &v.last_navigation {
+        if emitted.insert(r.action_id.clone()) {
+            let raw = encode_response(r)
+                .ok()
+                .and_then(|t| serde_json::from_str::<Value>(&t).ok())
+                .unwrap_or(Value::Null);
+            out.push(json!({ "ref": r.action_id, "dossier": null, "line": { "response": raw } }));
+        }
+    }
+    for h in &v.hypotheses {
+        for e in &h.evaluations {
+            if emitted.insert(e.id.clone()) {
+                let known: Vec<Value> = e
+                    .closure
+                    .iter()
+                    .filter_map(|x| serde_json::to_value(WireEvent::from(x)).ok())
+                    .collect();
+                out.push(json!({
+                    "ref": e.id, "dossier": e.dossier, "hypothesis": h.id,
+                    "line": { "response": {
+                        "status": if e.certified { "complete" } else { "error" },
+                        "payload": { "evaluation": {
+                            "candidate": h.id, "dossier": e.dossier,
+                            "closure": { "known": known }, "report": null,
+                        }},
+                    }},
+                }));
+            }
+        }
+    }
+    out
 }
 
 /// Largest rendered navigation response passed to the learner; the full
@@ -210,6 +275,8 @@ struct LineLearner {
     goals: usize,
     draft_contract: bool,
     navigation: bool,
+    findings: bool,
+    emitted: std::collections::BTreeSet<String>,
 }
 
 /// A navigation tool call as the wire request of the existing worker, with
@@ -306,6 +373,25 @@ fn parse_action(learner: &mut LineLearner, v: &Value) -> Result<LearnerAction, S
         },
         "end_phase" => LearnerAction::EndPhase {
             abstention: s("abstention"),
+            // Present only under the findings protocol, already checked by
+            // the driver with the existing claims verifier.
+            findings: a["findings_checked"].as_array().map(|items| {
+                items
+                    .iter()
+                    .map(|f| {
+                        let t = |k: &str| f[k].as_str().map(str::to_string);
+                        Finding {
+                            kind: t("kind").unwrap_or_default(),
+                            text: t("text").unwrap_or_default(),
+                            reference: t("reference"),
+                            assertion: t("assertion"),
+                            verdict: t("verdict").unwrap_or_default(),
+                            detail: t("detail").unwrap_or_default(),
+                            novelty: t("novelty").unwrap_or_default(),
+                        }
+                    })
+                    .collect()
+            }),
         },
         other => return Err(format!("unknown tool `{other}`")),
     })
@@ -315,23 +401,33 @@ impl Learner for LineLearner {
     fn act(&mut self, view: &LearnerView) -> (LearnerAction, Usage) {
         if self.eof {
             return (
-                LearnerAction::EndPhase { abstention: None },
+                LearnerAction::EndPhase {
+                    abstention: None,
+                    findings: None,
+                },
                 Usage::default(),
             );
         }
         let mut out = std::io::stdout().lock();
-        writeln!(
-            out,
-            "{}",
-            json!({ "view": view_json(view, self.draft_contract, self.navigation) })
-        )
+        writeln!(out, "{}", {
+            let mut line = json!({
+                "view": view_json(view, self.draft_contract, self.navigation, self.findings)
+            });
+            if self.findings {
+                line["records"] = json!(records(view, &mut self.emitted));
+            }
+            line
+        })
         .unwrap();
         out.flush().unwrap();
         let mut line = String::new();
         if self.input.read_line(&mut line).unwrap_or(0) == 0 {
             self.eof = true;
             return (
-                LearnerAction::EndPhase { abstention: None },
+                LearnerAction::EndPhase {
+                    abstention: None,
+                    findings: None,
+                },
                 Usage::default(),
             );
         }
@@ -402,12 +498,14 @@ fn report_json(r: &TrajectoryReport) -> Value {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
             "abstentions": k.abstentions, "questions": k.questions,
-            "discards": k.discards,
+            "discards": k.discards, "reports": k.reports, "findings": k.findings,
+            "findings_verified": k.findings_verified,
             "navigation_actions": k.navigation_actions, "navigation_steps": k.navigation_steps,
             "commits": k.commits, "commit_rejections": k.commit_rejections,
             "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
             "output_tokens": k.usage.output_tokens, "cost_microusd": k.usage.cost_microusd,
         },
+        "findings": r.findings.iter().map(finding_json).collect::<Vec<_>>(),
         "ledger": r.ledger.iter().map(|e| json!({
             "seq": e.seq, "dossier": e.dossier, "phase": e.phase.map(phase),
             "kind": e.kind, "detail": e.detail,
@@ -490,6 +588,8 @@ fn main() {
         goals: 0,
         draft_contract: t["draft_contract"].as_bool().unwrap_or(false),
         navigation: manifest.budgets.max_navigation_actions > 0,
+        findings: t["findings_report"].as_bool().unwrap_or(false),
+        emitted: std::collections::BTreeSet::new(),
     };
     let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
     let value = report_json(&report);

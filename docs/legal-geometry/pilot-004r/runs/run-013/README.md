@@ -137,8 +137,12 @@ cited evaluations: the `right` on jant, the `right` on usa/sue, and the
 obligation on cfA1. The verifier nevertheless returned `mismatch`, because the
 verifier (`claims.check`) compares the value with event verbs
 (`e["verb"] == value`), and the `end_phase` description does not say that the
-value is a verb. This is an interface ambiguity, not a false claim. As agreed,
-it is recorded here and not fixed.
+value is a verb. This is an interface ambiguity, not a false claim. The
+specification (`docs/llm-explorer-explanation-claims.md`) defines the rule as
+"`contains_event` (pertenencia al resultado)", which is the learner's reading.
+Re-run on the same records, `claims.check` gives `mismatch` for each full
+event and `match` for the same claim written with only the verb. As agreed,
+it is recorded here and in `../../closing-report.md` §6.1, and not fixed.
 
 ### Reading against the four questions
 

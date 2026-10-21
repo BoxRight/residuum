@@ -206,8 +206,7 @@ sonda `probes/probe-001`.
   escritos, no en el razonamiento interno.
 
 **Interfaz.**
-- `contains_event` se verifica contra nombres de verbo, y la descripción no
-  lo dice; las aserciones de run-013 son ciertas y aun así salen `mismatch`.
+- La verificación de claims puede declarar falso un claim verdadero (§6.1).
 - Hasta run-011, `new_events` y `activated_base_rules` se calculaban contra O
   sola, mientras que `positions_contributed` se calculaba por dependencia.
   Esa inconsistencia la corrigió la atribución.
@@ -215,6 +214,68 @@ sonda `probes/probe-001`.
 
 **Coste.** Los costes son estimaciones del driver con los precios del
 manifest, no la factura.
+
+### 6.1 Hallazgo: un claim verdadero verificado como falso
+
+**Qué pasó.** En run-013 el aprendiz presentó tres claims con
+`contains_event` sobre `e1`, `e2` y `e3`. En los tres, `value` era un evento
+completo, por ejemplo
+`right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB`. Los
+tres recibieron el veredicto `mismatch` con el detalle "recorded False", y
+`findings_verified` quedó en 0.
+
+**Por qué.**
+- **Lo que comprueba el verificador.** `tools/normative_explorer/claims.py`
+  coteja `contains_event` como `any(e["verb"] == value for e in events)`, es
+  decir, pertenencia del *verbo*.
+- **Lo que dice la especificación.**
+  `docs/llm-explorer-explanation-claims.md` define la regla de cotejo como
+  "`contains_event` (pertenencia al resultado)".
+- **Lo que ve el modelo.** La herramienta `end_phase` describe `value` como un
+  string sin formato.
+
+La interfaz y la especificación sugieren pertenencia del evento; la
+implementación comprueba pertenencia del verbo. El modelo siguió la
+interpretación que la interfaz le sugería.
+
+**Comprobación.** Se repitió la verificación sobre los mismos registros
+(`records` de `turns.jsonl`):
+
+| Ref | Evento completo en la clausura | `claims.check` con el evento | Mismo claim con solo el verbo |
+|---|---|---|---|
+| e1 | sí | `mismatch` ("recorded False") | `match` |
+| e2 | sí | `mismatch` ("recorded False") | `match` |
+| e3 | sí | `mismatch` ("recorded False") | `match` |
+
+Los tres claims son verdaderos. El veredicto los clasificó como si
+contradijeran el registro.
+
+**Alcance.**
+- En 004-R solo afecta a run-013, porque de 007 a 012 no hubo hallazgos con
+  aserción.
+- El verificador es compartido con `tools/normative_explorer`, así que
+  cualquier uso de `contains_event` con un evento completo tiene el mismo
+  sesgo.
+
+**Consecuencias para la lectura.**
+- `findings_verified` subestima la verificabilidad de los hallazgos.
+- `mismatch` mezcla dos cosas distintas: un claim que el registro contradice
+  y un claim cuyo `value` el verificador no sabe interpretar.
+- Cuando la interfaz induce una lectura y el verificador comprueba otra, un
+  claim verdadero puede quedar como no verificado o como falso. Ese error no
+  es del modelo.
+
+**Decisión.** Se registra y no se corrige en el piloto congelado; corregirlo
+cambiaría retroactivamente los veredictos archivados. Para la etapa
+siguiente:
+- cada atributo debe declarar el formato de `value` en la misma interfaz que
+  ve el modelo;
+- el verificador debe aceptar el evento completo, que es lo que dice la
+  especificación;
+- un `value` que no se puede interpretar debe dar un veredicto propio
+  (`malformed` o `unchecked`), nunca `mismatch`;
+- cada regla de cotejo debe tener un test con un claim verdadero escrito en
+  el formato que sugiere la interfaz.
 
 ## 7. Decisiones de arquitectura que surgieron
 

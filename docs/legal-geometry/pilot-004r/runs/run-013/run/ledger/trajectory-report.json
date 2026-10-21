@@ -1,0 +1,1401 @@
+{
+  "commit_traces": [
+    {
+      "before": [],
+      "dossier": "brookside",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h2",
+          "id": "e2",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "Correlative right of the beneficiary for each settlement obligation, in the orientation LegalGeneral uses for right (rightCompliance/rightEnforceability). Certified on brookside; adds only the five rights matching the five filed obligations.",
+      "requested": [
+        "h1"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": [
+          "e1"
+        ]
+      },
+      "result": "committed [\"h1\"]"
+    },
+    {
+      "before": [
+        "h1"
+      ],
+      "dossier": "casaFiesta",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h2",
+          "id": "e2",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "dossier": "casaFiesta",
+          "hypothesis": "h3",
+          "id": "e3",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [
+        "brookside"
+      ],
+      "findings_seen": 2,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "casaFiesta reproduces brookside's settlement pattern (mutual agree Acts on one document with usa, then the settling party adopts a policy and posts a sign for usa). h3 reads these performed settlement conducts as obligations under the agreement, yielding obligation + correlative right (h1) + compliance; it adds nothing on brookside since no adoptPolicy/post Acts occur there.",
+      "requested": [
+        "h1",
+        "h3"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": [],
+        "h3": [
+          "e3"
+        ]
+      },
+      "result": "committed [\"h1\", \"h3\"]"
+    },
+    {
+      "before": [
+        "h1",
+        "h3"
+      ],
+      "dossier": "casaFiesta",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h2",
+          "id": "e2",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "dossier": "casaFiesta",
+          "hypothesis": "h3",
+          "id": "e3",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": true,
+      "feedback_seen": [
+        "brookside",
+        "casaFiesta"
+      ],
+      "findings_seen": 3,
+      "navigation_actions_seen": 0,
+      "phase": "revise",
+      "reason": "casaFiesta had 0 valued positions, so h3 contributed nothing confirmable; retaining only h1 (confirmed on brookside) keeps the theory minimal and avoids unsupported over-generation on the next dossier.",
+      "requested": [
+        "h1"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": []
+      },
+      "result": "committed [\"h1\"]"
+    }
+  ],
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 1,
+    "admitted": 3,
+    "attempts": 3,
+    "calls": 17,
+    "commit_rejections": 0,
+    "commits": 3,
+    "cost_microusd": 2931003,
+    "discards": 1,
+    "findings": 4,
+    "findings_verified": 0,
+    "input_tokens": 1305570,
+    "navigation_actions": 1,
+    "navigation_steps": 0,
+    "output_tokens": 9231,
+    "questions": 0,
+    "refused_actions": 0,
+    "reports": 3,
+    "support_queries": 14,
+    "turns": 17,
+    "verified_evaluations": 3
+  },
+  "findings": [
+    {
+      "assertion": "contains_event=right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+      "detail": "recorded False",
+      "dossier": "brookside",
+      "kind": "residuum_result",
+      "novelty": "reference_from_this_phase; content_not_assessed",
+      "phase": "explore",
+      "reference": "e1",
+      "text": "h1 (obligation => correlative right, same argument tuple) certifies on brookside and adds exactly the five rights matching the five filed obligations of jant toward usa.",
+      "verdict": "mismatch"
+    },
+    {
+      "assertion": "contains_event=right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB",
+      "detail": "recorded False",
+      "dossier": "brookside",
+      "kind": "hypothesis_change",
+      "novelty": "reference_from_this_phase; content_not_assessed",
+      "phase": "explore",
+      "reference": "e2",
+      "text": "h2 (prohibition => right with the same tuple) discarded: it would add right(usa, sue, premisesB, jant), which under rightCompliance would treat usa's suing as compliance, contrary to the prohibition.",
+      "verdict": "mismatch"
+    },
+    {
+      "assertion": "contains_event=obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+      "detail": "recorded False",
+      "dossier": "casaFiesta",
+      "kind": "residuum_result",
+      "novelty": "reference_from_this_phase; content_not_assessed",
+      "phase": "explore",
+      "reference": "e3",
+      "text": "h3 (mutual agree Acts on one document + performed adoptPolicy/post Act by the settling party => obligation) certifies on casaFiesta and, with h1, yields obligation, right and compliance for cfA1 and cfA2; brookside unaffected since it has no adoptPolicy/post Acts.",
+      "verdict": "mismatch"
+    },
+    {
+      "assertion": null,
+      "detail": "no assertion",
+      "dossier": "flowers",
+      "kind": "investigation_reason",
+      "novelty": "not_assessed",
+      "phase": "explore",
+      "reference": null,
+      "text": "flowers has no seeds; its closure under LegalGeneral + h1 is empty, so all hypotheses coincide on it and no rule can change its derived positions.",
+      "verdict": "unchecked"
+    }
+  ],
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=distribute",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=keepAvailable",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=signB",
+                "subject=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e1",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Every obligation has a correlative right of the beneficiary; orientation follows rightCompliance (subject = obligor, beneficiary = holder).",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Prospective { dossiers: 1, exposures: 5 }",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule correlativeRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": false,
+      "discarded": "right(saB_u, usa, sue, premisesB, jant) has the orientation that would make usa's suing a compliance under rightCompliance, contradicting the prohibition; a prohibition's correlate is not a right with the same argument tuple.",
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "prohibition(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "prohibitionRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=jant",
+                "conduct=sue",
+                "effective=d20210216",
+                "id=saB_u",
+                "object=premisesB",
+                "subject=usa",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e2",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "prohibition(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "right(usa, sue, premisesB, jant)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h2",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Test whether a prohibition (usa not to sue) also carries a correlative right of the beneficiary; drafted to see the formal consequence, orientation uncertain.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule prohibitionRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    prohibition(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+            "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+            "do(casaFiesta, post, signCF, usa) @ after tCF",
+            "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+            "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+            "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+          ],
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h3",
+              "rule": "settledPolicyAdoption",
+              "substitution": [
+                "a1=saCF_c",
+                "a2=saCF_u",
+                "authority=private",
+                "beneficiary=usa",
+                "doc=saDocCF",
+                "effective=dCF",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF",
+                "x=cfA1"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h3",
+              "rule": "settledPosting",
+              "substitution": [
+                "a1=saCF_c",
+                "a2=saCF_u",
+                "authority=private",
+                "beneficiary=usa",
+                "doc=saDocCF",
+                "effective=dCF",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF",
+                "x=cfA2"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, post, signCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "correlativeRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            }
+          ],
+          "dossier": "casaFiesta",
+          "id": "e3",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "do(casaFiesta, post, signCF, usa) @ after tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "do(casaFiesta, post, signCF, usa) @ after tCF"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "obligation(casaFiesta, adoptPolicy, policyCF, usa)",
+            "obligation(casaFiesta, post, signCF, usa)",
+            "right(casaFiesta, adoptPolicy, policyCF, usa)",
+            "right(casaFiesta, post, signCF, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h3",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "casaFiesta mirrors brookside's settlement pattern but with the policy adoption and sign posting performed rather than filed as obligations. Test whether a mutually agreed settlement document plus performance of the settlement conducts (adoptPolicy, post) grounds the corresponding obligation (and via h1 the correlative right, and via obligationCompliance compliance). Restricted to these conducts to avoid catching the agree act itself on brookside.",
+      "retired_at": "casaFiesta",
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule settledPolicyAdoption(a1, a2, doc, x, subject, object, beneficiary, authority, effective, t) =\n    Act(a1, subject, agree, doc, beneficiary, authority, effective) @ t\n    & Act(a2, beneficiary, agree, doc, subject, authority, effective) @ t\n    & Act(x, subject, adoptPolicy, object, beneficiary, authority, effective) @ t\n    <= obligation(x, subject, adoptPolicy, object, beneficiary, authority, effective) @ t\n\nrule settledPosting(a1, a2, doc, x, subject, object, beneficiary, authority, effective, t) =\n    Act(a1, subject, agree, doc, beneficiary, authority, effective) @ t\n    & Act(a2, beneficiary, agree, doc, subject, authority, effective) @ t\n    & Act(x, subject, post, object, beneficiary, authority, effective) @ t\n    <= obligation(x, subject, post, object, beneficiary, authority, effective) @ t"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=2 input=32201 output=1919 cost_microusd=309425",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "h1 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "h1 on brookside: goals=5 answered=5 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "calls=1 input=22404 output=666 cost_microusd=107998",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "h2: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 7
+    },
+    {
+      "detail": "h2 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 8
+    },
+    {
+      "detail": "h2 on brookside: goals=1 answered=1 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 9
+    },
+    {
+      "detail": "calls=1 input=28719 output=215 cost_microusd=95308",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 10
+    },
+    {
+      "detail": "h2: right(saB_u, usa, sue, premisesB, jant) has the orientation that would make usa's suing a compliance under rightCompliance, contradicting the prohibition; a prohibition's correlate is not a right with the same argument tuple.",
+      "dossier": "brookside",
+      "kind": "discard",
+      "phase": "explore",
+      "seq": 11
+    },
+    {
+      "detail": "calls=1 input=34794 output=153 cost_microusd=90787",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 12
+    },
+    {
+      "detail": "committed [\"h1\"] reason: Correlative right of the beneficiary for each settlement obligation, in the orientation LegalGeneral uses for right (rightCompliance/rightEnforceability). Certified on brookside; adds only the five rights matching the five filed obligations.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 13
+    },
+    {
+      "detail": "calls=1 input=41704 output=344 cost_microusd=112293",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 14
+    },
+    {
+      "detail": "[residuum_result] ref=e1 assertion=contains_event=right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB verdict=mismatch (recorded False) novelty=reference_from_this_phase; content_not_assessed: h1 (obligation => correlative right, same argument tuple) certifies on brookside and adds exactly the five rights matching the five filed obligations of jant toward usa.",
+      "dossier": "brookside",
+      "kind": "finding",
+      "phase": "explore",
+      "seq": 15
+    },
+    {
+      "detail": "[hypothesis_change] ref=e2 assertion=contains_event=right(saB_u, usa, sue, premisesB, jant, private, d20210216) @ tB verdict=mismatch (recorded False) novelty=reference_from_this_phase; content_not_assessed: h2 (prohibition => right with the same tuple) discarded: it would add right(usa, sue, premisesB, jant), which under rightCompliance would treat usa's suing as compliance, contrary to the prohibition.",
+      "dossier": "brookside",
+      "kind": "finding",
+      "phase": "explore",
+      "seq": 16
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 17
+    },
+    {
+      "detail": "calls=1 input=49235 output=184 cost_microusd=113783",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 18
+    },
+    {
+      "detail": "calls=2 input=115730 output=2862 cost_microusd=286305",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "h3: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 20
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 21
+    },
+    {
+      "detail": "h3 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 22
+    },
+    {
+      "detail": "h3 on casaFiesta: goals=8 answered=8 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "casaFiesta",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 23
+    },
+    {
+      "detail": "calls=1 input=72581 output=767 cost_microusd=228309",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 24
+    },
+    {
+      "detail": "committed [\"h1\", \"h3\"] reason: casaFiesta reproduces brookside's settlement pattern (mutual agree Acts on one document with usa, then the settling party adopts a policy and posts a sign for usa). h3 reads these performed settlement conducts as obligations under the agreement, yielding obligation + correlative right (h1) + compliance; it adds nothing on brookside since no adoptPolicy/post Acts occur there.",
+      "dossier": "casaFiesta",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 25
+    },
+    {
+      "detail": "calls=1 input=88506 output=244 cost_microusd=229427",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 26
+    },
+    {
+      "detail": "[residuum_result] ref=e3 assertion=contains_event=obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF verdict=mismatch (recorded False) novelty=reference_from_this_phase; content_not_assessed: h3 (mutual agree Acts on one document + performed adoptPolicy/post Act by the settling party => obligation) certifies on casaFiesta and, with h1, yields obligation, right and compliance for cfA1 and cfA2; brookside unaffected since it has no adoptPolicy/post Acts.",
+      "dossier": "casaFiesta",
+      "kind": "finding",
+      "phase": "explore",
+      "seq": 27
+    },
+    {
+      "detail": "committed=[\"h1\", \"h3\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 28
+    },
+    {
+      "detail": "calls=1 input=104184 output=409 cost_microusd=238571",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 29
+    },
+    {
+      "detail": "committed [\"h1\"] reason: casaFiesta had 0 valued positions, so h3 contributed nothing confirmable; retaining only h1 (confirmed on brookside) keeps the theory minimal and avoids unsupported over-generation on the next dossier.",
+      "dossier": "casaFiesta",
+      "kind": "commit",
+      "phase": "revise",
+      "seq": 30
+    },
+    {
+      "detail": "calls=1 input=117380 output=113 cost_microusd=196666",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 31
+    },
+    {
+      "detail": "calls=2 input=261686 output=700 cost_microusd=269807",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 32
+    },
+    {
+      "detail": "inspect_theory: Complete (steps 0)",
+      "dossier": "flowers",
+      "kind": "navigate",
+      "phase": "explore",
+      "seq": 33
+    },
+    {
+      "detail": "calls=1 input=161537 output=379 cost_microusd=430970",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 34
+    },
+    {
+      "detail": "The flowers dossier has an empty seed set (confirmed by inspect_theory, record n9): its closure is empty under LegalGeneral and under any hypothesis, since every rule body requires at least one seeded or derived event. No draft can add or remove a position here, so there is nothing to test or commit. h1 remains committed (0 discrepancies on brookside and casaFiesta).",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 35
+    },
+    {
+      "detail": "[investigation_reason] ref=- assertion=- verdict=unchecked (no assertion) novelty=not_assessed: flowers has no seeds; its closure under LegalGeneral + h1 is empty, so all hypotheses coincide on it and no rule can change its derived positions.",
+      "dossier": "flowers",
+      "kind": "finding",
+      "phase": "explore",
+      "seq": 36
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 37
+    },
+    {
+      "detail": "calls=1 input=174909 output=276 cost_microusd=221354",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 38
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B7"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B8"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B9"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B10"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B11"
+        }
+      ],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h1",
+        "h3"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 4,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 0,
+  "trajectory_id": "pilot004r-run-013"
+}

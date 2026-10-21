@@ -1,0 +1,20 @@
+{
+  "stage": "trajectory",
+  "name": "pilot004r driver+trajectory",
+  "command": [
+    "/usr/bin/python3",
+    "-I",
+    "-c",
+    "import sys; sys.path.insert(0, '/home/maitreya/residuum-pilot004-documentary'); from tools.pilot004r import driver; sys.exit(driver.main(sys.argv[1:]))",
+    "--manifest",
+    "/home/maitreya/residuum-pilot004-documentary/docs/legal-geometry/pilot-004r/runs/run-007/trajectory.json",
+    "--ledger",
+    "/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-007/ledger",
+    "--binary",
+    "/home/maitreya/residuum-pilot004-documentary/target/debug/residuum-trajectory"
+  ],
+  "timeout": 1500,
+  "stdin": null,
+  "stdout": false,
+  "supervise": null
+}

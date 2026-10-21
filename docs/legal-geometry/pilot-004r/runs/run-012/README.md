@@ -161,3 +161,63 @@ covers the same case on Brookside with a non-performance seed. It checks:
   from a `/tmp` checkout.
 - The paid run-010, replayed without flags, differs only by provider usage.
 - The 22 pilot004r tests pass individually.
+
+## Result (paid run, `run/`)
+
+15 requests, US$0.388. Prequential loss 5: B7–B11 missed on Brookside, then 0
+on Casa Fiesta and 0 on Flowers. There were 3 drafts, each admitted and
+evaluated automatically with supports. There were 2 commits, no discard and 1
+abstention. The learner requested no navigation and no `evaluate_rule` of its
+own, ran no comparison and reported no findings. 18 support queries were
+answered, with nothing omitted and every answer `checked`.
+
+### Brookside: the run-010 path
+
+- **Explore.** h1 is the swapped form (`creditorRight`, *"Give the creditor a
+  right mirroring the obligation."*). `e1` (baseline `O`) has 5 goals, the
+  `right(saB_j, usa, …, jant)`. Each has one support, its
+  `obligationFiled(saB_j, jant, …)`. The learner commits h1 before feedback,
+  giving the reason *"plausible documented right positions"*. The commit
+  trace has `feedback_on_this_dossier_seen: false` and `e1` alone. Its plan
+  listed `minimal_supports` and `compare_partition` among its operations, and
+  it executed neither.
+- **Revise.** After feedback, it drafts the same-subject form h2. `e2`
+  (baseline `O, h1`) has 5 goals with the same single supports. It commits h2
+  alone: *"Matches documented right orientation; drop h1 as unsupported."*
+
+### Casa Fiesta: a probe left as a draft
+
+h3 (`actRight`, an `Act` gives the right with the same arguments): *"Probe
+whether performed Acts correspond to documented rights."*
+
+- `e3` (baseline `O, h2`) has 8 goals: 4 rights, including rights to
+  `agree`, and 4 compliances. Each has one support, its own `Act`.
+- The learner ends the phase with an empty findings check.
+- It neither commits nor discards h3, and it does not revise it.
+
+### Flowers
+
+The learner abstains: the dossier has no seeds.
+
+### Reading
+
+- **The supports carried no contrast in this trajectory.** All 18 answered
+  goals have exactly one support of one seed. No support shows a dependency
+  on a second fact, unlike `e3` in the local replay, where h4's obligations
+  needed the agreement `Act`. The learner's drafts did not reach a case where
+  the supports would discriminate.
+- **No use of the supports is visible.**
+  - The thinking blocks are redacted.
+  - No text, reason or plan refers to supports.
+  - Decisions follow the run-010 pattern: commit on the first evaluation,
+    revise on feedback.
+- **The Brookside sequence repeats run-010.** It also repeats the
+  run-011 contrast: run-011 drafted the same-subject form first, and run-012
+  the swapped form. The sampled first draft, not the presentation, decides
+  the Brookside loss.
+- **Exploration is unchanged.**
+  - One draft per phase.
+  - No alternative is drafted before committing, and nothing is compared.
+  - All planned consultations went unexecuted, including `minimal_supports`
+    as a tool.
+  - h3 stays a draft without a decision.

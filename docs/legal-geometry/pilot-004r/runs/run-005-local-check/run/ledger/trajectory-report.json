@@ -1,0 +1,511 @@
+{
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 3,
+    "admitted": 1,
+    "attempts": 1,
+    "calls": 17,
+    "commit_rejections": 0,
+    "commits": 1,
+    "cost_microusd": 0,
+    "input_tokens": 0,
+    "navigation_actions": 3,
+    "navigation_steps": 1,
+    "output_tokens": 0,
+    "questions": 3,
+    "refused_actions": 2,
+    "turns": 17,
+    "verified_evaluations": 1
+  },
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "evaluations": [
+        {
+          "certified": true,
+          "dossier": "casaFiesta",
+          "positions_contributed": [],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "revise"
+      },
+      "parent": null,
+      "rationale": "scripted check",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule corr(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "refused: in explore, first pose a question (pose_question) and consult Residuum about it (a navigation tool or evaluate_rule); then propose a hypothesis or state an abstention",
+      "dossier": "brookside",
+      "kind": "gate_refused",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "q1: Does anything derive right here? [tool: begin_residual]",
+      "dossier": "brookside",
+      "kind": "question",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "begin_residual: Complete (steps 0)",
+      "dossier": "brookside",
+      "kind": "navigate",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "advance_session: Complete (steps 1)",
+      "dossier": "brookside",
+      "kind": "navigate",
+      "phase": "explore",
+      "seq": 7
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 8
+    },
+    {
+      "detail": "scripted: residual consulted",
+      "dossier": "brookside",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 9
+    },
+    {
+      "detail": "committed=[] loss=5",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 10
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 11
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "revise",
+      "seq": 12
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 13
+    },
+    {
+      "detail": "committed [\"h1\"]",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "revise",
+      "seq": 14
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 15
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 16
+    },
+    {
+      "detail": "refused: in explore, first pose a question (pose_question) and consult Residuum about it (a navigation tool or evaluate_rule); then propose a hypothesis or state an abstention",
+      "dossier": "casaFiesta",
+      "kind": "gate_refused",
+      "phase": "explore",
+      "seq": 17
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 18
+    },
+    {
+      "detail": "q2: What does h1 add on casaFiesta? [tool: evaluate_rule]",
+      "dossier": "casaFiesta",
+      "kind": "question",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 20
+    },
+    {
+      "detail": "h1 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 21
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 22
+    },
+    {
+      "detail": "scripted: nothing added",
+      "dossier": "casaFiesta",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 23
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 24
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 25
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 26
+    },
+    {
+      "detail": "q3: Is there anything to derive in flowers? [tool: inspect_theory]",
+      "dossier": "flowers",
+      "kind": "question",
+      "phase": "explore",
+      "seq": 27
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 28
+    },
+    {
+      "detail": "inspect_theory: Complete (steps 0)",
+      "dossier": "flowers",
+      "kind": "navigate",
+      "phase": "explore",
+      "seq": 29
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 30
+    },
+    {
+      "detail": "scripted: flowers",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 31
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 32
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 33
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [],
+      "loss": 5,
+      "missed": [
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11"
+      ],
+      "unvalued_derived": 0,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 5,
+  "trajectory_id": "pilot004r-run-005-local-check"
+}

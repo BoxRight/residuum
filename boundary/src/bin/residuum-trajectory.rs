@@ -260,6 +260,10 @@ fn parse_action(learner: &mut LineLearner, v: &Value) -> Result<LearnerAction, S
                 .filter_map(|h| h.as_str().map(str::to_string))
                 .collect(),
         },
+        "pose_question" => LearnerAction::Question {
+            question: s("question").ok_or("pose_question needs question")?,
+            tool: s("tool").ok_or("pose_question needs tool")?,
+        },
         "end_phase" => LearnerAction::EndPhase {
             abstention: s("abstention"),
         },
@@ -351,7 +355,7 @@ fn report_json(r: &TrajectoryReport) -> Value {
         "counters": {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
-            "abstentions": k.abstentions,
+            "abstentions": k.abstentions, "questions": k.questions,
             "navigation_actions": k.navigation_actions, "navigation_steps": k.navigation_steps,
             "commits": k.commits, "commit_rejections": k.commit_rejections,
             "calls": k.usage.calls, "input_tokens": k.usage.input_tokens,
@@ -427,6 +431,8 @@ fn main() {
             max_navigation_steps: b["max_navigation_steps"].as_u64().unwrap_or(0) as usize,
         },
         base_module: t["base_module"].as_str().unwrap().into(),
+        // Absent before run-005: the run-001 to run-004 explore protocol.
+        question_first: t["question_first"].as_bool().unwrap_or(false),
     };
     let reserved = ReservedValuations::load_tsv(Path::new(&rel(&t["reserved"]))).unwrap();
     let mut learner = LineLearner {

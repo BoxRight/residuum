@@ -82,6 +82,16 @@ GOAL = {"type": "string", "description": "One event in Formal, e.g. verb(arg, ..
 HYPOTHESIS = {"type": ["string", "null"], "description": "Id of an admitted hypothesis: the theory is LegalGeneral plus "
                                                          "that hypothesis. Null or absent: LegalGeneral alone."}
 DOSSIER = {"type": "string", "description": "Id of a presented dossier."}
+QUESTION_TOOL = {
+    "name": "pose_question",
+    "description": "Record an investigable question about the presented dossiers and the theory, and the tool "
+                   "you will use to answer it. It executes nothing.",
+    "input_schema": {"type": "object", "properties": {
+        "question": {"type": "string"},
+        "tool": {"type": "string", "description": "Name of the tool you will consult to answer it."}},
+        "required": ["question", "tool"]},
+}
+
 NAVIGATION_TOOLS = [
     {
         "name": "inspect_theory",
@@ -172,11 +182,17 @@ Head verbs allowed: {heads}. Body verbs allowed: {body}. At most {atoms} body at
 already presented."""
 
 
-def instructions(condition: str, budgets: dict, n_dossiers: int) -> str:
+def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False) -> str:
     feedback = ("After each scoring you receive the list of discrepancies for that dossier: documented "
                 "positions your committed theory did not derive, and excluded positions it derived with the "
                 "hypotheses responsible." if condition == "feedback" else
                 "After each scoring you are only told that the dossier was evaluated.")
+    question = ""
+    if question_first:
+        question = ("\n  In explore, first pose an investigable question (pose_question) and name the tool that "
+                    "will answer it,\n  then consult Residuum with a navigation tool or evaluate_rule; in light "
+                    "of the result, propose a\n  hypothesis or state an abstention. Concluding that the evidence "
+                    "is insufficient is a valid outcome.")
     navigation = ""
     if budgets.get("max_navigation_actions", 0) > 0:
         navigation = (f"\n\nNavigation tools give access to Residuum's own operations on the presented dossiers and "
@@ -201,7 +217,7 @@ Each dossier has two phases.
   wait for a signal of error. You may propose rules, evaluate them on presented dossiers and commit a set of
   hypotheses. When you end the phase, the committed set is scored on this dossier: loss = required
   positions not derived + excluded positions derived. That prequential score is final and is never revised.
-  The phase ends only after at least one proposal in it or with a stated abstention.
+  The phase ends only after at least one proposal in it or with a stated abstention.{question}
 - revise: {feedback} You may revise, keep or discard hypotheses (propose, evaluate and commit again), also
   when no dossiers remain. The changes apply to the following dossiers; every presented dossier is also
   rescored with the new committed set, recorded separately as a retrospective adjustment.
@@ -365,9 +381,11 @@ def main(argv: list[str]) -> int:
     t = manifest["trajectory"]
     args.ledger.mkdir(parents=True, exist_ok=True)
     ledger = Ledger(args.ledger)
-    system = instructions(t["condition"], t["budgets"], len(t["order"]))
+    question_first = bool(t.get("question_first", False))
+    system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first)
     first = opening(manifest, base)
-    tools = TOOLS + (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
+    tools = TOOLS + ([QUESTION_TOOL] if question_first else []) + \
+        (NAVIGATION_TOOLS if t["budgets"].get("max_navigation_actions", 0) > 0 else [])
     ledger.append("start", {"manifest": manifest, "system": system, "opening": first, "tools": tools})
     if d["provider"] == "anthropic":
         provider = AnthropicProvider(d["model"], system, ledger, tools)

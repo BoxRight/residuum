@@ -756,6 +756,12 @@ pub enum LearnerAction {
     Navigate {
         request: worker::Request,
     },
+    /// An investigable question and the tool the learner plans to answer
+    /// it with. Recorded; it executes nothing.
+    Question {
+        question: String,
+        tool: String,
+    },
     /// An action the transport could not decode; refused with its reason.
     Malformed {
         message: String,
@@ -888,6 +894,10 @@ pub struct TrajectoryManifest {
     pub budgets: TrajectoryBudgets,
     /// Module name of `O` in the resolved baseline (`LegalGeneral`).
     pub base_module: String,
+    /// Explore protocol: before proposing or abstaining, pose a question
+    /// and consult Residuum (a navigation request or a verified evaluation)
+    /// after it. Never forces a proposal. Requires navigation.
+    pub question_first: bool,
 }
 
 /// The admissible language of contract §2: A3 heads, a body vocabulary over
@@ -1047,6 +1057,7 @@ pub struct Counters {
     pub verified_evaluations: usize,
     pub refused_actions: usize,
     pub abstentions: usize,
+    pub questions: usize,
     pub navigation_actions: usize,
     pub navigation_steps: usize,
     pub commits: usize,
@@ -1784,6 +1795,18 @@ impl<'a> State<'a> {
     fn phase(&mut self, learner: &mut dyn Learner, index: usize, phase: Phase) {
         let max = self.manifest.budgets.max_turns_per_phase;
         let attempts_before = self.counters.attempts;
+        // Question-first explore: consultations counted since the latest
+        // question of this phase; `None` until a question is posed.
+        let gated = self.manifest.question_first && phase == Phase::Explore;
+        let consultations =
+            |s: &Self| s.counters.navigation_actions + s.counters.verified_evaluations;
+        let mut since_question: Option<usize> = None;
+        let gate_open = |s: &Self, since: Option<usize>| {
+            !gated || since.is_some_and(|at| consultations(s) > at)
+        };
+        const GATE: &str = "refused: in explore, first pose a question (pose_question) and consult \
+                            Residuum about it (a navigation tool or evaluate_rule); then propose a \
+                            hypothesis or state an abstention";
         for turn in 0..max {
             let view = self.view(index, phase, max - turn);
             let (action, usage) = learner.act(&view);
@@ -1803,7 +1826,23 @@ impl<'a> State<'a> {
             );
             // A navigation response is shown once, right after its request.
             self.last_navigation = None;
+            let gate_closed = !gate_open(self, since_question);
             let result = match action {
+                LearnerAction::EndPhase { .. } | LearnerAction::Propose { .. } if gate_closed => {
+                    self.counters.refused_actions += 1;
+                    self.log(index, Some(phase), "gate_refused", GATE.into());
+                    GATE.into()
+                }
+                LearnerAction::Question { question, tool } => {
+                    self.counters.questions += 1;
+                    since_question = Some(consultations(self));
+                    let detail = format!(
+                        "q{}: {} [tool: {}]",
+                        self.counters.questions, question, tool
+                    );
+                    self.log(index, Some(phase), "question", detail.clone());
+                    format!("recorded {detail}")
+                }
                 LearnerAction::EndPhase { abstention } => {
                     let proposed = self.counters.attempts > attempts_before;
                     let stated = abstention
@@ -1846,7 +1885,11 @@ impl<'a> State<'a> {
             };
             self.last_result = Some(result);
         }
-        let detail = if phase == Phase::Explore && self.counters.attempts == attempts_before {
+        let detail = if gated && since_question.is_none() {
+            "turn limit reached without a question"
+        } else if gated && !gate_open(self, since_question) {
+            "turn limit reached without a consultation after the question"
+        } else if phase == Phase::Explore && self.counters.attempts == attempts_before {
             "turn limit reached without proposal or abstention"
         } else {
             "turn limit reached"
@@ -2012,6 +2055,11 @@ pub fn run_trajectory(
 ) -> Result<TrajectoryReport, Error> {
     if manifest.order.is_empty() {
         return Err(Error::new("trajectory: empty dossier order"));
+    }
+    if manifest.question_first && manifest.budgets.max_navigation_actions == 0 {
+        return Err(Error::new(
+            "trajectory: question_first needs navigation to consult Residuum",
+        ));
     }
     // `admit` does not read D; `Episode::prepare` only validates one. The
     // placeholder observes an arbitrary seed and is never evaluated.

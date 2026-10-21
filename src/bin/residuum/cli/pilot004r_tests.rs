@@ -397,6 +397,7 @@ fn manifest(id: &str, condition: Condition, order: Vec<DossierInput>) -> Traject
         order,
         budgets: budgets(),
         base_module: "LegalGeneral".into(),
+        question_first: false,
     }
 }
 
@@ -1333,4 +1334,104 @@ fn pilot004r_navigation_budget_and_disabled_navigation() {
     assert_eq!(report.counters.navigation_actions, 0);
     assert_eq!(report.counters.refused_actions, 3);
     assert!(learner.views.iter().all(|v| v.last_navigation.is_none()));
+}
+
+// ---------------------------------------------------------------------------
+// Question-first explore protocol (run-005).
+
+fn question(q: &str, tool: &str) -> LearnerAction {
+    LearnerAction::Question {
+        question: q.into(),
+        tool: tool.into(),
+    }
+}
+
+#[test]
+fn pilot004r_question_first_gates_proposals_and_abstentions() {
+    use residuum::experiments::worker::Request;
+    let mut m = manifest("question-first", Condition::Feedback, navigation_order());
+    m.question_first = true;
+    m.budgets.max_navigation_actions = 40;
+    m.budgets.max_navigation_steps = 2_000;
+    let abstain = || LearnerAction::EndPhase {
+        abstention: Some("no evidence".into()),
+    };
+    let mut learner = Scripted::new()
+        .at(
+            "brookside",
+            Phase::Explore,
+            vec![
+                propose(CORR, None), // refused: no question yet
+                abstain(),           // refused: no question yet
+                question("does anything derive right here?", "begin_residual"),
+                abstain(), // refused: no consultation since the question
+                nav(Request::InspectTheory),
+                abstain(), // accepted: question, consultation, abstention
+            ],
+        )
+        // Revise is not gated.
+        .at(
+            "brookside",
+            Phase::Revise,
+            vec![propose(CORR, None), commit(&["h1"]), end(None)],
+        )
+        .at(
+            "casaFiesta",
+            Phase::Explore,
+            vec![
+                // A question of the previous phase does not carry over.
+                propose(CORR_CREDITOR, None), // refused
+                question("what does h1 add here?", "evaluate_rule"),
+                evaluate("h1", "casaFiesta"), // a verified evaluation consults
+                propose(CORR_CREDITOR, None), // accepted
+                end(None),
+            ],
+        );
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+    let kinds = |d: &str| -> Vec<String> {
+        report
+            .ledger
+            .iter()
+            .filter(|e| e.dossier == d && e.phase == Some(Phase::Explore) && e.kind != "usage")
+            .map(|e| e.kind.clone())
+            .collect()
+    };
+    assert_eq!(
+        kinds("brookside"),
+        vec![
+            "gate_refused",
+            "gate_refused",
+            "question",
+            "gate_refused",
+            "navigate",
+            "abstention"
+        ]
+    );
+    assert_eq!(
+        kinds("casaFiesta"),
+        vec!["gate_refused", "question", "evaluate", "propose"]
+    );
+    let k = &report.counters;
+    assert_eq!(k.questions, 2);
+    assert_eq!(k.abstentions, 1);
+    assert_eq!(k.attempts, 2);
+    assert_eq!(k.refused_actions, 4);
+    // The learner sees the reason for each refusal.
+    assert!(learner.views.iter().any(|v| {
+        v.last_result
+            .as_deref()
+            .is_some_and(|r| r.starts_with("refused: in explore, first pose a question"))
+    }));
+    // Flowers: the scripted default ends without a question; the turn
+    // limit closes the phase and says why. Scoring still happens.
+    assert_eq!(report.prequential.len(), 2);
+
+    // question_first without navigation is a configuration error.
+    let mut bad = manifest(
+        "question-first-bad",
+        Condition::Feedback,
+        navigation_order(),
+    );
+    bad.question_first = true;
+    assert!(run_trajectory(&bad, &reserved(), &mut Scripted::new()).is_err());
 }

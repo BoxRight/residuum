@@ -404,6 +404,7 @@ fn score_brookside(texts: &[&str]) -> Scoring {
             max_navigation_steps: 0,
         },
         base_module: "LegalGeneral".into(),
+        question_first: false,
     };
     let reserved = ReservedValuations::load_tsv(&path(RESERVED)).unwrap();
     let report = run_trajectory(&manifest, &reserved, &mut Commit(actions)).unwrap();

@@ -1,0 +1,309 @@
+{
+  "trajectory": {
+    "trajectory_id": "pilot004r-run-013-local-check",
+    "condition": "feedback",
+    "imports": [
+      "../../vocabulary.res"
+    ],
+    "dossiers_module": "../../dossiers.res",
+    "reserved": "../../reserved/valuations.tsv",
+    "workdir": "../../../../../target/pilot004r/run-013-local-check/work",
+    "order": [
+      {
+        "id": "brookside",
+        "experiment": "brookside"
+      },
+      {
+        "id": "casaFiesta",
+        "experiment": "casa_fiesta"
+      },
+      {
+        "id": "flowers",
+        "experiment": null
+      }
+    ],
+    "budgets": {
+      "max_verified_evaluations": 40,
+      "max_proposals": 40,
+      "max_turns_per_phase": 30,
+      "max_clauses": 2,
+      "max_navigation_actions": 60,
+      "max_navigation_steps": 4000
+    },
+    "base_module": "LegalGeneral",
+    "draft_contract": true,
+    "findings_report": true,
+    "planning": true,
+    "investigation_split": true,
+    "auto_evaluate": true,
+    "attribution": true,
+    "supports": {
+      "goal_limit": 8,
+      "max_queries": 40
+    }
+  },
+  "driver": {
+    "ontology": "../../../../../examples/experiments/legal_geometry/ontology_reference/legal_general.res",
+    "vocabulary": "../../vocabulary.res",
+    "profile": {
+      "heads": [
+        "obligation",
+        "permission",
+        "prohibition",
+        "omissionProhibition",
+        "right",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialLiability"
+      ],
+      "body_verbs": [
+        "Act",
+        "right",
+        "obligationFiled",
+        "prohibition",
+        "omissionProhibition",
+        "permissionFiled",
+        "patrimonialHolding",
+        "powerGranted",
+        "legislationText",
+        "obligation",
+        "permission",
+        "compliance",
+        "violation",
+        "enforceability",
+        "patrimonialAsset",
+        "patrimonialLiability",
+        "transferred",
+        "owns",
+        "capacity",
+        "law"
+      ],
+      "max_atoms": 4
+    },
+    "provider": "scripted",
+    "script": [
+      {
+        "plan": {
+          "uncertainties": [
+            "Which positions the evaluator documents for brookside: likely obligations and rights of jant toward usa (policy adoption, distribution, posting, availability), a prohibition on usa suing, possibly permissions.",
+            "Whether reciprocity is expected: jant's obligations conditional on or paired with usa's counter-duty, or usa's rights mirroring jant's obligations (right derived from obligation).",
+            "Whether compliance, violation or enforceability should be derived. Act(saB_j ... agree ...) has a different conduct and object from the obligations, so exact-match compliance does not fire.",
+            "Whether an omissionProhibition or a permission should be derived for usa, for example a permission to sue under a different condition.",
+            "Whether the rules should generalise across later dossiers (casaFiesta, other persons), so they need to use variables rather than dossier-specific constants."
+          ],
+          "operations": [
+            {
+              "tool": "inspect_theory",
+              "purpose": "Confirm rules, verbs and the dossier list at low cost."
+            },
+            {
+              "tool": "propose_rule",
+              "purpose": "Draft a general rule such as obligationFiled(id,s,c,o,b,a,e)@t => right(id,b,c,o,s,a,e)@t (creditor right mirroring obligation), and a variant for the prohibition giving omissionProhibition."
+            },
+            {
+              "tool": "evaluate_rule",
+              "purpose": "See which new events and positions each draft adds on brookside."
+            },
+            {
+              "tool": "compare_partition",
+              "purpose": "Compare the alternatives on a goal such as right(...) to see which supports discriminate them."
+            },
+            {
+              "tool": "begin_residual",
+              "purpose": "Ask what is missing for goals such as violation or compliance of saB_j."
+            }
+          ],
+          "distinguishing_results": [
+            "A draft that adds right(...) events for usa only, versus one that also adds excluded-looking extras such as permissions.",
+            "Whether the mirror right triggers rightEnforceability or compliance, which would add more derived positions and more risk of excluded positions.",
+            "Whether the prohibition-to-omissionProhibition draft adds only the usa/sue position."
+          ],
+          "conditions": [
+            "Continue if a draft adds a small number of well-motivated positions that follow the normative structure of the seeded facts.",
+            "Change the plan if drafts produce many side-effect events such as violations and liabilities that look excluded.",
+            "Abstain from committing if no draft is better than the empty set, since the empty committed set is a safe baseline. Commit only the minimal, general rule, and wait for revise feedback to refine it."
+          ]
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule creditorRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, beneficiary, conduct, object, subject, authority, effective) @ t",
+          "rationale": "Obligations of debtor yield a mirror right for the creditor."
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h1"
+          ],
+          "reason": "Creditor right mirrors obligation; plausible documented positions."
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule obligationRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t",
+          "rationale": "Documented rights have the obligor as subject."
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h2"
+          ],
+          "reason": "Derives the missing documented rights with obligor as subject; drop h1 whose rights were not documented."
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "plan": {
+          "uncertainties": [
+            "casaFiesta has no obligations, prohibitions or rights as seeds. It has only Acts: the agreement acts, plus casaFiesta adopting a policy and posting a sign for usa. So the documented positions probably come from a rule that turns these into obligations or rights.",
+            "Whether the documented positions are obligations and rights for casaFiesta (adoptPolicy on policyCF, post on signCF), matching the brookside structure. Brookside's obligations were filed seeds, but here there are none.",
+            "Whether the agreement Acts (saCF_c, saCF_u) should generate obligations, for example casaFiesta owes the policy conduct and usa gets a prohibition on suing, mirroring brookside. The policy conduct is only visible through the cfA1 and cfA2 Acts.",
+            "Whether compliance should be derived. This needs an obligation whose conduct and object match an Act. The Acts cfA1 and cfA2 match adoptPolicy/policyCF and post/signCF, so an obligation rule would make compliance fire. The id of the norm would have to be saCF_c or cfA1 to line up.",
+            "How far a rule generalises. Brookside's compliance did not fire because the Act conduct was 'agree', while the obligations concerned other objects. Any rule must avoid excluded violations, for example an obligation for distribute or keepAvailable with no matching Act would produce a violation."
+          ],
+          "operations": [
+            {
+              "tool": "propose_rule",
+              "purpose": "Draft a rule that derives an obligation from an agreement Act plus a performance Act, for example Act(agree) and Act(adoptPolicy) giving obligation(adoptPolicy), and check the new events. A draft is evaluated at once on casaFiesta."
+            },
+            {
+              "tool": "evaluate_rule",
+              "purpose": "Test the draft together with h2 on casaFiesta to see whether compliance, right, or violation events appear. Also re-test on brookside to confirm there are no side effects."
+            },
+            {
+              "tool": "begin_residual",
+              "purpose": "Ask what is missing for the goal compliance(...) or right(casaFiesta, adoptPolicy, policyCF, usa), to see which body atoms the rules need."
+            },
+            {
+              "tool": "compare_partition",
+              "purpose": "Compare variants, such as one deriving only obligations versus one deriving obligations plus an usa prohibition, on a shared goal."
+            }
+          ],
+          "distinguishing_results": [
+            "A rule that yields compliance events for cfA1 and cfA2 with no violations, as opposed to one that yields violations (excluded risk).",
+            "Whether h2 turns the new obligations into rights for casaFiesta, so one rule covers both the obligation and the right positions.",
+            "Whether the draft fires on brookside, where there are no performance Acts, which shows if it is restricted to casaFiesta-like cases."
+          ],
+          "conditions": [
+            "Continue if a draft derives obligations, rights and compliance for casaFiesta without violations.",
+            "Change the plan if the draft produces excluded-looking violations or liabilities; narrow the body.",
+            "Abstain, committing nothing new and keeping h2, if no draft clearly follows from the seeds. The brookside feedback shows only rights were documented, so a conservative rule is better than a broad one."
+          ]
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule agreedDuty(sa, saU, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t",
+          "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire."
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule agreedDuty(sa, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t",
+          "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire."
+        }
+      },
+      {
+        "tool": "propose_rule",
+        "arguments": {
+          "text": "rule agreedAdopt(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n\nrule agreedPost(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, post, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, post, thing, beneficiary, authority, effective) @ t",
+          "rationale": "Narrow version avoiding obligations to agree."
+        }
+      },
+      {
+        "tool": "commit",
+        "arguments": {
+          "hypotheses": [
+            "h2",
+            "h5"
+          ],
+          "reason": "h5 derives obligations/compliance for performed policy and sign acts under an agreement, and h2 gives the obligor rights."
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      },
+      {
+        "plan": {
+          "uncertainties": [
+            "The flowers dossier has no seeds, and its closure is empty. Nothing can be derived from it, so any rule I write has nothing to fire on.",
+            "Whether flowers documents any positions at all. casaFiesta had 0 valued positions, and an empty dossier probably has none either.",
+            "Whether the committed set h2 and h5 yields side effects here. With no facts it should add nothing, so the expected loss is 0.",
+            "Whether h2 and h5 generalise. The only evidence is brookside, where the rights were missing, and casaFiesta, which had no valued positions. I cannot test them further on flowers."
+          ],
+          "operations": [
+            {
+              "tool": "inspect_theory",
+              "purpose": "Check whether flowers really has no seeds and whether the dossier list has changed. This is an optional, low-cost check."
+            },
+            {
+              "tool": "end_phase",
+              "purpose": "End the explore phase with a stated abstention, since there are no facts to investigate and nothing in this dossier can support a new rule."
+            }
+          ],
+          "distinguishing_results": [
+            "If inspect_theory shows seeds that the current view omits, I would draft rules against them.",
+            "If the scoring shows 0 discrepancies, the committed set is harmless on an empty dossier and I keep it unchanged."
+          ],
+          "conditions": [
+            "Abstain and keep h2 and h5 committed if the dossier stays empty.",
+            "Continue with drafting only if seeds appear.",
+            "Do not commit anything new, because a rule cannot be tested without facts and could only add risk."
+          ]
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {
+          "abstention": "The flowers dossier has no seeds and its closure is empty, so there is nothing to derive or test. I am keeping the committed set h2 and h5 unchanged."
+        }
+      },
+      {
+        "tool": "end_phase",
+        "arguments": {}
+      }
+    ],
+    "model": {
+      "model_id": "claude-fable-5-1",
+      "max_tokens": 16000,
+      "timeout_seconds": 600,
+      "parameters": {
+        "thinking": {
+          "type": "adaptive"
+        },
+        "output_config": {
+          "effort": "medium"
+        }
+      },
+      "pricing": {
+        "input_per_mtok": 10.0,
+        "output_per_mtok": 50.0,
+        "cache_write_multiplier": 1.25,
+        "cache_read_per_mtok": 0.25
+      },
+      "max_cost_usd": 20.0,
+      "max_model_requests": 400
+    }
+  }
+}

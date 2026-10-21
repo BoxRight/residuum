@@ -1,0 +1,2053 @@
+{
+  "commit_traces": [
+    {
+      "before": [],
+      "dossier": "brookside",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "Creditor right mirrors obligation; plausible documented positions.",
+      "requested": [
+        "h1"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": [
+          "e1"
+        ]
+      },
+      "result": "committed [\"h1\"]"
+    },
+    {
+      "before": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h2",
+          "id": "e2",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": true,
+      "feedback_seen": [
+        "brookside"
+      ],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "revise",
+      "reason": "Derives the missing documented rights with obligor as subject; drop h1 whose rights were not documented.",
+      "requested": [
+        "h2"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h2": [
+          "e2"
+        ]
+      },
+      "result": "committed [\"h2\"]"
+    },
+    {
+      "before": [
+        "h2"
+      ],
+      "dossier": "casaFiesta",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h2",
+          "id": "e2",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h2"
+          ],
+          "dossier": "casaFiesta",
+          "hypothesis": "h4",
+          "id": "e3",
+          "status": "certified"
+        },
+        {
+          "baseline": [
+            "O",
+            "h2"
+          ],
+          "dossier": "casaFiesta",
+          "hypothesis": "h5",
+          "id": "e4",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [
+        "brookside"
+      ],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "h5 derives obligations/compliance for performed policy and sign acts under an agreement, and h2 gives the obligor rights.",
+      "requested": [
+        "h2",
+        "h5"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h2": [],
+        "h5": [
+          "e4"
+        ]
+      },
+      "result": "committed [\"h2\", \"h5\"]"
+    }
+  ],
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h2"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 4,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h2",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 4,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h2",
+          "h5"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 1,
+    "admitted": 4,
+    "attempts": 5,
+    "calls": 17,
+    "commit_rejections": 0,
+    "commits": 3,
+    "cost_microusd": 0,
+    "discards": 0,
+    "findings": 0,
+    "findings_verified": 0,
+    "input_tokens": 0,
+    "navigation_actions": 0,
+    "navigation_steps": 0,
+    "output_tokens": 0,
+    "questions": 0,
+    "refused_actions": 0,
+    "reports": 0,
+    "support_queries": 26,
+    "turns": 18,
+    "verified_evaluations": 4
+  },
+  "findings": [],
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_j, usa, adoptPolicy, policyA, jant, private, d20210216) @ tB",
+            "right(saB_j, usa, distribute, policyA, jant, private, d20210216) @ tB",
+            "right(saB_j, usa, post, policyA, jant, private, d20210216) @ tB",
+            "right(saB_j, usa, keepAvailable, policyA, jant, private, d20210216) @ tB",
+            "right(saB_j, usa, post, signB, jant, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, usa, adoptPolicy, policyA, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "creditorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, usa, distribute, policyA, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "creditorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=distribute",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, usa, post, policyA, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "creditorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, usa, keepAvailable, policyA, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "creditorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=keepAvailable",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, usa, post, signB, jant, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "creditorRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=signB",
+                "subject=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e1",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_j, usa, adoptPolicy, policyA, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, usa, distribute, policyA, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, usa, keepAvailable, policyA, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, usa, post, policyA, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, usa, post, signB, jant, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "right(saB_j, usa, adoptPolicy, policyA, jant, private, d20210216) @ tB",
+              "right(saB_j, usa, distribute, policyA, jant, private, d20210216) @ tB",
+              "right(saB_j, usa, keepAvailable, policyA, jant, private, d20210216) @ tB",
+              "right(saB_j, usa, post, policyA, jant, private, d20210216) @ tB",
+              "right(saB_j, usa, post, signB, jant, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "right(usa, adoptPolicy, policyA, jant)",
+            "right(usa, distribute, policyA, jant)",
+            "right(usa, keepAvailable, policyA, jant)",
+            "right(usa, post, policyA, jant)",
+            "right(usa, post, signB, jant)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Obligations of debtor yield a mirror right for the creditor.",
+      "retired_at": "brookside",
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule creditorRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, beneficiary, conduct, object, subject, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=distribute",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=keepAvailable",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=policyA",
+                "subject=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=d20210216",
+                "id=saB_j",
+                "object=signB",
+                "subject=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e2",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h2",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "revise"
+      },
+      "parent": null,
+      "rationale": "Documented rights have the obligor as subject.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule obligationRight(id, subject, conduct, object, beneficiary, authority, effective, t) =\n    obligation(id, subject, conduct, object, beneficiary, authority, effective) @ t\n    <= right(id, subject, conduct, object, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "S_ELABORATION Elaboration(\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-013-local-check/work/Candidateh3.res: could not infer type for rule parameter `saU`\")",
+      "case_specific": false,
+      "certified_evaluations": 0,
+      "committed_ok": false,
+      "discarded": null,
+      "evaluations": [],
+      "id": "h3",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire.",
+      "retired_at": null,
+      "statuses": [
+        "Pending(\"S_ELABORATION Elaboration(\\\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-013-local-check/work/Candidateh3.res: could not infer type for rule parameter `saU`\\\")\")"
+      ],
+      "text": "rule agreedDuty(sa, saU, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": false,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+            "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+            "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+            "do(casaFiesta, agree, saDocCF, usa) @ after tCF",
+            "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+            "do(casaFiesta, post, signCF, usa) @ after tCF",
+            "do(usa, agree, saDocCF, casaFiesta) @ after tCF",
+            "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+            "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+            "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+            "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+            "right(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+            "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+            "right(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+          ],
+          "baseline": [
+            "O",
+            "h2"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h4",
+              "rule": "agreedDuty",
+              "substitution": [
+                "a=saCF_c",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_c",
+                "subject=casaFiesta",
+                "t=tCF",
+                "thing=saDocCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h4",
+              "rule": "agreedDuty",
+              "substitution": [
+                "a=cfA1",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_c",
+                "subject=casaFiesta",
+                "t=tCF",
+                "thing=policyCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h4",
+              "rule": "agreedDuty",
+              "substitution": [
+                "a=cfA2",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_c",
+                "subject=casaFiesta",
+                "t=tCF",
+                "thing=signCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h4",
+              "rule": "agreedDuty",
+              "substitution": [
+                "a=saCF_u",
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_u",
+                "subject=usa",
+                "t=tCF",
+                "thing=saDocCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, agree, saDocCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "id=saCF_c",
+                "object=saDocCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, post, signCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "do(usa, agree, saDocCF, casaFiesta) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "id=saCF_u",
+                "object=saDocCF",
+                "subject=usa",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=saCF_c",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "norm=saCF_c",
+                "object=saDocCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=saCF_u",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "norm=saCF_u",
+                "object=saDocCF",
+                "subject=usa",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "id=saCF_c",
+                "object=saDocCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "right(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "id=saCF_u",
+                "object=saDocCF",
+                "subject=usa",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=saCF_c",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=agree",
+                "effective=dCF",
+                "norm=saCF_c",
+                "object=saDocCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+              ],
+              "event": "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=saCF_u",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=casaFiesta",
+                "conduct=agree",
+                "effective=dCF",
+                "norm=saCF_u",
+                "object=saDocCF",
+                "subject=usa",
+                "t=tCF"
+              ]
+            }
+          ],
+          "dossier": "casaFiesta",
+          "id": "e3",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "obligation(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+              "obligation(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "right(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+              "right(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+              "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "do(casaFiesta, agree, saDocCF, usa) @ after tCF",
+              "do(casaFiesta, post, signCF, usa) @ after tCF",
+              "do(usa, agree, saDocCF, casaFiesta) @ after tCF"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": [
+              "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "compliance(saCF_c, saCF_c, casaFiesta, saDocCF, usa, private, dCF) @ tCF",
+              "compliance(saCF_u, saCF_u, usa, saDocCF, casaFiesta, private, dCF) @ tCF",
+              "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "do(casaFiesta, agree, saDocCF, usa) @ after tCF",
+              "do(casaFiesta, post, signCF, usa) @ after tCF",
+              "do(usa, agree, saDocCF, casaFiesta) @ after tCF"
+            ]
+          },
+          "positions_contributed": [
+            "obligation(casaFiesta, adoptPolicy, policyCF, usa)",
+            "obligation(casaFiesta, agree, saDocCF, usa)",
+            "obligation(casaFiesta, post, signCF, usa)",
+            "obligation(usa, agree, saDocCF, casaFiesta)",
+            "right(casaFiesta, adoptPolicy, policyCF, usa)",
+            "right(casaFiesta, agree, saDocCF, usa)",
+            "right(casaFiesta, post, signCF, usa)",
+            "right(usa, agree, saDocCF, casaFiesta)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h4",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Acts performed under an agreement correspond to obligations; h2 then yields rights and compliance may fire.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule agreedDuty(sa, a, subject, object, beneficiary, conduct, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, conduct, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, conduct, thing, beneficiary, authority, effective) @ t"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+            "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+            "do(casaFiesta, post, signCF, usa) @ after tCF",
+            "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+            "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+            "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+            "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+          ],
+          "baseline": [
+            "O",
+            "h2"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h5",
+              "rule": "agreedAdopt",
+              "substitution": [
+                "a=cfA1",
+                "authority=private",
+                "beneficiary=usa",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_c",
+                "subject=casaFiesta",
+                "t=tCF",
+                "thing=policyCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h5",
+              "rule": "agreedPost",
+              "substitution": [
+                "a=cfA2",
+                "authority=private",
+                "beneficiary=usa",
+                "effective=dCF",
+                "object=saDocCF",
+                "sa=saCF_c",
+                "subject=casaFiesta",
+                "t=tCF",
+                "thing=signCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "do(casaFiesta, post, signCF, usa) @ after tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCreatesRelation",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "obligationCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "id=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "h2",
+              "rule": "obligationRight",
+              "substitution": [
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "id=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA1",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=adoptPolicy",
+                "effective=dCF",
+                "norm=cfA1",
+                "object=policyCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            },
+            {
+              "antecedents": [
+                "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF"
+              ],
+              "event": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "event_already_in_baseline": false,
+              "origin": "O",
+              "rule": "rightCompliance",
+              "substitution": [
+                "act=cfA2",
+                "actAuthority=private",
+                "actEffective=dCF",
+                "authority=private",
+                "beneficiary=usa",
+                "conduct=post",
+                "effective=dCF",
+                "norm=cfA2",
+                "object=signCF",
+                "subject=casaFiesta",
+                "t=tCF"
+              ]
+            }
+          ],
+          "dossier": "casaFiesta",
+          "id": "e4",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+                "supports": [
+                  [
+                    "Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "do(casaFiesta, post, signCF, usa) @ after tCF",
+                "supports": [
+                  [
+                    "Act(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+                    "Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 8,
+            "goals": [
+              "obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF",
+              "right(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF",
+              "compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF",
+              "compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF",
+              "do(casaFiesta, adoptPolicy, policyCF, usa) @ after tCF",
+              "do(casaFiesta, post, signCF, usa) @ after tCF"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": []
+          },
+          "positions_contributed": [
+            "obligation(casaFiesta, adoptPolicy, policyCF, usa)",
+            "obligation(casaFiesta, post, signCF, usa)",
+            "right(casaFiesta, adoptPolicy, policyCF, usa)",
+            "right(casaFiesta, post, signCF, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h5",
+      "origin": {
+        "dossier": "casaFiesta",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "Narrow version avoiding obligations to agree.",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule agreedAdopt(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, adoptPolicy, thing, beneficiary, authority, effective) @ t\n\nrule agreedPost(sa, a, subject, object, beneficiary, thing, authority, effective, t) =\n    Act(sa, subject, agree, object, beneficiary, authority, effective) @ t\n    & Act(a, subject, post, thing, beneficiary, authority, effective) @ t\n    <= obligation(a, subject, post, thing, beneficiary, authority, effective) @ t"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "h1 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "h1 on brookside: goals=5 answered=5 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "committed [\"h1\"] reason: Creditor right mirrors obligation; plausible documented positions.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 7
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=5",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 8
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 9
+    },
+    {
+      "detail": "h2: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "revise",
+      "seq": 10
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 11
+    },
+    {
+      "detail": "h2 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "revise",
+      "seq": 12
+    },
+    {
+      "detail": "h2 on brookside: goals=5 answered=5 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "revise",
+      "seq": 13
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 14
+    },
+    {
+      "detail": "committed [\"h2\"] reason: Derives the missing documented rights with obligor as subject; drop h1 whose rights were not documented.",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "revise",
+      "seq": 15
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 16
+    },
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 17
+    },
+    {
+      "detail": "h3: S_ELABORATION Elaboration(\"/home/maitreya/residuum-pilot004-documentary/target/pilot004r/run-013-local-check/work/Candidateh3.res: could not infer type for rule parameter `saU`\")",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 18
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "h4: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 20
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 21
+    },
+    {
+      "detail": "h4 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 22
+    },
+    {
+      "detail": "h4 on casaFiesta: goals=16 answered=8 omitted presentation_limit=8 budget=0 tool=0",
+      "dossier": "casaFiesta",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 23
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 24
+    },
+    {
+      "detail": "h5: admitted",
+      "dossier": "casaFiesta",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 25
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 26
+    },
+    {
+      "detail": "h5 on casaFiesta: certified",
+      "dossier": "casaFiesta",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 27
+    },
+    {
+      "detail": "h5 on casaFiesta: goals=8 answered=8 omitted presentation_limit=0 budget=0 tool=0",
+      "dossier": "casaFiesta",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 28
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 29
+    },
+    {
+      "detail": "committed [\"h2\", \"h5\"] reason: h5 derives obligations/compliance for performed policy and sign acts under an agreement, and h2 gives the obligor rights.",
+      "dossier": "casaFiesta",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 30
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 31
+    },
+    {
+      "detail": "committed=[\"h2\", \"h5\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 32
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 33
+    },
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 34
+    },
+    {
+      "detail": "The flowers dossier has no seeds and its closure is empty, so there is nothing to derive or test. I am keeping the committed set h2 and h5 unchanged.",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 35
+    },
+    {
+      "detail": "committed=[\"h2\", \"h5\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 36
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 37
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [],
+      "loss": 5,
+      "missed": [
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11"
+      ],
+      "unvalued_derived": 5,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h2",
+        "h5"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 4,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h2",
+        "h5"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 5,
+  "trajectory_id": "pilot004r-run-013-local-check"
+}

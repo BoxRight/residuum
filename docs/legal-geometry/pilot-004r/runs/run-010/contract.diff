@@ -1,0 +1,24 @@
+--- run-009/system
++++ run-010/system
+@@ -11,7 +11,9 @@
+   hypotheses, with justifications. This phase is for investigating the dossier: which relations it contains,
+   what consequences possible generalisations would have, and how alternative hypotheses differ.
+   propose_rule creates a draft hypothesis: a draft has no effect on your committed set R_k and is never
+-  scored. evaluate_rule tests a hypothesis hypothetically on a presented dossier, without penalty. You may
++  scored. evaluate_rule tests a hypothesis hypothetically on a presented dossier, without penalty.
++  Each draft that Residuum admits is evaluated at once, automatically, on the current dossier (one
++  verified evaluation from the budget), and that evaluation is returned with the admission. You may
+   draft, test, compare and discard as many alternatives as the budgets allow; discard records that you set a
+   draft aside and why, and pose_question records a question if that helps you. commit is the decision to
+   incorporate hypotheses into R_k so that they are contrasted with later experience; give its reason. When
+--- run-009/tools
++++ run-010/tools
+@@ -1,7 +1,7 @@
+ [
+  {
+   "name": "propose_rule",
+-  "description": "Create a draft hypothesis from Formal rule declarations. Residuum parses, elaborates and admits it or reports why not. A draft has no effect on the committed set R_k and is never scored.",
++  "description": "Create a draft hypothesis from Formal rule declarations. Residuum parses, elaborates and admits it or reports why not. A draft has no effect on the committed set R_k and is never scored. When the draft is admitted, Residuum evaluates it at once on the current dossier (one verified evaluation from the budget) and returns that evaluation.",
+   "input_schema": {
+    "type": "object",
+    "properties": {

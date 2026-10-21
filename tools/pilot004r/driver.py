@@ -82,6 +82,15 @@ GOAL = {"type": "string", "description": "One event in Formal, e.g. verb(arg, ..
 HYPOTHESIS = {"type": ["string", "null"], "description": "Id of an admitted hypothesis: the theory is LegalGeneral plus "
                                                          "that hypothesis. Null or absent: LegalGeneral alone."}
 DOSSIER = {"type": "string", "description": "Id of a presented dossier."}
+def auto_evaluation_tools(tools: list[dict]) -> list[dict]:
+    """Run-010: the propose_rule description says that an admitted draft is evaluated at once."""
+    out = json.loads(json.dumps(tools))
+    for tool in out:
+        if tool["name"] == "propose_rule":
+            tool["description"] += AUTO_EVALUATION_TOOL
+    return out
+
+
 def draft_tools(tools: list[dict]) -> list[dict]:
     """The run-006 catalogue: same tools, described as drafting, hypothetical testing and commitment, plus
     discard and a reason on commit (both recorded only)."""
@@ -248,11 +257,27 @@ INVESTIGATION_PARAGRAPH = """
 
 DRAFT_EXPLORE_END = "you are never required to produce a rule."
 
+AUTO_EVALUATION_SENTENCE = ("evaluate_rule tests a hypothesis hypothetically on a presented dossier, without "
+                            "penalty.")
+AUTO_EVALUATION_PARAGRAPH = """
+  Each draft that Residuum admits is evaluated at once, automatically, on the current dossier (one
+  verified evaluation from the budget), and that evaluation is returned with the admission."""
+AUTO_EVALUATION_TOOL = (" When the draft is admitted, Residuum evaluates it at once on the current dossier "
+                        "(one verified evaluation from the budget) and returns that evaluation.")
+ADMITTED = re.compile(r"^(h\d+): admitted$")
+
 
 def instructions(condition: str, budgets: dict, n_dossiers: int, question_first: bool = False,
                  draft_contract: bool = False, findings_report: bool = False,
-                 investigation_split: bool = False) -> str:
+                 investigation_split: bool = False, auto_evaluate: bool = False) -> str:
     text = _contract(condition, budgets, n_dossiers, question_first, draft_contract)
+    if auto_evaluate:
+        # Run-010: every admitted draft is evaluated by the harness; only with the draft contract.
+        if not draft_contract or " ".join(text.split()).count(AUTO_EVALUATION_SENTENCE) != 1:
+            raise SystemExit("auto_evaluate needs the draft contract")
+        head, tail = text.split("evaluate_rule tests a hypothesis", 1)
+        end = tail.index("without penalty.") + len("without penalty.")
+        text = head + "evaluate_rule tests a hypothesis" + tail[:end] + AUTO_EVALUATION_PARAGRAPH + tail[end:]
     if investigation_split:
         # Run-009: investigating and committing are separate decisions; only with the draft contract.
         if not draft_contract or text.count(DRAFT_EXPLORE_END) != 1:
@@ -523,6 +548,7 @@ class PlanTrace:
         self.deviations: list[dict] = []
         self.consultations_with_result = 0
         self.consultations_without_result = 0
+        self.automatic_evaluations = 0
 
     def action(self, tool: str, view: dict) -> None:
         self.executed.append(tool)
@@ -553,7 +579,8 @@ class PlanTrace:
                 "executed_not_planned": sorted({t for t in self.executed if t not in self.planned} - {"end_phase"}),
                 "deviations": self.deviations,
                 "consultations_with_result": self.consultations_with_result,
-                "consultations_without_result": self.consultations_without_result}
+                "consultations_without_result": self.consultations_without_result,
+                **({"automatic_evaluations": self.automatic_evaluations} if self.automatic_evaluations else {})}
 
 
 FINDINGS_PARAGRAPH = """
@@ -690,10 +717,13 @@ def main(argv: list[str]) -> int:
     draft_contract = bool(t.get("draft_contract", False))
     findings_report = bool(t.get("findings_report", False))
     investigation_split = bool(t.get("investigation_split", False))
+    auto_evaluate = bool(t.get("auto_evaluate", False))
     system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract,
-                          findings_report, investigation_split)
+                          findings_report, investigation_split, auto_evaluate)
     first = opening(manifest, base)
     base_tools = draft_tools(TOOLS) if draft_contract else TOOLS
+    if auto_evaluate:
+        base_tools = auto_evaluation_tools(base_tools)
     if findings_report:
         base_tools = findings_tools(base_tools)
     tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \
@@ -716,6 +746,8 @@ def main(argv: list[str]) -> int:
     ceiling: str | None = None
     report = None
     opened = False
+    last_tool: str | None = None
+    admission: str | None = None
     for line in process.stdout:
         message = json.loads(line)
         if "report" in message:
@@ -728,6 +760,28 @@ def main(argv: list[str]) -> int:
                 ledger.append("records", message["records"])
             memory.observe(message)
         last = view.get("last_result")
+        if admission is not None:
+            # The view after the harness's own evaluation: report admission and evaluation together.
+            last = f"{admission}\nAutomatic evaluation: {last}"
+            ledger.append("automatic_result", {"result": last})
+            admission = None
+            automatic_result = True
+        else:
+            automatic_result = False
+        if (auto_evaluate and ceiling is None and last_tool == "propose_rule"
+                and ADMITTED.match(last or "")):
+            # Run-010: evaluate the admitted draft at once on the current dossier, with no model call.
+            admission = last
+            last_tool = None
+            action = {"tool": "evaluate_rule",
+                      "arguments": {"hypothesis": ADMITTED.match(last).group(1), "dossier": view["dossier"]}}
+            if memory is not None:
+                memory.last_action = action
+            ledger.append("automatic_action", action)
+            process.stdin.write(json.dumps({"action": action, "usage": {
+                "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_microusd": 0}}) + "\n")
+            process.stdin.flush()
+            continue
         text = (f"Result of your last action: {last}\n\n" if last else "") + \
             "Current view:\n" + json.dumps(view, ensure_ascii=False)
         if not opened:
@@ -736,7 +790,10 @@ def main(argv: list[str]) -> int:
         key = (view["dossier"], view["phase"])
         if trace is not None:
             if key == (trace.dossier, "explore"):
-                trace.result(view)
+                if automatic_result:
+                    trace.automatic_evaluations += 1
+                else:
+                    trace.result(view)
             else:
                 ledger.append("plan_trace", trace.summary())
                 trace = None
@@ -770,6 +827,7 @@ def main(argv: list[str]) -> int:
         if trace is not None:
             trace.action(action.get("tool", ""), view)
         pending = action.pop("_ids", [])
+        last_tool = action.get("tool")
         if memory is not None and action.get("tool") == "end_phase":
             arguments = dict(action.get("arguments") or {})
             if "findings" in arguments:

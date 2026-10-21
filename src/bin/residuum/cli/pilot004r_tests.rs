@@ -7,9 +7,9 @@
 use residuum::experiments::exploration::{certify_addition, install, theory_preserved};
 use residuum::experiments::generative::{
     Condition, DossierInput, FeedbackView, HypothesisStatus, Label, Learner, LearnerAction,
-    LearnerView, Phase, Position, ReservedValuations, RevisionEffect, TrajectoryBudgets,
-    TrajectoryManifest, TrajectoryReport, Usage, Valuation, certify_attributed, check_closure,
-    profile_004r, revision_effect, run_trajectory,
+    LearnerView, Phase, Position, ReservedValuations, RevisionEffect, SupportPolicy,
+    TrajectoryBudgets, TrajectoryManifest, TrajectoryReport, Usage, Valuation, certify_attributed,
+    check_closure, formal_event, profile_004r, revision_effect, run_trajectory,
 };
 use residuum::typed::{
     Closure, Declaration, DerivationTime, Event, Module, Rule, SubstitutionValue, Term, VerbKind,
@@ -400,6 +400,7 @@ fn manifest(id: &str, condition: Condition, order: Vec<DossierInput>) -> Traject
         budgets: budgets(),
         base_module: "LegalGeneral".into(),
         question_first: false,
+        supports: None,
     }
 }
 
@@ -1001,6 +1002,93 @@ fn pilot004r_valid_proposal_installs_runs_and_chains_through_legal_general() {
 
     assert_eq!(report.prequential[0].loss, 0);
     assert!(report.prequential[0].missed.is_empty());
+}
+
+const CORR_TWIN: &str = "rule corrTwin(id, s, c, o, b, au, e, t) =
+    obligation(id, s, c, o, b, au, e) @ t
+    <= right(id, s, c, o, b, au, e) @ t
+";
+
+#[test]
+fn pilot004r_supports_select_goals_in_order_and_record_omissions() {
+    let seeds = brookside_with_non_performance();
+    let order = vec![DossierInput {
+        id: "brookside".into(),
+        seeds: seeds.clone(),
+    }];
+    let mut m = manifest("supports", Condition::Feedback, order);
+    m.supports = Some(SupportPolicy {
+        goal_limit: 4,
+        max_queries: 6,
+    });
+    let mut learner = Scripted::new().at(
+        "brookside",
+        Phase::Explore,
+        vec![
+            propose(CORR, None),
+            evaluate("h1", "brookside"),
+            commit(&["h1"]),
+            propose(CORR_TWIN, None),
+            evaluate("h2", "brookside"),
+            end(None),
+        ],
+    );
+    let report = run_trajectory(&m, &reserved(), &mut learner).unwrap();
+
+    // e1, baseline `O`: added events first, positions before other verbs,
+    // then Formal text; the presentation limit omits the rest.
+    let s1 = report.hypotheses[0].evaluations[0]
+        .supports
+        .as_ref()
+        .unwrap();
+    let verbs: Vec<&str> = s1.goals.iter().map(|e| e.verb.as_str()).collect();
+    assert_eq!(
+        verbs,
+        [
+            "right",
+            "right",
+            "right",
+            "right",
+            "right",
+            "enforceability"
+        ]
+    );
+    let texts: Vec<String> = s1.goals[..5].iter().map(formal_event).collect();
+    let mut sorted = texts.clone();
+    sorted.sort();
+    assert_eq!(texts, sorted);
+    assert_eq!(s1.answered.len(), 4);
+    assert_eq!(s1.omitted_by_presentation_limit, s1.goals[4..].to_vec());
+    assert!(s1.omitted_by_budget.is_empty() && s1.omitted_by_tool.is_empty());
+    for a in &s1.answered {
+        assert!(a.checked, "{}", formal_event(&a.goal));
+        assert!(a.supports.iter().flatten().all(|e| seeds.contains(e)));
+    }
+
+    // e2, baseline `O, h1`: the twin adds no event, only justifications on
+    // events the baseline derives; the budget leaves 2 of its 4 goals.
+    let e2 = &report.hypotheses[1].evaluations[0];
+    assert_eq!(e2.baseline, ["h1"]);
+    assert!(e2.added_events.is_empty());
+    let s2 = e2.supports.as_ref().unwrap();
+    assert_eq!(s2.goals, s1.goals[..5].to_vec());
+    assert_eq!(s2.answered.len(), 2);
+    assert_eq!(s2.omitted_by_budget, s2.goals[2..4].to_vec());
+    assert_eq!(s2.omitted_by_presentation_limit, s2.goals[4..].to_vec());
+    for (a, b) in s2.answered.iter().zip(&s1.answered) {
+        assert_eq!(a.goal, b.goal);
+        assert_eq!(a.supports, b.supports);
+        assert!(a.checked);
+    }
+    assert_eq!(report.counters.support_queries, 6);
+    assert_eq!(
+        report
+            .ledger
+            .iter()
+            .filter(|e| e.kind == "supports")
+            .count(),
+        2
+    );
 }
 
 const CORR_POST: &str = "rule corrPost(id, s, o, b, au, e, t) =

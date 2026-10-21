@@ -1,0 +1,829 @@
+{
+  "commit_traces": [
+    {
+      "before": [],
+      "dossier": "brookside",
+      "evaluations_seen": [
+        {
+          "baseline": [
+            "O"
+          ],
+          "dossier": "brookside",
+          "hypothesis": "h1",
+          "id": "e1",
+          "status": "certified"
+        }
+      ],
+      "feedback_on_this_dossier_seen": false,
+      "feedback_seen": [],
+      "findings_seen": 0,
+      "navigation_actions_seen": 0,
+      "phase": "explore",
+      "reason": "scripted",
+      "requested": [
+        "h1"
+      ],
+      "requested_evaluated_on_this_dossier": {
+        "h1": [
+          "e1"
+        ]
+      },
+      "result": "committed [\"h1\"]"
+    }
+  ],
+  "compatibility_after_each_revision": [
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      }
+    ],
+    [
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "brookside",
+        "excess": [],
+        "exposures": [
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B7"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B8"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B9"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B10"
+          },
+          {
+            "correct": true,
+            "hypothesis": "h1",
+            "prequential": false,
+            "valuation": "B11"
+          }
+        ],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 11
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "casaFiesta",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 0
+      },
+      {
+        "committed": [
+          "h1"
+        ],
+        "dossier": "flowers",
+        "excess": [],
+        "exposures": [],
+        "loss": 0,
+        "missed": [],
+        "unvalued_derived": 0,
+        "valued": 10
+      }
+    ]
+  ],
+  "condition": "Feedback",
+  "counters": {
+    "abstentions": 2,
+    "admitted": 2,
+    "attempts": 2,
+    "calls": 12,
+    "commit_rejections": 0,
+    "commits": 1,
+    "cost_microusd": 0,
+    "discards": 0,
+    "findings": 0,
+    "findings_verified": 0,
+    "input_tokens": 0,
+    "navigation_actions": 0,
+    "navigation_steps": 0,
+    "output_tokens": 0,
+    "questions": 0,
+    "refused_actions": 0,
+    "reports": 0,
+    "support_queries": 4,
+    "turns": 11,
+    "verified_evaluations": 2
+  },
+  "findings": [],
+  "hypotheses": [
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": true,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [
+            "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+            "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+          ],
+          "baseline": [
+            "O"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "sameA",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=adoptPolicy",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "sameA",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=distribute",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "sameA",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=post",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "sameA",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=keepAvailable",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": false,
+              "origin": "h1",
+              "rule": "sameA",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=post",
+                "e=d20210216",
+                "id=saB_j",
+                "o=signB",
+                "s=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e1",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              },
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 3,
+            "goals": [
+              "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [],
+            "omitted_by_presentation_limit": [
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ]
+          },
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h1",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "A",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Prospective { dossiers: 1, exposures: 5 }",
+        "Compatible { dossiers: 1, exposures: 5 }"
+      ],
+      "text": "rule sameA(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n"
+    },
+    {
+      "admission": "admitted",
+      "case_specific": false,
+      "certified_evaluations": 1,
+      "committed_ok": false,
+      "discarded": null,
+      "evaluations": [
+        {
+          "added_events": [],
+          "baseline": [
+            "O",
+            "h1"
+          ],
+          "certified": true,
+          "contributed_justifications": [
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": true,
+              "origin": "h2",
+              "rule": "sameB",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=adoptPolicy",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": true,
+              "origin": "h2",
+              "rule": "sameB",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=distribute",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": true,
+              "origin": "h2",
+              "rule": "sameB",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=post",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": true,
+              "origin": "h2",
+              "rule": "sameB",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=keepAvailable",
+                "e=d20210216",
+                "id=saB_j",
+                "o=policyA",
+                "s=jant",
+                "t=tB"
+              ]
+            },
+            {
+              "antecedents": [
+                "obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+              ],
+              "event": "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB",
+              "event_already_in_baseline": true,
+              "origin": "h2",
+              "rule": "sameB",
+              "substitution": [
+                "au=private",
+                "b=usa",
+                "c=post",
+                "e=d20210216",
+                "id=saB_j",
+                "o=signB",
+                "s=jant",
+                "t=tB"
+              ]
+            }
+          ],
+          "dossier": "brookside",
+          "id": "e2",
+          "minimal_supports": {
+            "analysis_error": null,
+            "answered": [
+              {
+                "checked": true,
+                "goal": "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+                "supports": [
+                  [
+                    "obligationFiled(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB"
+                  ]
+                ]
+              }
+            ],
+            "goal_limit": 3,
+            "goals": [
+              "right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ],
+            "omitted_by_analysis": [],
+            "omitted_by_budget": [
+              "right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB"
+            ],
+            "omitted_by_presentation_limit": [
+              "right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB",
+              "right(saB_j, jant, post, signB, usa, private, d20210216) @ tB"
+            ]
+          },
+          "positions_contributed": [
+            "right(jant, adoptPolicy, policyA, usa)",
+            "right(jant, distribute, policyA, usa)",
+            "right(jant, keepAvailable, policyA, usa)",
+            "right(jant, post, policyA, usa)",
+            "right(jant, post, signB, usa)"
+          ],
+          "status": "certified"
+        }
+      ],
+      "id": "h2",
+      "origin": {
+        "dossier": "brookside",
+        "phase": "explore"
+      },
+      "parent": null,
+      "rationale": "B, same consequences as A",
+      "retired_at": null,
+      "statuses": [
+        "Valid",
+        "Unexposed"
+      ],
+      "text": "rule sameB(id, s, c, o, b, au, e, t) =\n    obligation(id, s, c, o, b, au, e) @ t\n    <= right(id, s, c, o, b, au, e) @ t\n"
+    }
+  ],
+  "ledger": [
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 0
+    },
+    {
+      "detail": "h1: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 1
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 2
+    },
+    {
+      "detail": "h1 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 3
+    },
+    {
+      "detail": "h1 on brookside: goals=5 answered=3 omitted presentation_limit=2 budget=0 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 4
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 5
+    },
+    {
+      "detail": "committed [\"h1\"] reason: scripted",
+      "dossier": "brookside",
+      "kind": "commit",
+      "phase": "explore",
+      "seq": 6
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 7
+    },
+    {
+      "detail": "h2: admitted",
+      "dossier": "brookside",
+      "kind": "propose",
+      "phase": "explore",
+      "seq": 8
+    },
+    {
+      "detail": "calls=0 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 9
+    },
+    {
+      "detail": "h2 on brookside: certified",
+      "dossier": "brookside",
+      "kind": "evaluate",
+      "phase": "explore",
+      "seq": 10
+    },
+    {
+      "detail": "h2 on brookside: goals=5 answered=1 omitted presentation_limit=2 budget=2 tool=0",
+      "dossier": "brookside",
+      "kind": "supports",
+      "phase": "explore",
+      "seq": 11
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 12
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "brookside",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 13
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "brookside",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 14
+    },
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 15
+    },
+    {
+      "detail": "scripted",
+      "dossier": "casaFiesta",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 16
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "casaFiesta",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 17
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "casaFiesta",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 18
+    },
+    {
+      "detail": "calls=2 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "explore",
+      "seq": 19
+    },
+    {
+      "detail": "scripted",
+      "dossier": "flowers",
+      "kind": "abstention",
+      "phase": "explore",
+      "seq": 20
+    },
+    {
+      "detail": "committed=[\"h1\"] loss=0",
+      "dossier": "flowers",
+      "kind": "prequential",
+      "phase": null,
+      "seq": 21
+    },
+    {
+      "detail": "calls=1 input=0 output=0 cost_microusd=0",
+      "dossier": "flowers",
+      "kind": "usage",
+      "phase": "revise",
+      "seq": 22
+    }
+  ],
+  "order": [
+    "brookside",
+    "casaFiesta",
+    "flowers"
+  ],
+  "prequential": [
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "brookside",
+      "excess": [],
+      "exposures": [
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B7"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B8"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B9"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B10"
+        },
+        {
+          "correct": true,
+          "hypothesis": "h1",
+          "prequential": true,
+          "valuation": "B11"
+        }
+      ],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 11
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "casaFiesta",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 0
+    },
+    {
+      "committed": [
+        "h1"
+      ],
+      "dossier": "flowers",
+      "excess": [],
+      "exposures": [],
+      "loss": 0,
+      "missed": [],
+      "unvalued_derived": 0,
+      "valued": 10
+    }
+  ],
+  "prequential_loss": 0,
+  "trajectory_id": "pilot004r-run-012-local-check-limits"
+}

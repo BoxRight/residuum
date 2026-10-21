@@ -1,0 +1,11 @@
+--- run-011/tools
++++ run-012/tools
+@@ -28,7 +28,7 @@
+  },
+  {
+   "name": "evaluate_rule",
+-  "description": "Test a hypothesis hypothetically: the closure of LegalGeneral plus the committed hypotheses plus this one on a presented dossier, with Residuum's independent certificate. No penalty; uses one verified evaluation from the budget. Returns certificate status, its baseline (LegalGeneral plus the other committed hypotheses), the events it adds to that baseline, the justifications it contributes (each with its rule and the hypothesis that owns it, also on events the baseline already derives) and the positions that depend on its rules; never valuations or loss.",
++  "description": "Test a hypothesis hypothetically: the closure of LegalGeneral plus the committed hypotheses plus this one on a presented dossier, with Residuum's independent certificate. No penalty; uses one verified evaluation from the budget. Returns certificate status, its baseline (LegalGeneral plus the other committed hypotheses), the events it adds to that baseline, the justifications it contributes (each with its rule and the hypothesis that owns it, also on events the baseline already derives) and the positions that depend on its rules; never valuations or loss. Each verified evaluation also lists minimal supports. Its goals are the events the hypothesis adds or newly justifies over that baseline, ordered as added events first, then positions, then other verbs, then by text (a presentation order, nothing more). For each answered goal it gives every minimal set of this dossier's seeds from which the baseline plus the hypothesis derives it, with no search limit. Goals beyond the stated goal_limit or the support budget are listed as omitted.",
+   "input_schema": {
+    "type": "object",
+    "properties": {

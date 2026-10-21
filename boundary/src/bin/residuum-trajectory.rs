@@ -7,12 +7,13 @@
 use residuum::experiments::generative::{
     CommitTrace, Condition, DossierInput, EvaluationView, FeedbackView, Finding, FindingView,
     HypothesisRecord, JustificationView, Learner, LearnerAction, LearnerView, Phase,
-    ReservedValuations, Scoring, TrajectoryBudgets, TrajectoryManifest, TrajectoryReport, Usage,
-    parse_event, profile_004r, run_trajectory,
+    ReservedValuations, Scoring, SupportPolicy, SupportsView, TrajectoryBudgets,
+    TrajectoryManifest, TrajectoryReport, Usage, formal_event, parse_event, profile_004r,
+    run_trajectory,
 };
 use residuum::experiments::worker::{Request, Response};
 use residuum::load_formal_module;
-use residuum::typed::{Declaration, Event, Polarity, SubstitutionValue, Term, TimeExpr};
+use residuum::typed::{Declaration, Event, SubstitutionValue, Term, TimeExpr};
 use residuum_boundary::wire::{WireEvent, WireRequest, encode_response};
 use serde_json::{Value, json};
 use std::io::{BufRead, Write};
@@ -35,18 +36,7 @@ fn time(t: &TimeExpr) -> String {
 }
 
 fn event(e: &Event) -> String {
-    let neg = if e.polarity == Polarity::EvidentialNot {
-        "~"
-    } else {
-        ""
-    };
-    let args: Vec<String> = e.args.iter().map(term).collect();
-    format!(
-        "{neg}{}({}) @ {}",
-        e.verb,
-        args.join(", "),
-        time(&e.proposition.time)
-    )
+    formal_event(e)
 }
 
 fn events(es: &[Event]) -> Value {
@@ -97,6 +87,39 @@ fn attribution_json(e: &EvaluationView) -> Value {
             r
         }).collect::<Vec<_>>(),
     })
+}
+
+/// Automatic minimal supports (run-012): the goals `G(h, S, B)` in
+/// presentation order, the supports of the answered goals, and the goals
+/// omitted by the presentation limit, the budget or the analysis.
+fn supports_json(s: &SupportsView) -> Value {
+    json!({
+        "goals": s.goals.len(),
+        "goal_limit": s.goal_limit,
+        "answered": s.answered.iter().map(|a| json!({
+            "goal": event(&a.goal),
+            "supports": a.supports.iter().map(|x| events(x)).collect::<Vec<_>>(),
+        })).collect::<Vec<_>>(),
+        "omitted_by_presentation_limit": events(&s.omitted_by_presentation_limit),
+        "omitted_by_budget": events(&s.omitted_by_budget),
+        "omitted_by_analysis": events(&s.omitted_by_tool),
+    })
+}
+
+/// The report's record of the same: every goal, and whether each answered
+/// support was re-checked by closure.
+fn supports_record(s: &SupportsView) -> Value {
+    let mut out = supports_json(s);
+    out["goals"] = events(&s.goals);
+    out["analysis_error"] = json!(s.tool_error);
+    for (a, r) in s
+        .answered
+        .iter()
+        .zip(out["answered"].as_array_mut().into_iter().flatten())
+    {
+        r["checked"] = json!(a.checked);
+    }
+    out
 }
 
 fn view_json(
@@ -201,6 +224,9 @@ fn view_json(
                     map.remove("new_events");
                     map.remove("activated_base_rules");
                     map.extend(extra);
+                }
+                if let Some(s) = &e.supports {
+                    r["minimal_supports"] = supports_json(s);
                 }
             }
         }
@@ -545,6 +571,9 @@ fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport, attribution: bool
                 map.insert("id".into(), json!(e.id));
                 map.extend(extra);
             }
+            if let Some(s) = &e.supports {
+                r["minimal_supports"] = supports_record(s);
+            }
         }
     }
     out
@@ -575,7 +604,7 @@ fn commit_trace_json(c: &CommitTrace, r: &TrajectoryReport) -> Value {
     })
 }
 
-fn report_json(r: &TrajectoryReport, attribution: bool) -> Value {
+fn report_json(r: &TrajectoryReport, attribution: bool, supports: bool) -> Value {
     let k = &r.counters;
     let mut out = json!({
         "trajectory_id": r.trajectory_id,
@@ -603,6 +632,9 @@ fn report_json(r: &TrajectoryReport, attribution: bool) -> Value {
             "kind": e.kind, "detail": e.detail,
         })).collect::<Vec<_>>(),
     });
+    if supports {
+        out["counters"]["support_queries"] = json!(k.support_queries);
+    }
     if attribution {
         out["commit_traces"] = json!(
             r.commit_traces
@@ -679,6 +711,11 @@ fn main() {
         base_module: t["base_module"].as_str().unwrap().into(),
         // Absent before run-005: the run-001 to run-004 explore protocol.
         question_first: t["question_first"].as_bool().unwrap_or(false),
+        // Absent before run-012: no automatic minimal supports.
+        supports: t["supports"].as_object().map(|p| SupportPolicy {
+            goal_limit: p["goal_limit"].as_u64().unwrap() as usize,
+            max_queries: p["max_queries"].as_u64().unwrap() as usize,
+        }),
     };
     let reserved = ReservedValuations::load_tsv(Path::new(&rel(&t["reserved"]))).unwrap();
     let mut learner = LineLearner {
@@ -694,8 +731,12 @@ fn main() {
         attribution: t["attribution"].as_bool().unwrap_or(false),
         emitted: std::collections::BTreeSet::new(),
     };
+    assert!(
+        manifest.supports.is_none() || learner.attribution,
+        "supports needs attribution: its goals are taken over the stated baseline"
+    );
     let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
-    let value = report_json(&report, learner.attribution);
+    let value = report_json(&report, learner.attribution, manifest.supports.is_some());
     std::fs::write(
         ledger.join("trajectory-report.json"),
         serde_json::to_string_pretty(&value).unwrap() + "\n",

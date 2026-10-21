@@ -88,6 +88,23 @@ ATTRIBUTION_RETURNS = ("Returns certificate status, its baseline (LegalGeneral p
                        "already derives) and the positions that depend on its rules; never valuations or loss.")
 
 
+SUPPORTS_RETURNS = (" Each verified evaluation also lists minimal supports. Its goals are the events the "
+                    "hypothesis adds or newly justifies over that baseline, ordered as added events first, then "
+                    "positions, then other verbs, then by text (a presentation order, nothing more). For each "
+                    "answered goal it gives every minimal set of this dossier's seeds from which the baseline plus "
+                    "the hypothesis derives it, with no search limit. Goals beyond the stated goal_limit or the "
+                    "support budget are listed as omitted.")
+
+
+def supports_tools(tools: list[dict]) -> list[dict]:
+    """Run-012: evaluate_rule says that it returns the minimal supports of its goals."""
+    out = json.loads(json.dumps(tools))
+    for tool in out:
+        if tool["name"] == "evaluate_rule":
+            tool["description"] += SUPPORTS_RETURNS
+    return out
+
+
 def attribution_tools(tools: list[dict]) -> list[dict]:
     """Run-011: evaluate_rule describes its result against the stated baseline."""
     out = json.loads(json.dumps(tools))
@@ -737,6 +754,9 @@ def main(argv: list[str]) -> int:
     investigation_split = bool(t.get("investigation_split", False))
     auto_evaluate = bool(t.get("auto_evaluate", False))
     attribution = bool(t.get("attribution", False))
+    supports = t.get("supports") is not None
+    if supports and not attribution:
+        raise SystemExit("supports needs attribution: its goals are taken over the stated baseline")
     system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract,
                           findings_report, investigation_split, auto_evaluate)
     first = opening(manifest, base)
@@ -745,6 +765,8 @@ def main(argv: list[str]) -> int:
         base_tools = auto_evaluation_tools(base_tools)
     if attribution:
         base_tools = attribution_tools(base_tools)
+    if supports:
+        base_tools = supports_tools(base_tools)
     if findings_report:
         base_tools = findings_tools(base_tools)
     tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \

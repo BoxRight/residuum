@@ -35,7 +35,10 @@ use crate::typed::{
 };
 
 use super::Clock;
-use super::exploration::{Criterion, Decision, Profile, install, theory_preserved};
+use super::exploration::{
+    Criterion, Decision, Profile, frontiers, goal_index, install, state_events, theory_preserved,
+    universe,
+};
 use super::proposal::{
     Episode, ProposalContext, SourceProposal, admit, compose, relative, status_label,
 };
@@ -611,6 +614,38 @@ pub fn project(e: &Event) -> Option<Position> {
     })
 }
 
+fn formal_term(t: &Term) -> String {
+    match t {
+        Term::Const(c) | Term::Var(c) => c.clone(),
+        Term::None => "none".into(),
+        Term::Constructor { argument, .. } => format!("after {}", formal_term(argument)),
+        other => format!("{other:?}"),
+    }
+}
+
+fn formal_time(t: &TimeExpr) -> String {
+    match t {
+        TimeExpr::At(c) | TimeExpr::Var(c) => c.clone(),
+        TimeExpr::After(inner) => format!("after {}", formal_time(inner)),
+    }
+}
+
+/// An event in canonical Formal, as the learner's view shows it.
+pub fn formal_event(e: &Event) -> String {
+    let neg = if e.polarity == Polarity::EvidentialNot {
+        "~"
+    } else {
+        ""
+    };
+    let args: Vec<String> = e.args.iter().map(formal_term).collect();
+    format!(
+        "{neg}{}({}) @ {}",
+        e.verb,
+        args.join(", "),
+        formal_time(&e.proposition.time)
+    )
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Label {
     Required,
@@ -834,6 +869,35 @@ pub struct EvaluationView {
     /// Justifications of the evaluated theory absent from the baseline
     /// closure, on new or on already derived events.
     pub contributed: Vec<JustificationView>,
+    /// Minimal supports of the goals `G(h, S, B)`, when the manifest asks
+    /// for them (run-012).
+    pub supports: Option<SupportsView>,
+}
+
+/// Minimal supports of one goal: every minimal set of seeds of the
+/// evaluated dossier from which `B ∪ {h}` derives it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GoalSupports {
+    pub goal: Event,
+    pub supports: Vec<Vec<Event>>,
+    /// Each support was re-closed under `B ∪ {h}`: it derives the goal and
+    /// no proper subset obtained by removing one seed does.
+    pub checked: bool,
+}
+
+/// `G(h, S, B)`: the events of the justifications `h` contributes on `S`
+/// over the baseline `B` (its added events among them), in presentation
+/// order, with what was answered and what was omitted and why.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SupportsView {
+    pub goals: Vec<Event>,
+    pub goal_limit: usize,
+    pub answered: Vec<GoalSupports>,
+    pub omitted_by_presentation_limit: Vec<Event>,
+    pub omitted_by_budget: Vec<Event>,
+    /// Goals the analysis could not answer, with its error.
+    pub omitted_by_tool: Vec<Event>,
+    pub tool_error: Option<String>,
 }
 
 /// One evaluation shown in the learner's view when it committed.
@@ -977,6 +1041,18 @@ pub struct TrajectoryManifest {
     /// and consult Residuum (a navigation request or a verified evaluation)
     /// after it. Never forces a proposal. Requires navigation.
     pub question_first: bool,
+    /// Automatic minimal supports of every verified evaluation (run-012).
+    pub supports: Option<SupportPolicy>,
+}
+
+/// Goal selection and budget of the automatic minimal supports.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SupportPolicy {
+    /// Presentation limit: goals of `G(h, S, B)` after the first
+    /// `goal_limit` are omitted.
+    pub goal_limit: usize,
+    /// Goals answered over the trajectory.
+    pub max_queries: usize,
 }
 
 /// The admissible language of contract §2: A3 heads, a body vocabulary over
@@ -1147,6 +1223,8 @@ pub struct Counters {
     pub findings_verified: usize,
     pub navigation_actions: usize,
     pub navigation_steps: usize,
+    /// Goals answered by the automatic minimal supports (run-012).
+    pub support_queries: usize,
     pub commits: usize,
     pub commit_rejections: usize,
     pub usage: Usage,
@@ -1817,6 +1895,7 @@ impl<'a> State<'a> {
                 baseline: baseline.clone(),
                 added_events: Vec::new(),
                 contributed: Vec::new(),
+                supports: None,
             },
             Ok((certificate, closure)) => {
                 self.counters.verified_evaluations += 1;
@@ -1866,6 +1945,12 @@ impl<'a> State<'a> {
                     }
                     None => (Vec::new(), Vec::new()),
                 };
+                let supports = match (self.manifest.supports.clone(), &base_closure) {
+                    (Some(policy), Some(_)) => {
+                        Some(self.goal_supports(&policy, &ids, &seeds, &added_events, &contributed))
+                    }
+                    _ => None,
+                };
                 EvaluationView {
                     id: evaluation_id.clone(),
                     dossier: dossier.clone(),
@@ -1886,6 +1971,7 @@ impl<'a> State<'a> {
                     baseline: baseline.clone(),
                     added_events,
                     contributed,
+                    supports,
                 }
             }
         };
@@ -1897,7 +1983,107 @@ impl<'a> State<'a> {
             h.evaluations.push(view);
         }
         self.log(index, Some(phase), "evaluate", result.clone());
+        if let Some(s) = self
+            .hypothesis(&hypothesis)
+            .and_then(|h| h.evaluations.last())
+            .and_then(|e| e.supports.as_ref())
+        {
+            let detail = format!(
+                "{hypothesis} on {dossier}: goals={} answered={} omitted presentation_limit={} budget={} tool={}",
+                s.goals.len(),
+                s.answered.len(),
+                s.omitted_by_presentation_limit.len(),
+                s.omitted_by_budget.len(),
+                s.omitted_by_tool.len()
+            );
+            self.log(index, Some(phase), "supports", detail);
+        }
         result
+    }
+
+    /// `G(h, S, B)` and its minimal supports. Order (a presentation policy of
+    /// the pilot, not a property of the geometry): added events before events
+    /// that only gain a justification, projected normative positions before
+    /// other verbs, then canonical Formal text. The analysis is the worker's
+    /// `minimal_supports` algorithm (`exploration::frontiers`) on `B ∪ {h}`,
+    /// a fixpoint over the finite grounded rules with no search limit. Its
+    /// leaves are the seeds of the evaluated dossier, not every event of a
+    /// Seeded verb as in the worker: a derived `right` is not its own support.
+    fn goal_supports(
+        &mut self,
+        policy: &SupportPolicy,
+        ids: &[String],
+        seeds: &[Event],
+        added: &[Event],
+        contributed: &[JustificationView],
+    ) -> SupportsView {
+        let delta: BTreeSet<Event> = added.iter().cloned().collect();
+        let mut goals: Vec<Event> = added
+            .iter()
+            .chain(contributed.iter().map(|j| &j.event))
+            .cloned()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        goals.sort_by_cached_key(|e| (!delta.contains(e), project(e).is_none(), formal_event(e)));
+        let cut = goals.len().min(policy.goal_limit);
+        let mut view = SupportsView {
+            goals: goals.clone(),
+            goal_limit: policy.goal_limit,
+            answered: Vec::new(),
+            omitted_by_presentation_limit: goals[cut..].to_vec(),
+            omitted_by_budget: Vec::new(),
+            omitted_by_tool: Vec::new(),
+            tool_error: None,
+        };
+        let mut analysis = None;
+        for goal in &goals[..cut] {
+            if self.counters.support_queries >= policy.max_queries {
+                view.omitted_by_budget.push(goal.clone());
+                continue;
+            }
+            let analysis = analysis.get_or_insert_with(|| {
+                self.theory(ids).and_then(|(m, _)| {
+                    let e = universe(&m, seeds)?;
+                    let allowed = seeds.iter().filter_map(|s| goal_index(&e, s)).collect();
+                    let f = frontiers(&m, &e, &allowed)?;
+                    Ok((m, e, f))
+                })
+            });
+            let (m, e, f) = match analysis {
+                Ok(a) => a,
+                Err(err) => {
+                    view.tool_error = Some(err.to_string());
+                    view.omitted_by_tool.push(goal.clone());
+                    continue;
+                }
+            };
+            let Some(q) = goal_index(e, goal) else {
+                view.tool_error = Some("goal outside the analysed universe".into());
+                view.omitted_by_tool.push(goal.clone());
+                continue;
+            };
+            self.counters.support_queries += 1;
+            let supports: Vec<Vec<Event>> =
+                f.supports[q].iter().map(|s| state_events(e, s)).collect();
+            let derives =
+                |s: &[Event]| close(m, s).map(|c| c.known.contains(goal)).unwrap_or(false);
+            let checked = !supports.is_empty()
+                && supports.iter().all(|s| {
+                    derives(s)
+                        && (0..s.len()).all(|i| {
+                            let mut smaller = s.clone();
+                            smaller.remove(i);
+                            !derives(&smaller)
+                        })
+                });
+            view.answered.push(GoalSupports {
+                goal: goal.clone(),
+                supports,
+                checked,
+            });
+        }
+        view
     }
 
     /// Keep a phase report: each finding with its verdict, reference and

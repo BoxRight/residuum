@@ -5,9 +5,10 @@
 //! `<ledger>/trajectory-report.json`. The reserved valuations are read here
 //! and only appear in the final report, after the learner has finished.
 use residuum::experiments::generative::{
-    Condition, DossierInput, FeedbackView, Finding, FindingView, HypothesisRecord, Learner,
-    LearnerAction, LearnerView, Phase, ReservedValuations, Scoring, TrajectoryBudgets,
-    TrajectoryManifest, TrajectoryReport, Usage, parse_event, profile_004r, run_trajectory,
+    CommitTrace, Condition, DossierInput, EvaluationView, FeedbackView, Finding, FindingView,
+    HypothesisRecord, JustificationView, Learner, LearnerAction, LearnerView, Phase,
+    ReservedValuations, Scoring, TrajectoryBudgets, TrajectoryManifest, TrajectoryReport, Usage,
+    parse_event, profile_004r, run_trajectory,
 };
 use residuum::experiments::worker::{Request, Response};
 use residuum::load_formal_module;
@@ -66,7 +67,45 @@ fn position(p: &residuum::experiments::generative::Position) -> String {
     )
 }
 
-fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool, findings: bool) -> Value {
+fn justification_json(j: &JustificationView) -> Value {
+    json!({
+        "event": event(&j.event),
+        "rule": j.rule,
+        "origin": j.origin,
+        "antecedents": events(&j.antecedents),
+        "substitution": j.substitution.bindings.iter().map(|b| format!("{}={}", b.parameter, match &b.value {
+            SubstitutionValue::Term(t) => term(t),
+            SubstitutionValue::Time(t) => time(t),
+        })).collect::<Vec<_>>(),
+    })
+}
+
+/// Attribution protocol (run-011): an evaluation against its stated baseline,
+/// `O` plus the other committed hypotheses, instead of against `O` alone.
+fn attribution_json(e: &EvaluationView) -> Value {
+    let known_before: std::collections::BTreeSet<&Event> = e
+        .closure
+        .iter()
+        .filter(|x| !e.added_events.contains(x))
+        .collect();
+    json!({
+        "baseline": std::iter::once("O".to_string()).chain(e.baseline.iter().cloned()).collect::<Vec<_>>(),
+        "added_events": events(&e.added_events),
+        "contributed_justifications": e.contributed.iter().map(|j| {
+            let mut r = justification_json(j);
+            r["event_already_in_baseline"] = json!(known_before.contains(&j.event));
+            r
+        }).collect::<Vec<_>>(),
+    })
+}
+
+fn view_json(
+    v: &LearnerView,
+    draft_contract: bool,
+    navigation: bool,
+    findings: bool,
+    attribution: bool,
+) -> Value {
     let mut view = json!({
         "phase": phase(v.phase),
         "dossier": v.dossier,
@@ -74,16 +113,7 @@ fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool, findings: 
             "id": d.id,
             "seeds": events(&d.seeds),
             "closure_of_O_plus_committed": events(&d.known),
-            "justifications": d.justifications.iter().map(|j| json!({
-                "event": event(&j.event),
-                "rule": j.rule,
-                "origin": j.origin,
-                "antecedents": events(&j.antecedents),
-                "substitution": j.substitution.bindings.iter().map(|b| format!("{}={}", b.parameter, match &b.value {
-                    SubstitutionValue::Term(t) => term(t),
-                    SubstitutionValue::Time(t) => time(t),
-                })).collect::<Vec<_>>(),
-            })).collect::<Vec<_>>(),
+            "justifications": d.justifications.iter().map(justification_json).collect::<Vec<_>>(),
         })).collect::<Vec<_>>(),
         "hypotheses": v.hypotheses.iter().map(|h| json!({
             "id": h.id,
@@ -151,6 +181,29 @@ fn view_json(v: &LearnerView, draft_contract: bool, navigation: bool, findings: 
             }
         }
         view["findings"] = json!(v.findings.iter().map(finding_json).collect::<Vec<_>>());
+    }
+    // Attribution (run-011): `new_events` and `activated_base_rules` are taken
+    // against `O` alone; they are replaced by the baseline, the added events
+    // and the contributed justifications.
+    if attribution {
+        for (h, rendered) in v
+            .hypotheses
+            .iter()
+            .zip(view["hypotheses"].as_array_mut().into_iter().flatten())
+        {
+            for (e, r) in h
+                .evaluations
+                .iter()
+                .zip(rendered["evaluations"].as_array_mut().into_iter().flatten())
+            {
+                if let (Some(map), Value::Object(extra)) = (r.as_object_mut(), attribution_json(e))
+                {
+                    map.remove("new_events");
+                    map.remove("activated_base_rules");
+                    map.extend(extra);
+                }
+            }
+        }
     }
     // Draft contract (run-006): each hypothesis is shown as a draft, committed
     // or discarded; earlier manifests keep their views unchanged.
@@ -276,6 +329,7 @@ struct LineLearner {
     draft_contract: bool,
     navigation: bool,
     findings: bool,
+    attribution: bool,
     emitted: std::collections::BTreeSet<String>,
 }
 
@@ -411,7 +465,7 @@ impl Learner for LineLearner {
         let mut out = std::io::stdout().lock();
         writeln!(out, "{}", {
             let mut line = json!({
-                "view": view_json(view, self.draft_contract, self.navigation, self.findings)
+                "view": view_json(view, self.draft_contract, self.navigation, self.findings, self.attribution)
             });
             if self.findings {
                 line["records"] = json!(records(view, &mut self.emitted));
@@ -462,8 +516,8 @@ fn scoring_json(s: &Scoring) -> Value {
     })
 }
 
-fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport) -> Value {
-    json!({
+fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport, attribution: bool) -> Value {
+    let mut out = json!({
         "id": h.id,
         "parent": h.parent,
         "text": h.text,
@@ -480,12 +534,50 @@ fn hypothesis_json(h: &HypothesisRecord, r: &TrajectoryReport) -> Value {
             "dossier": e.dossier, "status": e.status, "certified": e.certified,
             "positions_contributed": e.positions.iter().map(position).collect::<Vec<_>>(),
         })).collect::<Vec<_>>(),
+    });
+    if attribution {
+        for (e, r) in h
+            .evaluations
+            .iter()
+            .zip(out["evaluations"].as_array_mut().into_iter().flatten())
+        {
+            if let (Some(map), Value::Object(extra)) = (r.as_object_mut(), attribution_json(e)) {
+                map.insert("id".into(), json!(e.id));
+                map.extend(extra);
+            }
+        }
+    }
+    out
+}
+
+/// What the learner's view held when it asked to commit (run-011).
+fn commit_trace_json(c: &CommitTrace, r: &TrajectoryReport) -> Value {
+    let dossier = &r.order[c.dossier];
+    json!({
+        "dossier": dossier,
+        "phase": phase(c.phase),
+        "before": c.before,
+        "requested": c.requested,
+        "result": c.result,
+        "reason": c.reason,
+        "feedback_seen": c.feedback_seen,
+        "feedback_on_this_dossier_seen": c.feedback_seen.contains(dossier),
+        "evaluations_seen": c.evaluations_seen.iter().map(|e| json!({
+            "hypothesis": e.hypothesis, "id": e.id, "dossier": e.dossier,
+            "baseline": std::iter::once("O".to_string()).chain(e.baseline.iter().cloned()).collect::<Vec<_>>(),
+            "status": e.status,
+        })).collect::<Vec<_>>(),
+        "requested_evaluated_on_this_dossier": c.requested.iter().map(|h| (h.clone(), json!(
+            c.evaluations_seen.iter().filter(|e| &e.hypothesis == h && &e.dossier == dossier)
+                .map(|e| e.id.clone()).collect::<Vec<_>>()))).collect::<serde_json::Map<_, _>>(),
+        "navigation_actions_seen": c.navigation_actions_seen,
+        "findings_seen": c.findings_seen,
     })
 }
 
-fn report_json(r: &TrajectoryReport) -> Value {
+fn report_json(r: &TrajectoryReport, attribution: bool) -> Value {
     let k = &r.counters;
-    json!({
+    let mut out = json!({
         "trajectory_id": r.trajectory_id,
         "condition": format!("{:?}", r.condition),
         "order": r.order,
@@ -493,7 +585,7 @@ fn report_json(r: &TrajectoryReport) -> Value {
         "prequential": r.prequential.iter().map(scoring_json).collect::<Vec<_>>(),
         "compatibility_after_each_revision": r.compatibility.iter()
             .map(|c| c.iter().map(scoring_json).collect::<Vec<_>>()).collect::<Vec<_>>(),
-        "hypotheses": r.hypotheses.iter().map(|h| hypothesis_json(h, r)).collect::<Vec<_>>(),
+        "hypotheses": r.hypotheses.iter().map(|h| hypothesis_json(h, r, attribution)).collect::<Vec<_>>(),
         "counters": {
             "turns": k.turns, "attempts": k.attempts, "admitted": k.admitted,
             "verified_evaluations": k.verified_evaluations, "refused_actions": k.refused_actions,
@@ -510,7 +602,16 @@ fn report_json(r: &TrajectoryReport) -> Value {
             "seq": e.seq, "dossier": e.dossier, "phase": e.phase.map(phase),
             "kind": e.kind, "detail": e.detail,
         })).collect::<Vec<_>>(),
-    })
+    });
+    if attribution {
+        out["commit_traces"] = json!(
+            r.commit_traces
+                .iter()
+                .map(|c| commit_trace_json(c, r))
+                .collect::<Vec<_>>()
+        );
+    }
+    out
 }
 
 fn seeds(module: &residuum::typed::Module, name: &str) -> Vec<Event> {
@@ -589,10 +690,12 @@ fn main() {
         draft_contract: t["draft_contract"].as_bool().unwrap_or(false),
         navigation: manifest.budgets.max_navigation_actions > 0,
         findings: t["findings_report"].as_bool().unwrap_or(false),
+        // Absent before run-011: evaluations against `O` alone, no commit traces.
+        attribution: t["attribution"].as_bool().unwrap_or(false),
         emitted: std::collections::BTreeSet::new(),
     };
     let report = run_trajectory(&manifest, &reserved, &mut learner).unwrap();
-    let value = report_json(&report);
+    let value = report_json(&report, learner.attribution);
     std::fs::write(
         ledger.join("trajectory-report.json"),
         serde_json::to_string_pretty(&value).unwrap() + "\n",

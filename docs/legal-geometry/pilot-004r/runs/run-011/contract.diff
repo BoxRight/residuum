@@ -1,0 +1,11 @@
+--- run-010/tools
++++ run-011/tools
+@@ -28,7 +28,7 @@
+  },
+  {
+   "name": "evaluate_rule",
+-  "description": "Test a hypothesis hypothetically: the closure of LegalGeneral plus the committed hypotheses plus this one on a presented dossier, with Residuum's independent certificate. No penalty; uses one verified evaluation from the budget. Returns certificate status, new events and positions the hypothesis contributes; never valuations or loss.",
++  "description": "Test a hypothesis hypothetically: the closure of LegalGeneral plus the committed hypotheses plus this one on a presented dossier, with Residuum's independent certificate. No penalty; uses one verified evaluation from the budget. Returns certificate status, its baseline (LegalGeneral plus the other committed hypotheses), the events it adds to that baseline, the justifications it contributes (each with its rule and the hypothesis that owns it, also on events the baseline already derives) and the positions that depend on its rules; never valuations or loss.",
+   "input_schema": {
+    "type": "object",
+    "properties": {

@@ -82,6 +82,24 @@ GOAL = {"type": "string", "description": "One event in Formal, e.g. verb(arg, ..
 HYPOTHESIS = {"type": ["string", "null"], "description": "Id of an admitted hypothesis: the theory is LegalGeneral plus "
                                                          "that hypothesis. Null or absent: LegalGeneral alone."}
 DOSSIER = {"type": "string", "description": "Id of a presented dossier."}
+ATTRIBUTION_RETURNS = ("Returns certificate status, its baseline (LegalGeneral plus the other committed "
+                       "hypotheses), the events it adds to that baseline, the justifications it contributes "
+                       "(each with its rule and the hypothesis that owns it, also on events the baseline "
+                       "already derives) and the positions that depend on its rules; never valuations or loss.")
+
+
+def attribution_tools(tools: list[dict]) -> list[dict]:
+    """Run-011: evaluate_rule describes its result against the stated baseline."""
+    out = json.loads(json.dumps(tools))
+    for tool in out:
+        if tool["name"] == "evaluate_rule":
+            head, sep, _ = tool["description"].partition("Returns ")
+            if not sep:
+                raise SystemExit("attribution: unexpected evaluate_rule description")
+            tool["description"] = head + ATTRIBUTION_RETURNS
+    return out
+
+
 def auto_evaluation_tools(tools: list[dict]) -> list[dict]:
     """Run-010: the propose_rule description says that an admitted draft is evaluated at once."""
     out = json.loads(json.dumps(tools))
@@ -718,12 +736,15 @@ def main(argv: list[str]) -> int:
     findings_report = bool(t.get("findings_report", False))
     investigation_split = bool(t.get("investigation_split", False))
     auto_evaluate = bool(t.get("auto_evaluate", False))
+    attribution = bool(t.get("attribution", False))
     system = instructions(t["condition"], t["budgets"], len(t["order"]), question_first, draft_contract,
                           findings_report, investigation_split, auto_evaluate)
     first = opening(manifest, base)
     base_tools = draft_tools(TOOLS) if draft_contract else TOOLS
     if auto_evaluate:
         base_tools = auto_evaluation_tools(base_tools)
+    if attribution:
+        base_tools = attribution_tools(base_tools)
     if findings_report:
         base_tools = findings_tools(base_tools)
     tools = base_tools + ([QUESTION_TOOL] if question_first or draft_contract else []) + \

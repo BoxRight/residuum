@@ -106,7 +106,13 @@ with a draft. In Brookside it turned an untested draft into a commitment.
 In Casa Fiesta it supported a draft–consequence–narrower draft cycle. The
 learner still requests no consultation of its own (`evaluate_rule`,
 `compare_partition`, navigation). It does not draft the alternative it
-plans before committing, and it reports no findings. Its revise message also
-says that h2's evaluation listed the five usa rights. `e2` contributes only the
-jant rights; the usa rights come from h1, still committed at that point. The
-learner guesses as much and says it did not check.
+plans before committing, and it reports no findings.
+
+Correction (after run-010): the revise message says that h2's evaluation
+listed the five usa rights, and that is literally true. `e2.new_events` lists
+ten rights, because `new_events` is taken against `O` alone and so includes
+the rights of h1, still committed. `e2.positions_contributed` lists only the
+five jant rights, because it is taken by dependency on h2's rules. The
+learner's reading (*"the same events appearing in the combined closure rather
+than something h2 adds, but I did not check it"*) was correct. The
+inconsistency is in the interface, and run-011 addresses it.

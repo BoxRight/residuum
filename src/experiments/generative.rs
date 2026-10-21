@@ -826,6 +826,41 @@ pub struct EvaluationView {
     /// Closure of the evaluated theory: the record findings are checked
     /// against. Not rendered in the learner's view.
     pub closure: Vec<Event>,
+    /// Committed hypotheses other than the evaluated one: the baseline
+    /// theory is `O` plus these.
+    pub baseline: Vec<String>,
+    /// Events of the evaluated theory absent from the baseline closure.
+    pub added_events: Vec<Event>,
+    /// Justifications of the evaluated theory absent from the baseline
+    /// closure, on new or on already derived events.
+    pub contributed: Vec<JustificationView>,
+}
+
+/// One evaluation shown in the learner's view when it committed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvaluationSeen {
+    pub hypothesis: String,
+    pub id: String,
+    pub dossier: String,
+    pub baseline: Vec<String>,
+    pub status: String,
+}
+
+/// What the learner's view contained when it asked to commit: the state the
+/// view is built from, recorded by the harness without the learner's report.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CommitTrace {
+    pub dossier: usize,
+    pub phase: Phase,
+    pub before: Vec<String>,
+    pub requested: Vec<String>,
+    pub result: String,
+    pub reason: Option<String>,
+    /// Dossiers whose feedback had been delivered.
+    pub feedback_seen: Vec<String>,
+    pub evaluations_seen: Vec<EvaluationSeen>,
+    pub navigation_actions_seen: usize,
+    pub findings_seen: usize,
 }
 
 /// One finding of a phase report, as checked by the driver with the
@@ -1139,6 +1174,7 @@ pub struct TrajectoryReport {
     pub counters: Counters,
     pub ledger: Vec<LedgerEntry>,
     pub findings: Vec<FindingView>,
+    pub commit_traces: Vec<CommitTrace>,
 }
 
 impl TrajectoryReport {
@@ -1210,6 +1246,7 @@ struct State<'a> {
     navigation_serial: usize,
     last_navigation: Option<worker::Response>,
     findings: Vec<FindingView>,
+    commit_traces: Vec<CommitTrace>,
 }
 
 fn event_constants(e: &Event, out: &mut BTreeSet<String>) {
@@ -1743,6 +1780,18 @@ impl<'a> State<'a> {
         let outcome = self.theory(&ids).and_then(|(m, learned)| {
             certify_attributed(&self.episode.baseline, &m, &learned, &seeds)
         });
+        // Attribution against the theory the learner already holds: `O` plus
+        // the other committed hypotheses.
+        let baseline: Vec<String> = ids
+            .iter()
+            .filter(|id| **id != hypothesis)
+            .cloned()
+            .collect();
+        let base_closure = self
+            .theory(&baseline)
+            .and_then(|(m, _)| close(&m, &seeds))
+            .ok();
+        let origins = self.rule_origins(&ids);
         let own: BTreeSet<String> = self
             .hypothesis(&hypothesis)
             .map(|h| h.rules.iter().map(|r| r.name.clone()).collect())
@@ -1765,6 +1814,9 @@ impl<'a> State<'a> {
                 activated_base_rules: BTreeSet::new(),
                 positions: Vec::new(),
                 closure: Vec::new(),
+                baseline: baseline.clone(),
+                added_events: Vec::new(),
+                contributed: Vec::new(),
             },
             Ok((certificate, closure)) => {
                 self.counters.verified_evaluations += 1;
@@ -1777,6 +1829,43 @@ impl<'a> State<'a> {
                     .collect();
                 positions.sort();
                 positions.dedup();
+                let (added_events, contributed) = match &base_closure {
+                    Some(base) => {
+                        let key = |d: &crate::typed::DerivedEvent| -> Justification {
+                            (
+                                d.record.rule.clone(),
+                                d.record.antecedents.clone(),
+                                d.event.clone(),
+                            )
+                        };
+                        let base_known: BTreeSet<&Event> = base.known.iter().collect();
+                        let base_just: BTreeSet<Justification> =
+                            base.derivations.iter().map(key).collect();
+                        let added = closure
+                            .known
+                            .iter()
+                            .filter(|e| !base_known.contains(e))
+                            .cloned()
+                            .collect();
+                        let contributed = closure
+                            .derivations
+                            .iter()
+                            .filter(|d| !base_just.contains(&key(d)))
+                            .map(|d| JustificationView {
+                                event: d.event.clone(),
+                                rule: d.record.rule.clone(),
+                                origin: origins
+                                    .get(&d.record.rule)
+                                    .cloned()
+                                    .unwrap_or_else(|| "O".into()),
+                                antecedents: d.record.antecedents.clone(),
+                                substitution: d.record.substitution.clone(),
+                            })
+                            .collect();
+                        (added, contributed)
+                    }
+                    None => (Vec::new(), Vec::new()),
+                };
                 EvaluationView {
                     id: evaluation_id.clone(),
                     dossier: dossier.clone(),
@@ -1794,6 +1883,9 @@ impl<'a> State<'a> {
                     activated_base_rules: certificate.activated_base_rules.clone(),
                     positions,
                     closure: closure.known.clone(),
+                    baseline: baseline.clone(),
+                    added_events,
+                    contributed,
                 }
             }
         };
@@ -1862,6 +1954,7 @@ impl<'a> State<'a> {
         ids: Vec<String>,
         reason: Option<String>,
     ) -> String {
+        let before = self.committed.clone();
         let mut unique = Vec::new();
         for id in ids {
             if !unique.contains(&id) {
@@ -1915,6 +2008,37 @@ impl<'a> State<'a> {
             None => result.clone(),
         };
         self.log(index, Some(phase), "commit", detail);
+        self.commit_traces.push(CommitTrace {
+            dossier: index,
+            phase,
+            before,
+            requested: unique,
+            result: result.clone(),
+            reason,
+            feedback_seen: self
+                .feedback
+                .iter()
+                .map(|f| match f {
+                    FeedbackView::Discrepancies { dossier, .. }
+                    | FeedbackView::Evaluated { dossier } => dossier.clone(),
+                })
+                .collect(),
+            evaluations_seen: self
+                .hypotheses
+                .iter()
+                .flat_map(|h| {
+                    h.evaluations.iter().map(|e| EvaluationSeen {
+                        hypothesis: h.id.clone(),
+                        id: e.id.clone(),
+                        dossier: e.dossier.clone(),
+                        baseline: e.baseline.clone(),
+                        status: e.status.clone(),
+                    })
+                })
+                .collect(),
+            navigation_actions_seen: self.counters.navigation_actions,
+            findings_seen: self.findings.len(),
+        });
         result
     }
 
@@ -2250,6 +2374,7 @@ pub fn run_trajectory(
         navigation_serial: 0,
         last_navigation: None,
         findings: Vec::new(),
+        commit_traces: Vec::new(),
     };
     for index in 0..manifest.order.len() {
         state.open_navigator(index)?;
@@ -2298,5 +2423,6 @@ pub fn run_trajectory(
         counters: state.counters,
         ledger: state.ledger,
         findings: state.findings,
+        commit_traces: state.commit_traces,
     })
 }

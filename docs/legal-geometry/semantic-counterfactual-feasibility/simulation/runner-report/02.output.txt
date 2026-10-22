@@ -1,0 +1,2 @@
+worker: episode `feasibility-sim` manifest `h-feasibility-sim` loaded; 6 dossiers; serving
+worker: stopped: eof; lines 95 responses 95 faults 0; exit 0

@@ -1,0 +1,1047 @@
+{
+ "wire_version": "residuum-wire/1",
+ "episode_id": "feasibility-sim",
+ "manifest_hash": "h-feasibility-sim",
+ "imports": [
+  "/home/maitreya/residuum-pilot004-documentary/docs/legal-geometry/pilot-004r/vocabulary.res"
+ ],
+ "workdir": "/tmp/claude-1000/-home-maitreya-residuum/e63cda89-6c06-4645-b144-dd704b4a4736/scratchpad/sim/work",
+ "profile": {
+  "heads": [
+   "obligation",
+   "permission",
+   "prohibition",
+   "omissionProhibition",
+   "right",
+   "compliance",
+   "violation",
+   "enforceability",
+   "patrimonialLiability"
+  ],
+  "body_verbs": [
+   "Act",
+   "right",
+   "obligationFiled",
+   "prohibition",
+   "omissionProhibition",
+   "permissionFiled",
+   "patrimonialHolding",
+   "powerGranted",
+   "legislationText",
+   "obligation",
+   "permission",
+   "compliance",
+   "violation",
+   "enforceability",
+   "patrimonialAsset",
+   "patrimonialLiability",
+   "transferred",
+   "owns",
+   "capacity",
+   "law"
+  ],
+  "evidential_not_verbs": [
+   "Act"
+  ],
+  "max_atoms": 4,
+  "max_binders": 16,
+  "max_after_depth": 1,
+  "max_unit_nodes": 1,
+  "require_connected": false
+ },
+ "decision": {
+  "components": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocB"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   }
+  ],
+  "criterion": {
+   "component": 0
+  }
+ },
+ "dossiers": {
+  "brookside": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocB"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saB_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocB"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyA"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "distribute"
+     },
+     {
+      "const": "policyA"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "policyA"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "keepAvailable"
+     },
+     {
+      "const": "policyA"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saB_j"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signB"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "prohibition",
+    "args": [
+     {
+      "const": "saB_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "sue"
+     },
+     {
+      "const": "premisesB"
+     },
+     {
+      "const": "jant"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "d20210216"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tB"
+    },
+    "transition": null
+   }
+  ],
+  "casaFiesta": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA1"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA2"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   }
+  ],
+  "cf_filed": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA1"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA2"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   }
+  ],
+  "cf_no_agreeU": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA1"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA2"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   }
+  ],
+  "cf_nonperf": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "evidential_not",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA1"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA2"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   }
+  ],
+  "cf_filed_nonperf": [
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "saCF_u"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "agree"
+     },
+     {
+      "const": "saDocCF"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "evidential_not",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA1"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "Act",
+    "args": [
+     {
+      "const": "cfA2"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "post"
+     },
+     {
+      "const": "signCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   },
+   {
+    "polarity": "positive",
+    "verb": "obligationFiled",
+    "args": [
+     {
+      "const": "saCF_c"
+     },
+     {
+      "const": "casaFiesta"
+     },
+     {
+      "const": "adoptPolicy"
+     },
+     {
+      "const": "policyCF"
+     },
+     {
+      "const": "usa"
+     },
+     {
+      "const": "private"
+     },
+     {
+      "const": "dCF"
+     }
+    ],
+    "kind": "seeded",
+    "time": {
+     "at": "tCF"
+    },
+    "transition": null
+   }
+  ]
+ },
+ "budgets": {
+  "max_actions": 400,
+  "max_steps_per_action": 64,
+  "max_steps_total": 20000,
+  "max_sessions": 60,
+  "max_candidates": 4,
+  "max_clauses": 2,
+  "search_limits": {
+   "max_depth": 32,
+   "max_nodes": 4096,
+   "max_branches": 4096
+  }
+ },
+ "transport": null
+}

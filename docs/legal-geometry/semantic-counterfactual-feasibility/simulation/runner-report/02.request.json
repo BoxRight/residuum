@@ -1,0 +1,13 @@
+{
+  "stage": "worker",
+  "name": "residuum-worker",
+  "command": [
+    "/home/maitreya/residuum-pilot004-documentary/target/debug/residuum-worker",
+    "--manifest",
+    "/tmp/claude-1000/-home-maitreya-residuum/e63cda89-6c06-4645-b144-dd704b4a4736/scratchpad/sim/manifest.json"
+  ],
+  "timeout": 15,
+  "stdin": "/tmp/claude-1000/-home-maitreya-residuum/e63cda89-6c06-4645-b144-dd704b4a4736/scratchpad/sim/requests.jsonl",
+  "stdout": true,
+  "supervise": null
+}

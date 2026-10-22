@@ -1,0 +1,162 @@
+statuses Counter({'complete': 95})
+
+== brookside: |S|=8 |C_O|=13
+   O derives: obligation(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB
+   O derives: obligation(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB
+   O derives: obligation(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB
+   O derives: obligation(saB_j, jant, post, policyA, usa, private, d20210216) @ tB
+   O derives: obligation(saB_j, jant, post, signB, usa, private, d20210216) @ tB
+  O+h1 adds 5:
+     + right(saB_j, jant, adoptPolicy, policyA, usa, private, d20210216) @ tB
+     + right(saB_j, jant, distribute, policyA, usa, private, d20210216) @ tB
+     + right(saB_j, jant, keepAvailable, policyA, usa, private, d20210216) @ tB
+     + right(saB_j, jant, post, policyA, usa, private, d20210216) @ tB
+     + right(saB_j, jant, post, signB, usa, private, d20210216) @ tB
+  O+h3 adds 0:
+
+== casaFiesta: |S|=4 |C_O|=4
+  O+h1 adds 0:
+  O+h3 adds 4:
+     + compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+     + compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF
+     + obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+     + obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF
+
+== cf_filed: |S|=5 |C_O|=7
+   O derives: compliance(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+   O derives: obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  O+h1 adds 1:
+     + right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  O+h3 adds 4:
+     + compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+     + compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF
+     + obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+     + obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF
+
+== cf_no_agreeU: |S|=3 |C_O|=3
+  O+h1 adds 0:
+  O+h3 adds 0:
+
+== cf_nonperf: |S|=4 |C_O|=4
+  O+h1 adds 0:
+  O+h3 adds 2:
+     + compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF
+     + obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF
+
+== cf_filed_nonperf: |S|=5 |C_O|=8
+   O derives: obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+   O derives: patrimonialLiability(casaFiesta, policyCF, saCF_c, private, dCF) @ tCF
+   O derives: violation(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+  O+h1 adds 2:
+     + enforceability(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+     + right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  O+h3 adds 2:
+     + compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF
+     + obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF
+
+== world diffs (same theory, delta on facts)
+  [O] cf_filed vs casaFiesta:
+      + compliance(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O] cf_no_agreeU vs casaFiesta:
+      - Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF
+  [O] cf_nonperf vs casaFiesta:
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O] cf_filed_nonperf vs casaFiesta:
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + patrimonialLiability(casaFiesta, policyCF, saCF_c, private, dCF) @ tCF
+      + violation(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h1] cf_filed vs casaFiesta:
+      + compliance(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h1] cf_no_agreeU vs casaFiesta:
+      - Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF
+  [O+h1] cf_nonperf vs casaFiesta:
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h1] cf_filed_nonperf vs casaFiesta:
+      + enforceability(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + patrimonialLiability(casaFiesta, policyCF, saCF_c, private, dCF) @ tCF
+      + right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + violation(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h3] cf_filed vs casaFiesta:
+      + compliance(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h3] cf_no_agreeU vs casaFiesta:
+      - Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF
+      - compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      - compliance(cfA2, cfA2, casaFiesta, signCF, usa, private, dCF) @ tCF
+      - obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - obligation(cfA2, casaFiesta, post, signCF, usa, private, dCF) @ tCF
+  [O+h3] cf_nonperf vs casaFiesta:
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      - obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+  [O+h3] cf_filed_nonperf vs casaFiesta:
+      + obligation(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      + patrimonialLiability(casaFiesta, policyCF, saCF_c, private, dCF) @ tCF
+      + violation(saCF_c, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      + ~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+      - compliance(cfA1, cfA1, casaFiesta, policyCF, usa, private, dCF) @ tCF
+      - obligation(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF
+
+== certified evaluations
+  certified c1 on brookside complete {'session': 's19', 'kind': 'evaluation'}
+  certified c1 on casaFiesta complete {'session': 's20', 'kind': 'evaluation'}
+  certified c1 on cf_filed complete {'session': 's21', 'kind': 'evaluation'}
+  certified c2 on brookside complete {'out_of_certificate_scope': ['obligation']}
+  certified c2 on casaFiesta complete {'session': 's22', 'kind': 'evaluation'}
+  certified c2 on cf_filed complete {'out_of_certificate_scope': ['obligation']}
+
+== supports and partitions
+  supports h1 obligation(cfA1): in_universe=True
+  supports h3 obligation(cfA1): in_universe=True
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF, Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF}
+  partition obligation(cfA1): discriminants=[0] covers=[['c2', 'c1']]
+      [0] {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF, Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF} h1,h3={'c1': False, 'c2': True}
+  supports h1 compliance(saCF_c,cfA1): in_universe=True
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  supports h3 compliance(saCF_c,cfA1): in_universe=True
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  partition compliance(saCF_c,cfA1): discriminants=[] covers=[['c1', 'c2'], ['c2', 'c1']]
+      [0] {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': True}
+      [1] {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': True}
+  supports h1 compliance(cfA1,cfA1): in_universe=True
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  supports h3 compliance(cfA1,cfA1): in_universe=True
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF, Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF}
+      {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  partition compliance(cfA1,cfA1): discriminants=[0] covers=[['c2', 'c1']]
+      [0] {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, Act(saCF_c, casaFiesta, agree, saDocCF, usa, private, dCF) @ tCF, Act(saCF_u, usa, agree, saDocCF, casaFiesta, private, dCF) @ tCF} h1,h3={'c1': False, 'c2': True}
+      [1] {Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': True}
+  supports h1 violation(saCF_c,cfA1): in_universe=True
+      {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  supports h3 violation(saCF_c,cfA1): in_universe=True
+      {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  partition violation(saCF_c,cfA1): discriminants=[] covers=[['c1', 'c2'], ['c2', 'c1']]
+      [0] {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': True}
+  supports h1 enforceability(saCF_c,cfA1): in_universe=True
+      {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+      {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  supports h3 enforceability(saCF_c,cfA1): in_universe=True
+      {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF}
+  partition enforceability(saCF_c,cfA1): discriminants=[0] covers=[['c1', 'c2']]
+      [0] {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, obligationFiled(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': False}
+      [1] {~Act(cfA1, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF, right(saCF_c, casaFiesta, adoptPolicy, policyCF, usa, private, dCF) @ tCF} h1,h3={'c1': True, 'c2': True}

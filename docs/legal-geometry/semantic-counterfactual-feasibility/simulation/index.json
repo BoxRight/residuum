@@ -1,0 +1,115 @@
+{
+ "propose h1": "a1",
+ "propose h3": "a2",
+ "O on brookside": [
+  "a4",
+  "a5",
+  "a6"
+ ],
+ "O+h1 on brookside": [
+  "a8",
+  "a9",
+  "a10"
+ ],
+ "O+h3 on brookside": [
+  "a12",
+  "a13",
+  "a14"
+ ],
+ "O on casaFiesta": [
+  "a16",
+  "a17",
+  "a18"
+ ],
+ "O+h1 on casaFiesta": [
+  "a20",
+  "a21",
+  "a22"
+ ],
+ "O+h3 on casaFiesta": [
+  "a24",
+  "a25",
+  "a26"
+ ],
+ "O on cf_filed": [
+  "a28",
+  "a29",
+  "a30"
+ ],
+ "O+h1 on cf_filed": [
+  "a32",
+  "a33",
+  "a34"
+ ],
+ "O+h3 on cf_filed": [
+  "a36",
+  "a37",
+  "a38"
+ ],
+ "O on cf_no_agreeU": [
+  "a40",
+  "a41",
+  "a42"
+ ],
+ "O+h1 on cf_no_agreeU": [
+  "a44",
+  "a45",
+  "a46"
+ ],
+ "O+h3 on cf_no_agreeU": [
+  "a48",
+  "a49",
+  "a50"
+ ],
+ "O on cf_nonperf": [
+  "a52",
+  "a53",
+  "a54"
+ ],
+ "O+h1 on cf_nonperf": [
+  "a56",
+  "a57",
+  "a58"
+ ],
+ "O+h3 on cf_nonperf": [
+  "a60",
+  "a61",
+  "a62"
+ ],
+ "O on cf_filed_nonperf": [
+  "a64",
+  "a65",
+  "a66"
+ ],
+ "O+h1 on cf_filed_nonperf": [
+  "a68",
+  "a69",
+  "a70"
+ ],
+ "O+h3 on cf_filed_nonperf": [
+  "a72",
+  "a73",
+  "a74"
+ ],
+ "certified c1 on brookside": "a75",
+ "certified c1 on casaFiesta": "a76",
+ "certified c1 on cf_filed": "a77",
+ "certified c2 on brookside": "a78",
+ "certified c2 on casaFiesta": "a79",
+ "certified c2 on cf_filed": "a80",
+ "supports h1 obligation(cfA1)": "a81",
+ "supports h3 obligation(cfA1)": "a82",
+ "partition obligation(cfA1)": "a83",
+ "supports h1 compliance(saCF_c,cfA1)": "a84",
+ "supports h3 compliance(saCF_c,cfA1)": "a85",
+ "partition compliance(saCF_c,cfA1)": "a86",
+ "supports h1 compliance(cfA1,cfA1)": "a87",
+ "supports h3 compliance(cfA1,cfA1)": "a88",
+ "partition compliance(cfA1,cfA1)": "a89",
+ "supports h1 violation(saCF_c,cfA1)": "a90",
+ "supports h3 violation(saCF_c,cfA1)": "a91",
+ "partition violation(saCF_c,cfA1)": "a92",
+ "supports h1 enforceability(saCF_c,cfA1)": "a93",
+ "supports h3 enforceability(saCF_c,cfA1)": "a94",
+ "partition enforceability(saCF_c,cfA1)": "a95"
+}

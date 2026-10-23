@@ -88,7 +88,15 @@ pub struct InitialState {
 pub struct InitialField {
     pub object: String,
     pub field: String,
-    pub values: Vec<String>,
+    pub value: InitialValue,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InitialValue {
+    /// Elements of a set-valued field, kept as constants.
+    Set(Vec<String>),
+    /// The object an entity-typed field refers to, as field paths traverse it.
+    Reference(String),
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

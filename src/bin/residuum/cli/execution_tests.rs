@@ -219,3 +219,80 @@ fn effect_operations_resolve_without_applying() {
         "missing set field `juan.assets`"
     );
 }
+
+fn patrimony_execution() -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("examples/execution/patrimony_execute.res");
+    execute_file(Command::Execute, &path).unwrap()
+}
+
+#[test]
+fn execute_follows_declared_references_to_reach_sets() {
+    assert_eq!(
+        execution(&patrimony_execution(), "sale"),
+        "    state @ tau: juan.patrimony = juanPatrimony, juanPatrimony.assets = {car}, \
+         pedro.patrimony = pedroPatrimony, pedroPatrimony.assets = {}\n\
+         \x20   apply tau -> after(tau): give(juan, car, pedro) @ after(tau)\n\
+         \x20   state @ after(tau): juan.patrimony = juanPatrimony, juanPatrimony.assets = {}, \
+         pedro.patrimony = pedroPatrimony, pedroPatrimony.assets = {car}\n"
+    );
+}
+
+/// Writes an edited copy into its own directory outside the repository, next to
+/// a copy of the imported legal module, and executes it.
+fn execute_edited(source: &str, name: &str) -> Result<String, Error> {
+    let legal =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/legal/give_formal.res");
+    let dir = std::env::temp_dir().join(format!("residuum-{}-{name}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::copy(legal, dir.join("give_formal.res")).unwrap();
+    let path = dir.join("case.res");
+    std::fs::write(
+        &path,
+        source.replace("../legal/give_formal.res", "./give_formal.res"),
+    )
+    .unwrap();
+    let result = execute_file(Command::Execute, &path);
+    std::fs::remove_dir_all(&dir).unwrap();
+    result
+}
+
+#[test]
+fn execute_validates_reference_fields() {
+    let source = include_str!("../../../../examples/execution/patrimony_execute.res");
+    let declared = "juan.patrimony = juanPatrimony,";
+    for (index, (replacement, message)) in [
+        (
+            "juan.patrimony = {juanPatrimony},",
+            "state field `juan.patrimony` is not a set",
+        ),
+        (
+            "juan.patrimony = pedro,",
+            "state constant `pedro` is not assignable to Entity(\"Patrimony\")",
+        ),
+        (
+            "juan.patrimony = nobody,",
+            "unknown state constant `nobody`",
+        ),
+        (
+            "juanPatrimony.rights = juanPatrimony,",
+            "state field `juanPatrimony.rights` is not an entity reference",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let error =
+            execute_edited(&source.replace(declared, replacement), &index.to_string()).unwrap_err();
+        assert!(
+            error.to_string().ends_with(message),
+            "{replacement}: {error}"
+        );
+    }
+    // Without the reference the runtime cannot reach the set, and says so.
+    let output = execute_edited(&source.replace(declared, ""), "missing").unwrap();
+    assert!(
+        execution(&output, "sale")
+            .contains("error: give(juan, car, pedro) @ after(tau): missing field `juan.patrimony`")
+    );
+}

@@ -5,7 +5,7 @@ use crate::surface::{
     SurfaceDefaultBody, SurfaceEffect, SurfaceEvent, SurfaceFieldAccess, SurfaceInitialState,
     SurfaceProgramBody, SurfaceQueryBinding, SurfaceQueryOptions, SurfaceQueryScope,
     SurfaceRecordFieldValue, SurfaceRuleBody, SurfaceRuleUse, SurfaceStateField,
-    SurfaceStateOperation, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
+    SurfaceStateOperation, SurfaceStateValue, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
 };
 use crate::typed::{
     BehaviorKind, BehaviorRef, ExperimentInputKind, ExperimentQueryKind, Polarity, Type,
@@ -513,17 +513,19 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
         .then_ignore(just(Token::Dot))
         .then(ident.clone())
         .then_ignore(just(Token::Equal))
-        .then(
+        .then(choice((
             ident
                 .clone()
                 .separated_by(just(Token::Comma))
                 .allow_trailing()
-                .delimited_by(just(Token::LBrace), just(Token::RBrace)),
-        )
-        .map(|((object, field), values)| SurfaceStateField {
+                .delimited_by(just(Token::LBrace), just(Token::RBrace))
+                .map(SurfaceStateValue::Set),
+            ident.clone().map(SurfaceStateValue::Reference),
+        )))
+        .map(|((object, field), value)| SurfaceStateField {
             object,
             field,
-            values,
+            value,
         });
     let initial_state = keyword("state")
         .ignore_then(just(Token::At))
@@ -1315,19 +1317,23 @@ impl ManualParser {
             self.expect(&Token::Dot)?;
             let field = self.expect_ident()?;
             self.expect(&Token::Equal)?;
-            self.expect(&Token::LBrace)?;
-            let mut values = Vec::new();
-            while !self.eat(&Token::RBrace) {
-                values.push(self.expect_ident()?);
-                if !self.eat(&Token::Comma) {
-                    self.expect(&Token::RBrace)?;
-                    break;
+            let value = if self.eat(&Token::LBrace) {
+                let mut values = Vec::new();
+                while !self.eat(&Token::RBrace) {
+                    values.push(self.expect_ident()?);
+                    if !self.eat(&Token::Comma) {
+                        self.expect(&Token::RBrace)?;
+                        break;
+                    }
                 }
-            }
+                SurfaceStateValue::Set(values)
+            } else {
+                SurfaceStateValue::Reference(self.expect_ident()?)
+            };
             fields.push(SurfaceStateField {
                 object,
                 field,
-                values,
+                value,
             });
             if !self.eat(&Token::Comma) {
                 self.expect(&Token::RBrace)?;

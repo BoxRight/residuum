@@ -55,7 +55,14 @@ pub struct SurfaceInitialState {
 pub struct SurfaceStateField {
     pub object: String,
     pub field: String,
-    pub values: Vec<String>,
+    pub value: SurfaceStateValue,
+}
+
+/// `{a, b}` for a set-valued field, a bare constant for an entity reference.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SurfaceStateValue {
+    Set(Vec<String>),
+    Reference(String),
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

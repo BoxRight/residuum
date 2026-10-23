@@ -5,16 +5,17 @@ use crate::derive::{substitute_antecedent, substitute_event};
 use crate::surface::{
     CnlDeclaration, CnlModule, FormalDeclaration, FormalModule, SurfaceAntecedent,
     SurfaceDefaultBody, SurfaceEvent, SurfaceFieldAccess, SurfaceInitialState, SurfaceQueryOptions,
-    SurfaceQueryScope, SurfaceRuleBody, SurfaceStateOperation, SurfaceTerm, SurfaceTime,
-    SurfaceVerbKind,
+    SurfaceQueryScope, SurfaceRuleBody, SurfaceStateOperation, SurfaceStateValue, SurfaceTerm,
+    SurfaceTime, SurfaceVerbKind,
 };
 use crate::typed::{
     Antecedent, Arg, BehaviorKind, BehaviorRef, Constant, Declaration, Default, DefaultBody,
     DefaultRef, Effect, Entity, Event, Experiment, ExperimentInputKind, ExperimentQueryKind, Field,
-    FieldAccess, HornClause, HornQueryScope, InitialField, InitialState, Module, Polarity,
-    ProgramRef, PropositionKind, PropositionType, QueryBinding, QueryOptions, QueryParameterScope,
-    RecordFieldValue, Residual, ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime,
-    StateTransitionType, SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
+    FieldAccess, HornClause, HornQueryScope, InitialField, InitialState, InitialValue, Module,
+    Polarity, ProgramRef, PropositionKind, PropositionType, QueryBinding, QueryOptions,
+    QueryParameterScope, RecordFieldValue, Residual, ResidualClause, Rule, RuleBody, RuleRef,
+    StateOperation, StateTime, StateTransitionType, SubstitutionValue, Term, TimeExpr, Type, Verb,
+    VerbKind,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -424,32 +425,52 @@ fn lower_initial_state(
             )));
         };
         let ty = resolve_field_path(entity, std::slice::from_ref(&field.field), &entity_fields)?;
-        let Type::Set(element) = ty else {
-            return Err(Error::new(format!(
-                "state field `{}.{}` is not a set",
-                field.object, field.field
-            )));
-        };
         if !seen.insert((field.object.clone(), field.field.clone())) {
             return Err(Error::new(format!(
                 "duplicate state field `{}.{}`",
                 field.object, field.field
             )));
         }
-        for value in &field.values {
+        let check = |value: &String, expected: &Type| {
             let actual = constants
                 .get(value)
                 .ok_or_else(|| Error::new(format!("unknown state constant `{value}`")))?;
-            if !rule_type_assignable(actual, element, &module.declarations) {
+            if rule_type_assignable(actual, expected, &module.declarations) {
+                Ok(())
+            } else {
+                Err(Error::new(format!(
+                    "state constant `{value}` is not assignable to {expected:?}"
+                )))
+            }
+        };
+        let value = match (field.value, ty) {
+            (SurfaceStateValue::Set(values), Type::Set(element)) => {
+                for value in &values {
+                    check(value, element)?;
+                }
+                InitialValue::Set(values)
+            }
+            (SurfaceStateValue::Reference(value), Type::Entity(_)) => {
+                check(&value, ty)?;
+                InitialValue::Reference(value)
+            }
+            (SurfaceStateValue::Set(_), _) => {
                 return Err(Error::new(format!(
-                    "state constant `{value}` is not assignable to {element:?}"
+                    "state field `{}.{}` is not a set",
+                    field.object, field.field
                 )));
             }
-        }
+            (SurfaceStateValue::Reference(_), _) => {
+                return Err(Error::new(format!(
+                    "state field `{}.{}` is not an entity reference",
+                    field.object, field.field
+                )));
+            }
+        };
         fields.push(InitialField {
             object: field.object,
             field: field.field,
-            values: field.values,
+            value,
         });
     }
     Ok(InitialState {

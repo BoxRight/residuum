@@ -96,9 +96,13 @@ experiment sale {
 ./residuum execute examples/execution/sells_execute.res
 ```
 
-- El estado solo declara campos de conjunto de constantes de entidad. `run`,
-  `explain` y `query` lo ignoran, y el cierre nunca lo lee: la ejecución va del
-  cierre al estado, nunca al revés.
+- El estado declara campos de constantes de entidad de dos clases: conjuntos
+  (`juanPatrimony.assets = {car}`) y referencias a otra entidad, sin llaves
+  (`juan.patrimony = juanPatrimony`). Las referencias son las que recorren rutas
+  como `subject.patrimony.assets`; ver `examples/execution/patrimony_execute.res`,
+  que usa el `give` de `examples/legal/give_formal.res`. `run`, `explain` y
+  `query` ignoran el estado, y el cierre nunca lo lee: la ejecución va del cierre
+  al estado, nunca al revés.
 - Los efectos se agrupan por tiempo de entrada y se aplican en orden de `after`
   sobre el tiempo del estado; sin efectos entre dos tiempos, el estado no cambia.
 - Dos efectos del mismo instante que añaden y quitan el mismo valor del mismo

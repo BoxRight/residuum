@@ -6,7 +6,9 @@ use residuum::runtime::{
     FieldName, ObjectId, OperationKind, ResolvedOperation, StateSnapshot, Store, Value,
     effect_operations,
 };
-use residuum::typed::{Effect, Polarity, PropositionKind, StateOperation, StateTime, Verb};
+use residuum::typed::{
+    Effect, InitialValue, Polarity, PropositionKind, StateOperation, StateTime, Verb,
+};
 use std::collections::BTreeSet;
 
 pub(super) fn render_execution(
@@ -62,12 +64,15 @@ pub(super) fn render_execution(
             ObjectId(field.object.clone()),
             FieldName(field.field.clone()),
         );
-        // Set elements are constants, as an effect body's literal constants are.
-        store = store.with_value(
-            key.0.clone(),
-            key.1.clone(),
-            Value::Set(field.values.iter().cloned().map(Value::Const).collect()),
-        );
+        let value = match &field.value {
+            // Set elements are constants, as an effect body's literal constants are.
+            InitialValue::Set(values) => {
+                Value::Set(values.iter().cloned().map(Value::Const).collect())
+            }
+            // Field paths traverse a reference only when it is an ObjectId.
+            InitialValue::Reference(object) => Value::Object(ObjectId(object.clone())),
+        };
+        store = store.with_value(key.0.clone(), key.1.clone(), value);
         fields.insert(key);
     }
     let mut snapshot = StateSnapshot {

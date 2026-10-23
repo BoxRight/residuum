@@ -136,6 +136,8 @@ mod tests {
             "state @ tau {}",
             "state @ tau { p.items = {} }",
             "state @ tau { p.items = {a, }, }",
+            "state @ tau { p.owner = a }",
+            "state @ tau { p.items = {a}, p.owner = a, }",
         ] {
             let source = module(state);
             let chumsky = parse_formal(&source).unwrap();
@@ -152,6 +154,8 @@ mod tests {
             "state tau {}",
             "state @ tau { p.items }",
             "state @ tau { p = {} }",
+            "state @ tau { p.owner = }",
+            "state @ tau { p.owner = a b }",
         ] {
             let source = module(state);
             assert!(parse_formal(&source).is_err(), "chumsky accepted `{state}`");
@@ -239,6 +243,10 @@ mod tests {
             (
                 "execution/literal_execute.res",
                 include_str!("../examples/execution/literal_execute.res"),
+            ),
+            (
+                "execution/patrimony_execute.res",
+                include_str!("../examples/execution/patrimony_execute.res"),
             ),
         ];
 

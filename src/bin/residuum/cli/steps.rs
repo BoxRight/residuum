@@ -46,6 +46,9 @@ pub fn execute_file_steps(
     path: &std::path::Path,
     options: StepOptions,
 ) -> Result<String, Error> {
+    if command == Command::Execute {
+        return Err(Error::new("execute does not support --steps or --trace"));
+    }
     render(command, &residuum::load_formal_module(path)?, options)
 }
 #[cfg(test)]

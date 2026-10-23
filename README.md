@@ -80,6 +80,38 @@ defaults, cierran primero las reglas obligatorias, evalúan la selección una ve
 y calculan el cierre con las lambdas seleccionadas. `explain` muestra además
 aplicabilidad, evidencia de bloqueo, sustituciones y desplazamiento por prioridad.
 
+`execute` imprime exactamente la salida de `run` y, por cada experimento, aplica
+los efectos derivados del cierre (`+=`, `-=`) al estado inicial declarado en el
+experimento con `runtime::execute_effect`:
+
+```
+experiment sale {
+    seeds { sells(juan, car, pedro) @ tau, }
+    state @ tau { juan.assets = {car}, pedro.assets = {} }
+    query residual give(juan, car, pedro) @ after tau
+}
+```
+
+```sh
+./residuum execute examples/execution/sells_execute.res
+```
+
+- El estado solo declara campos de conjunto de constantes de entidad. `run`,
+  `explain` y `query` lo ignoran, y el cierre nunca lo lee: la ejecución va del
+  cierre al estado, nunca al revés.
+- Los efectos se agrupan por tiempo de entrada y se aplican en orden de `after`
+  sobre el tiempo del estado; sin efectos entre dos tiempos, el estado no cambia.
+- Dos efectos del mismo instante que añaden y quitan el mismo valor del mismo
+  campo dependen del orden: se reportan como conflicto y la ejecución se detiene,
+  sin aplicarlos. Los errores del runtime (campo ausente, tiempo no resuelto)
+  también la detienen.
+- Los efectos con negación evidencial, los de tiempos no ordenables desde el
+  estado y los de experimentos sin `state` se listan como no ejecutados.
+- Los elementos de los conjuntos son constantes, igual que las constantes
+  literales del cuerpo de un efecto. Solo los argumentos que un efecto usa como
+  base de un acceso a campo (`subject.assets`) se tratan como `ObjectId`.
+- `--steps` y `--trace` no se admiten con `execute`.
+
 `query` ejecuta el tipo de consulta declarado (`residual` o `fourFusion`) con su
 contrato y límites actuales. Los requisitos son hipótesis, no nuevos hechos.
 El residual usa la vista de reglas declaradas y no se identifica con la activación

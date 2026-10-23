@@ -2,10 +2,10 @@ use crate::elab::Error;
 use crate::surface::{
     FormalArg, FormalConst, FormalDeclaration, FormalDefault, FormalEntity, FormalExperiment,
     FormalField, FormalModule, FormalProgram, FormalRule, FormalVerb, SurfaceAntecedent,
-    SurfaceDefaultBody, SurfaceEffect, SurfaceEvent, SurfaceFieldAccess, SurfaceProgramBody,
-    SurfaceQueryBinding, SurfaceQueryOptions, SurfaceQueryScope, SurfaceRecordFieldValue,
-    SurfaceRuleBody, SurfaceRuleUse, SurfaceStateOperation, SurfaceTerm, SurfaceTime,
-    SurfaceVerbKind,
+    SurfaceDefaultBody, SurfaceEffect, SurfaceEvent, SurfaceFieldAccess, SurfaceInitialState,
+    SurfaceProgramBody, SurfaceQueryBinding, SurfaceQueryOptions, SurfaceQueryScope,
+    SurfaceRecordFieldValue, SurfaceRuleBody, SurfaceRuleUse, SurfaceStateField,
+    SurfaceStateOperation, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
 };
 use crate::typed::{
     BehaviorKind, BehaviorRef, ExperimentInputKind, ExperimentQueryKind, Polarity, Type,
@@ -508,6 +508,34 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
             )
         })
         .boxed();
+    let state_field = ident
+        .clone()
+        .then_ignore(just(Token::Dot))
+        .then(ident.clone())
+        .then_ignore(just(Token::Equal))
+        .then(
+            ident
+                .clone()
+                .separated_by(just(Token::Comma))
+                .allow_trailing()
+                .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+        )
+        .map(|((object, field), values)| SurfaceStateField {
+            object,
+            field,
+            values,
+        });
+    let initial_state = keyword("state")
+        .ignore_then(just(Token::At))
+        .ignore_then(ident.clone())
+        .then(
+            state_field
+                .separated_by(just(Token::Comma))
+                .allow_trailing()
+                .delimited_by(just(Token::LBrace), just(Token::RBrace)),
+        )
+        .map(|(time, fields)| SurfaceInitialState { time, fields })
+        .boxed();
     let experiment = keyword("experiment")
         .ignore_then(ident.clone())
         .then(
@@ -522,11 +550,12 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                     .allow_trailing()
                     .delimited_by(just(Token::LBrace), just(Token::RBrace)),
             )
+            .then(initial_state.or_not())
             .then(query)
             .delimited_by(just(Token::LBrace), just(Token::RBrace)),
         )
         .map(
-            |(name, ((input_kind, input), (query_kind, goal, query_options)))| {
+            |(name, (((input_kind, input), state), (query_kind, goal, query_options)))| {
                 FormalDeclaration::Experiment(FormalExperiment {
                     name,
                     input_kind,
@@ -534,6 +563,7 @@ fn formal_module_parser() -> impl Parser<Token, FormalModule, Error = Simple<Tok
                     query_kind,
                     goal,
                     query_options,
+                    state,
                 })
             },
         )
@@ -1178,6 +1208,11 @@ impl ManualParser {
                 }
             }
         }
+        let state = if self.peek_ident()? == "state" {
+            Some(self.parse_initial_state()?)
+        } else {
+            None
+        };
         self.expect_ident_value("query")?;
         let active = if self.peek_ident()? == "active" {
             self.expect_ident_value("active")?;
@@ -1265,7 +1300,41 @@ impl ManualParser {
                 scope,
                 bindings,
             },
+            state,
         })
+    }
+
+    fn parse_initial_state(&mut self) -> Result<SurfaceInitialState, Error> {
+        self.expect_ident_value("state")?;
+        self.expect(&Token::At)?;
+        let time = self.expect_ident()?;
+        self.expect(&Token::LBrace)?;
+        let mut fields = Vec::new();
+        while !self.eat(&Token::RBrace) {
+            let object = self.expect_ident()?;
+            self.expect(&Token::Dot)?;
+            let field = self.expect_ident()?;
+            self.expect(&Token::Equal)?;
+            self.expect(&Token::LBrace)?;
+            let mut values = Vec::new();
+            while !self.eat(&Token::RBrace) {
+                values.push(self.expect_ident()?);
+                if !self.eat(&Token::Comma) {
+                    self.expect(&Token::RBrace)?;
+                    break;
+                }
+            }
+            fields.push(SurfaceStateField {
+                object,
+                field,
+                values,
+            });
+            if !self.eat(&Token::Comma) {
+                self.expect(&Token::RBrace)?;
+                break;
+            }
+        }
+        Ok(SurfaceInitialState { time, fields })
     }
 
     fn expect_ident_value(&mut self, expected: &str) -> Result<(), Error> {

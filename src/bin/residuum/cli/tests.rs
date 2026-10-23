@@ -255,11 +255,12 @@ fn explain_preserves_all_justifications_seeds_units_and_missing_goals() {
 #[test]
 fn cli_keeps_existing_errors_and_associated_program_semantics() {
     assert!(
-        Command::parse("execute")
+        Command::parse("apply")
             .unwrap_err()
             .to_string()
             .contains("Usage:")
     );
+    assert_eq!(Command::parse("execute").unwrap(), Command::Execute);
     assert!(
         execute(Command::Run, "module Empty")
             .unwrap_err()
@@ -317,3 +318,6 @@ mod dynamic_incremental_contract;
 
 #[path = "program_validation_tests.rs"]
 mod program_validation;
+
+#[path = "execution_tests.rs"]
+mod execution;

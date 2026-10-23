@@ -123,6 +123,46 @@ mod tests {
     const RESIDUAL_UNIT_FORMAL: &str = include_str!("../examples/residual/unit_formal.res");
 
     #[test]
+    fn formal_parsers_agree_on_experiment_initial_state() {
+        let module = |state: &str| {
+            format!(
+                "module M\nentity T\nentity P {{ items : Set T }}\nconst p : P\nconst a : T\n\
+                 const tau : PropositionTime\nseeded verb s(subject : P)\n\
+                 experiment e {{ seeds {{ s(p) @ tau, }} {state} query residual s(p) @ tau }}\n"
+            )
+        };
+        for state in [
+            "",
+            "state @ tau {}",
+            "state @ tau { p.items = {} }",
+            "state @ tau { p.items = {a, }, }",
+        ] {
+            let source = module(state);
+            let chumsky = parse_formal(&source).unwrap();
+            let manual = crate::formal::parse_formal_manual(&source).unwrap();
+            assert_eq!(chumsky, manual, "surface AST mismatch for `{state}`");
+            let crate::surface::FormalDeclaration::Experiment(experiment) =
+                chumsky.declarations.last().unwrap()
+            else {
+                panic!("expected an experiment");
+            };
+            assert_eq!(experiment.state.is_some(), !state.is_empty());
+        }
+        for state in [
+            "state tau {}",
+            "state @ tau { p.items }",
+            "state @ tau { p = {} }",
+        ] {
+            let source = module(state);
+            assert!(parse_formal(&source).is_err(), "chumsky accepted `{state}`");
+            assert!(
+                crate::formal::parse_formal_manual(&source).is_err(),
+                "manual parser accepted `{state}`"
+            );
+        }
+    }
+
+    #[test]
     fn chumsky_formal_parser_matches_manual_surface_ast_for_existing_fixtures() {
         let fixtures = [
             ("transfer/formal.res", FORMAL),
@@ -192,6 +232,14 @@ mod tests {
             ("residual/horn_formal.res", RESIDUAL_HORN_FORMAL),
             ("residual/curried_formal.res", RESIDUAL_CURRIED_FORMAL),
             ("residual/unit_formal.res", RESIDUAL_UNIT_FORMAL),
+            (
+                "execution/sells_execute.res",
+                include_str!("../examples/execution/sells_execute.res"),
+            ),
+            (
+                "execution/literal_execute.res",
+                include_str!("../examples/execution/literal_execute.res"),
+            ),
         ];
 
         for (name, source) in fixtures {

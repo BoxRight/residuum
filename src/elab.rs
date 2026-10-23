@@ -4,16 +4,17 @@ use std::fmt;
 use crate::derive::{substitute_antecedent, substitute_event};
 use crate::surface::{
     CnlDeclaration, CnlModule, FormalDeclaration, FormalModule, SurfaceAntecedent,
-    SurfaceDefaultBody, SurfaceEvent, SurfaceFieldAccess, SurfaceQueryOptions, SurfaceQueryScope,
-    SurfaceRuleBody, SurfaceStateOperation, SurfaceTerm, SurfaceTime, SurfaceVerbKind,
+    SurfaceDefaultBody, SurfaceEvent, SurfaceFieldAccess, SurfaceInitialState, SurfaceQueryOptions,
+    SurfaceQueryScope, SurfaceRuleBody, SurfaceStateOperation, SurfaceTerm, SurfaceTime,
+    SurfaceVerbKind,
 };
 use crate::typed::{
     Antecedent, Arg, BehaviorKind, BehaviorRef, Constant, Declaration, Default, DefaultBody,
     DefaultRef, Effect, Entity, Event, Experiment, ExperimentInputKind, ExperimentQueryKind, Field,
-    FieldAccess, HornClause, HornQueryScope, Module, Polarity, ProgramRef, PropositionKind,
-    PropositionType, QueryBinding, QueryOptions, QueryParameterScope, RecordFieldValue, Residual,
-    ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime, StateTransitionType,
-    SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
+    FieldAccess, HornClause, HornQueryScope, InitialField, InitialState, Module, Polarity,
+    ProgramRef, PropositionKind, PropositionType, QueryBinding, QueryOptions, QueryParameterScope,
+    RecordFieldValue, Residual, ResidualClause, Rule, RuleBody, RuleRef, StateOperation, StateTime,
+    StateTransitionType, SubstitutionValue, Term, TimeExpr, Type, Verb, VerbKind,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -368,6 +369,13 @@ pub(crate) fn elaborate_formal_with_dependencies(
             })
             .collect::<Result<Vec<_>, Error>>()?;
         let goal = lower_ground_event(experiment.goal, &verb_sigs, &constants, &result)?;
+        if experiment.state.is_some() && experiment.input_kind != ExperimentInputKind::Seeds {
+            return Err(Error::new("an initial state requires a seeds experiment"));
+        }
+        let state = experiment
+            .state
+            .map(|state| lower_initial_state(state, &constants, &result))
+            .transpose()?;
         let query_options = lower_query_options(
             experiment.query_options,
             experiment.query_kind,
@@ -385,10 +393,69 @@ pub(crate) fn elaborate_formal_with_dependencies(
                 query_kind: experiment.query_kind,
                 goal,
                 query_options,
+                state,
             }));
     }
     result.origins = source_origins(&result);
     Ok(result)
+}
+
+/// Validates `state @ t { object.field = {values} }` against declared constants
+/// and set-valued entity fields. The closure never reads this state.
+fn lower_initial_state(
+    state: SurfaceInitialState,
+    constants: &BTreeMap<String, Type>,
+    module: &Module,
+) -> Result<InitialState, Error> {
+    if constants.get(&state.time) != Some(&Type::PropositionTime) {
+        return Err(Error::new(format!(
+            "state time `{}` must be a PropositionTime constant",
+            state.time
+        )));
+    }
+    let entity_fields = declaration_fields(&module.declarations);
+    let mut seen = BTreeSet::new();
+    let mut fields = Vec::new();
+    for field in state.fields {
+        let Some(Type::Entity(entity)) = constants.get(&field.object) else {
+            return Err(Error::new(format!(
+                "state object `{}` must be an entity constant",
+                field.object
+            )));
+        };
+        let ty = resolve_field_path(entity, std::slice::from_ref(&field.field), &entity_fields)?;
+        let Type::Set(element) = ty else {
+            return Err(Error::new(format!(
+                "state field `{}.{}` is not a set",
+                field.object, field.field
+            )));
+        };
+        if !seen.insert((field.object.clone(), field.field.clone())) {
+            return Err(Error::new(format!(
+                "duplicate state field `{}.{}`",
+                field.object, field.field
+            )));
+        }
+        for value in &field.values {
+            let actual = constants
+                .get(value)
+                .ok_or_else(|| Error::new(format!("unknown state constant `{value}`")))?;
+            if !rule_type_assignable(actual, element, &module.declarations) {
+                return Err(Error::new(format!(
+                    "state constant `{value}` is not assignable to {element:?}"
+                )));
+            }
+        }
+        fields.push(InitialField {
+            object: field.object,
+            field: field.field,
+            values: field.values,
+        });
+    }
+    Ok(InitialState {
+        time: TimeExpr::At(state.time),
+        fields,
+    })
 }
 
 fn source_origins(result: &Module) -> BTreeMap<String, crate::typed::DeclarationOrigin> {

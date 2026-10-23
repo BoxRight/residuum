@@ -74,6 +74,21 @@ pub struct Experiment {
     pub goal: Event,
     /// Additive query configuration; default retains the legacy experiment path.
     pub query_options: QueryOptions,
+    /// Initial set-valued fields for effect execution. Closure never reads it.
+    pub state: Option<InitialState>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InitialState {
+    pub time: TimeExpr,
+    pub fields: Vec<InitialField>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InitialField {
+    pub object: String,
+    pub field: String,
+    pub values: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

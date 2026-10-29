@@ -246,7 +246,7 @@ pub struct DerivedEvent {
     pub record: DerivationRecord,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UnstampedDerivation {
     pub event: Event,
     pub record: DerivationRecord,
@@ -263,25 +263,25 @@ pub struct DerivationTime {
     pub name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DerivationRecord {
     pub rule: String,
     pub antecedents: Vec<Event>,
     pub substitution: Substitution,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Substitution {
     pub bindings: Vec<SubstitutionBinding>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SubstitutionBinding {
     pub parameter: String,
     pub value: SubstitutionValue,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SubstitutionValue {
     Term(Term),
     Time(TimeExpr),

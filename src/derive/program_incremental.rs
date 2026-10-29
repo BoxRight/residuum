@@ -39,7 +39,7 @@ pub struct IncrementalProgramClosure {
     closure: Closure,
     known_keys: BTreeSet<Event>,
     index: KnownIndex,
-    seen: Vec<UnstampedDerivation>,
+    seen: BTreeSet<UnstampedDerivation>,
 }
 
 impl IncrementalProgramClosure {
@@ -59,7 +59,7 @@ impl IncrementalProgramClosure {
             },
             known_keys: BTreeSet::new(),
             index: KnownIndex::default(),
-            seen: Vec::new(),
+            seen: BTreeSet::new(),
         };
         let mut delta = ProgramClosureDelta::default();
         let frontier = state.add_seeds(seeds, &mut delta);

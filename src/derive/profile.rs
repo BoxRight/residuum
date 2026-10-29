@@ -1,7 +1,7 @@
 //! Test-only observations of the existing evaluator; no scheduling changes.
 use crate::typed::UnstampedDerivation;
 use std::cell::{Cell, RefCell};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::time::{Duration, Instant};
 
 thread_local! {
@@ -152,16 +152,17 @@ pub(super) fn probe(header_reject: bool) {
         }
     }
 }
-pub(super) fn contains(seen: &[UnstampedDerivation], candidate: &UnstampedDerivation) -> bool {
+pub(super) fn contains(
+    seen: &BTreeSet<UnstampedDerivation>,
+    candidate: &UnstampedDerivation,
+) -> bool {
     let Some(timer) = start() else {
         return seen.contains(candidate);
     };
-    // Same ordered equality comparisons, with the same first-match exit as contains.
-    let mut comparisons = 0;
-    let found = seen.iter().any(|old| {
-        comparisons += 1;
-        old == candidate
-    });
+    // Justifications are kept in an ordered set: `comparisons` counts lookups,
+    // one per candidate, not element comparisons inside the set.
+    let comparisons = 1;
+    let found = seen.contains(candidate);
     let elapsed = timer.elapsed();
     DATA.with(|data| {
         let mut data = data.borrow_mut();

@@ -275,3 +275,37 @@ La deuda queda delimitada: tenemos una caracterización general del operador
 Horn positivo para cambios aditivos y su mantenimiento productivo con R fijo.
 La API conjunta, eliminaciones, activación incremental general de programas
 asociados y cambios no monotónicos siguen fuera de esa garantía.
+
+## 9. Base por derivada, índice y deduplicación (2026-10-29)
+
+Este incremento no cambia la semántica ni el oráculo `close`.
+
+- `IncrementalClosure::new_by_derivative(S, R)` construye la base con la
+  propia caracterización de §2: evalúa `close` sólo sobre seeds vacías, donde
+  únicamente disparan los axiomas `I <= C`, y añade S con `update`:
+  \(Close_R(S)=Close_R(\varnothing)\cup\partial_R(Close_R(\varnothing),S)\).
+  Coincide con `new` en eventos y justificaciones como conjuntos lógicos y en
+  el número de sellos; pueden diferir el orden de Known y la asignación de
+  DerivationTime. `new` sigue usando el cierre de referencia.
+- `update` consulta Known y la frontera mediante `KnownIndex`, como
+  `IncrementalProgramClosure`. El índice sólo filtra por verbo, polaridad y
+  aridad; los matches, sus testigos y las estadísticas de pivotes no cambian.
+- En `match_delta_antecedents`, compartido por ambos evaluadores, las
+  posiciones anteriores al pivote excluyen eventos de la frontera. Un match
+  con varios testigos nuevos se produce una vez, en su primera posición de
+  frontera; es donde el recorrido sin restricción lo producía primero dentro
+  de la misma llamada. Las justificaciones retenidas, su orden y sus sellos no
+  cambian; sólo desaparecen candidatos repetidos, y bajan `full_matches` y los
+  candidatos del profiler. Es la descomposición dA·B ∪ A_viejo·dB de la regla
+  del producto discreta. Supone, como el test de bindings canónicos por pivote,
+  que el mismo vector de testigos da la misma sustitución desde cualquier pivote.
+- Las justificaciones vistas se guardan en un `BTreeSet` en todos los
+  evaluadores. La igualdad es la misma que la de `Vec::contains`, porque el
+  orden derivado es consistente con la igualdad lógica de `Event`. En el
+  profiler, `comparisons` pasa a contar búsquedas, una por candidato.
+
+[forward_incremental_mixed_pivots.res](../examples/experiments/forward_incremental_mixed_pivots.res)
+añade un caso parametrizado en que una misma ronda une testigos viejo × nuevo,
+nuevo × viejo y nuevo × nuevo, más una autounión `suspect(x) & suspect(y)`.
+Sus tests recorren las 4.096 particiones entre base y adición de sus seis
+seeds y comparan `new_by_derivative` con `new` en las tres fixtures forward.

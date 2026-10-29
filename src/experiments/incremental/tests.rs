@@ -4,6 +4,8 @@ use crate::{DerivationClock, parse_formal, parse_formal_to_typed};
 
 const FORWARD: &str = include_str!("../../../examples/experiments/forward_incremental.res");
 const PROVENANCE: &str = include_str!("../../../examples/experiments/forward_provenance.res");
+const MIXED: &str =
+    include_str!("../../../examples/experiments/forward_incremental_mixed_pivots.res");
 
 fn inputs(source: &str) -> (Vec<Rule>, Vec<Event>) {
     let module = parse_formal_to_typed(source).unwrap();
@@ -304,4 +306,97 @@ fn derivation_clock_remains_external_to_incremental_rounds() {
             .iter()
             .all(|e| e.proposition.time == events[0].proposition.time)
     );
+}
+
+fn verb_count(events: &[Event], verb: &str) -> usize {
+    events.iter().filter(|e| e.verb == verb).count()
+}
+
+#[test]
+fn mixed_old_and_new_witnesses_in_one_round_equal_full_close() {
+    let (rules, events) = inputs(MIXED);
+    assert_eq!(events.len(), 6);
+    // Every split of the six seeds into a base and one addition (4096 pairs).
+    // One round can then join old x new, new x old and new x new witnesses.
+    let all = (1usize << events.len()) - 1;
+    for base_mask in 0..=all {
+        for delta_mask in 0..=all {
+            let base = subset(&events, base_mask);
+            let additions = subset(&events, delta_mask);
+            let mut clock = Clock::default();
+            let mut state = IncrementalClosure::new(base.clone(), &rules, &mut clock);
+            let before = state.closure().clone();
+            let delta = state.update(additions.clone(), &mut clock);
+            let expected = keys(state.closure())
+                .difference(&keys(&before))
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            assert_eq!(
+                delta.known.iter().cloned().collect::<BTreeSet<_>>(),
+                expected
+            );
+            assert!(
+                before
+                    .derivations
+                    .iter()
+                    .all(|d| state.closure().derivations.contains(d)),
+                "old provenance and stamps remain intact"
+            );
+            assert_oracle(&state, &[base, additions].concat(), &rules);
+        }
+    }
+}
+
+#[test]
+fn one_round_finds_every_mixed_witness_combination() {
+    let (rules, events) = inputs(MIXED);
+    // Seeds in fixture order: present(ana, beto, carla), motive(ana, beto, carla).
+    // Base: present(ana), motive(beto). Addition: the other four seeds.
+    // ana = old x new, beto = new x old, carla = new x new.
+    let base = vec![events[0].clone(), events[4].clone()];
+    let additions = vec![
+        events[1].clone(),
+        events[2].clone(),
+        events[3].clone(),
+        events[5].clone(),
+    ];
+    let mut clock = Clock::default();
+    let mut state = IncrementalClosure::new(base.clone(), &rules, &mut clock);
+    assert_eq!(state.closure().known.len(), 2);
+    let delta = state.update(additions.clone(), &mut clock);
+    assert_eq!(verb_count(&delta.known, "suspect"), 3);
+    // Ordered pairs, including (x, x), all from new suspects.
+    assert_eq!(verb_count(&delta.known, "coSuspects"), 9);
+    assert_eq!(delta.derivations.len(), 12, "one stamp per justification");
+    // Earlier positions exclude the frontier, so a match with several new
+    // witnesses (carla, every suspect pair) is produced once: no repeats.
+    assert_eq!(delta.stats.full_matches, 12);
+    assert_oracle(&state, &[base, additions].concat(), &rules);
+}
+
+#[test]
+fn derivative_base_equals_naive_base_and_later_updates() {
+    for source in [FORWARD, PROVENANCE, MIXED] {
+        let (rules, events) = inputs(source);
+        let all = (1usize << events.len()) - 1;
+        for base_mask in 0..=all {
+            let seeds = subset(&events, base_mask);
+            let mut naive_clock = Clock::default();
+            let mut derivative_clock = Clock::default();
+            let mut naive = IncrementalClosure::new(seeds.clone(), &rules, &mut naive_clock);
+            let mut derivative =
+                IncrementalClosure::new_by_derivative(seeds.clone(), &rules, &mut derivative_clock);
+            assert_eq!(keys(derivative.closure()), keys(naive.closure()));
+            assert!(same_justifications(derivative.closure(), naive.closure()));
+            assert_eq!(derivative_clock.0, naive_clock.0, "same number of stamps");
+            assert_oracle(&derivative, &seeds, &rules);
+            // Both states keep maintaining the same closure afterwards.
+            let rest = subset(&events, all & !base_mask);
+            naive.update(rest.clone(), &mut naive_clock);
+            derivative.update(rest.clone(), &mut derivative_clock);
+            assert_eq!(keys(derivative.closure()), keys(naive.closure()));
+            assert!(same_justifications(derivative.closure(), naive.closure()));
+            assert_oracle(&derivative, &[seeds, rest].concat(), &rules);
+        }
+    }
 }

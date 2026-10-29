@@ -309,3 +309,6 @@ añade un caso parametrizado en que una misma ronda une testigos viejo × nuevo,
 nuevo × viejo y nuevo × nuevo, más una autounión `suspect(x) & suspect(y)`.
 Sus tests recorren las 4.096 particiones entre base y adición de sus seis
 seeds y comparan `new_by_derivative` con `new` en las tres fixtures forward.
+
+Las optimizaciones que quedan pendientes se inventarían en
+[semi-naive-pending-optimizations.md](semi-naive-pending-optimizations.md).

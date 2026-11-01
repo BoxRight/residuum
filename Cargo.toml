@@ -5,3 +5,9 @@ edition = "2024"
 
 [dependencies]
 chumsky = { version = "=0.9.3", default-features = false }
+
+# Los binarios de tests compilan sin símbolos de depuración: con `debug = 2` la
+# compilación desde cero del target de tests supera el freno de 768 MiB del
+# runner. Medido en docs/compile-cost-optimizations.md.
+[profile.test]
+debug = 0

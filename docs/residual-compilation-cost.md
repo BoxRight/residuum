@@ -150,3 +150,7 @@ CARGO_BUILD_JOBS=1 CARGO_PROFILE_TEST_DEBUG=0 python3 scripts/test_safe.py --tes
 
 Para ejecución se emplea test_safe.py con `--binary` y `--test` exactos. No se
 invocan Cargo ni binarios de tests directamente fuera del runner.
+
+Las palancas posteriores y la medición que separa memoria anónima de caché
+están en [compile-cost-optimizations.md](compile-cost-optimizations.md); desde
+el 2026-11-01 `debug = 0` para tests está fijado en `Cargo.toml`.

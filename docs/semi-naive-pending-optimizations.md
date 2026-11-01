@@ -1,6 +1,6 @@
 # Optimizaciones pendientes del cierre semi-naive
 
-Inventario de 2026-10-29, posterior a la rama `semi-naive-dedup-index`
+Inventario de 2026-10-29 (punto 12 añadido el 2026-11-01), posterior a la rama `semi-naive-dedup-index`
 (índice en `IncrementalClosure`, deduplicación con `BTreeSet`, pivotes sin
 repetición y `new_by_derivative`). Este documento no modifica código ni
 contratos. Ordena trabajo posible; ninguna entrada está medida todavía y su
@@ -27,6 +27,7 @@ de rondas y `PropositionTime` ([discrete-derivative.md](discrete-derivative.md) 
 | 9 | Prueba mínima: tropical y (min, max) | Nueva capacidad; `explain` más legible | Medio | capa de procedencia, `explain` |
 | 10 | Uniones *worst-case optimal* | Alto en cuerpos cíclicos | Alto | matching |
 | 11 | Evaluación dirigida por objetivo | Depende de la consulta | Alto | residual / forward |
+| 12 | FOUR por modelo menos informado | Alto: de 4ⁿ a polinomial | Medio | `experiments/four.rs` |
 
 Fuera de alcance por diseño: `close` sigue siendo el cierre ingenuo de
 referencia y oráculo de comparación. Las optimizaciones van en los evaluadores
@@ -258,6 +259,76 @@ El cierre forward calcula todas las consecuencias. Cuando sólo interesa un goal
 transformaciones como *magic sets* restringen la evaluación a lo relevante para
 él. La búsqueda residual ya es backward; habría que delimitar qué fragmento del
 forward se beneficia sin duplicar su contrato.
+
+## 12. Consecuencia FOUR por modelo menos informado
+
+**Problema.** `experiments/four.rs` decide `fourFusion` enumerando las
+\(4^n\) interpretaciones de los átomos ground y conservando las que satisfacen
+premisas y reglas. Por eso `prepare` limita el experimento a cuatro átomos.
+`FourSession` refina por pasos eliminando mundos, pero recorre el mismo
+universo.
+
+**Observación.** Cada valor es un par de bits `Value { p, n }`. Con la
+semántica de `four.rs`, todas las condiciones de modelo son cláusulas Horn
+sobre las \(2n\) variables booleanas \(p_i, n_i\):
+
+- Premisa `A`: \(p(A)\). Un literal negativo intercambia los componentes:
+  `~A` aporta \(n(A)\).
+- Regla `a <= c`, por `Value::le` (\((\lnot a.p\lor c.p)\land(\lnot c.n\lor a.n)\)):
+  - **hacia adelante:** \(P(a)\Rightarrow c.p\), donde \(P(a)\) es el
+    conjunto de componentes p de los literales de `a` (`I` no aporta ninguno,
+    porque vale \((1,1)\));
+  - **hacia atrás:** \(c.n\Rightarrow a.n\). Como
+    \(n(x\otimes y)=(y.p\Rightarrow x.n)\land(x.p\Rightarrow y.n)\), se
+    compila recursivamente con una guarda G, que empieza en \(\{c.n\}\):
+    en un literal da \(G\Rightarrow\ell.n\); en \(x\otimes y\) baja a
+    x con \(G\cup P(y)\) y a y con \(G\cup P(x)\); `I` no da nada.
+
+Todas tienen exactamente una conclusión, así que el conjunto de modelos es
+cerrado bajo la conjunción componente a componente, que es el meet del orden de
+conocimiento \(\le_k\). El conjunto no es vacío (todo B es modelo), así que
+existe el **modelo \(\le_k\)-mínimo**, y como \(p\) es monótono en
+\(\le_k\):
+
+\[
+\text{entailed}(g)\iff p(g)\text{ en el modelo }\le_k\text{-mínimo.}
+\]
+
+**Propuesta.** Compilar las cláusulas anteriores y calcular el modelo mínimo
+por propagación unitaria Horn, partiendo de todo U: es la iteración de Kleene de
+un operador de consecuencias. El costo es lineal en el tamaño de las cláusulas
+compiladas (cuadrático en el tamaño de cada cuerpo), en lugar de \(4^n\), y
+permite levantar el límite de cuatro átomos.
+
+**Diferencia con Fitting.** El operador de consecuencias de Fitting para
+bilátices sólo propaga hacia adelante. Aquí el componente n también viaja de la
+conclusión a las premisas, por la segunda mitad de `Value::le`. Copiar sólo la
+dirección forward daría modelos que no satisfacen las reglas.
+
+**Límites.** El argumento depende de que las conclusiones sean literales. Una
+conclusión con disyunción rompería la forma Horn; en ese caso el problema es
+difícil en general. El cierre Horn y esta consecuencia FOUR siguen siendo
+objetos distintos ([discrete-derivative.md](discrete-derivative.md) §7): el
+modelo mínimo vive en los pares (p, n), no en Known.
+
+Como justificación teórica, la descomposición de FOUR en dos componentes es la
+representación como producto que Cabrer y Priestley obtienen como consecuencia
+de una dualidad natural por *piggyback* sobre Priestley. El algoritmo no la
+necesita.
+
+**Conservar.** `FourEntailment.entailed` debe coincidir. `models` e
+`interpretations` cuentan mundos y no se obtienen del modelo mínimo; un
+evaluador nuevo debería ofrecerlo como modo aparte, con la enumeración como
+oráculo en el dominio pequeño.
+
+**Verificado (experimento finito, no prueba formal).**
+[scripts/four_least_model_check.py](../scripts/four_least_model_check.py)
+copia `tensor` y `le` de `four.rs` y genera 5.000 programas ground al azar de
+hasta tres átomos, con conjunciones anidadas, `I` y literales negativos. En
+todos, el meet \(\le_k\) de los modelos es modelo, y la enumeración, el modelo
+mínimo y la propagación compilada dan la misma consecuencia. No ejecuta código
+Rust: falta un test que compare un evaluador Rust contra `entailment` en las
+fixtures existentes.
 
 ## Fuera de este inventario
 

@@ -395,7 +395,7 @@ fn close_with_programs(
     let mut known_index = KnownIndex::new(&known);
     let mut frontier = known.clone();
     let mut derivations = Vec::new();
-    let mut seen_unstamped = Vec::new();
+    let mut seen_unstamped = BTreeSet::new();
     let mut initial_round = true;
     let mut activated = Vec::new();
 
@@ -474,7 +474,7 @@ fn close_with_programs(
 /// indexing stay with each evaluator, so synchronous rounds remain synchronous.
 fn retain_derivation(
     unstamped: UnstampedDerivation,
-    seen: &mut Vec<UnstampedDerivation>,
+    seen: &mut BTreeSet<UnstampedDerivation>,
     known_keys: &mut BTreeSet<Event>,
     clock: &mut dyn DerivationClock,
 ) -> Option<(DerivedEvent, bool)> {
@@ -487,7 +487,7 @@ fn retain_derivation(
     }
     #[cfg(test)]
     let timer = profile::start();
-    seen.push(unstamped.clone());
+    seen.insert(unstamped.clone());
     let is_new = known_keys.insert(unstamped.event.clone());
     let derived = stamp(unstamped, clock.next_derivation_time());
     #[cfg(test)]

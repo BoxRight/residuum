@@ -21,7 +21,7 @@ pub struct ForwardSession {
     rules: Vec<Rule>,
     programs: Vec<ProgramSource>,
     closure: Closure,
-    seen: Vec<UnstampedDerivation>,
+    seen: BTreeSet<UnstampedDerivation>,
     round: usize,
     complete: bool,
 }
@@ -47,7 +47,7 @@ impl ForwardSession {
                 known,
                 derivations: Vec::new(),
             },
-            seen: Vec::new(),
+            seen: BTreeSet::new(),
             round: 0,
             complete: false,
         }

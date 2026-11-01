@@ -166,7 +166,7 @@ def main():
     parser.add_argument('--fmt-check', action='store_true')
     parser.add_argument('--format', action='store_true')
     parser.add_argument('--fixture', type=Path, help='Run one source-defined Formal fixture with the bounded example runner')
-    parser.add_argument('--cli', choices=('run', 'query', 'explain'), help='Run one CLI command on --fixture under the same limits')
+    parser.add_argument('--cli', choices=('run', 'query', 'explain', 'execute'), help='Run one CLI command on --fixture under the same limits')
     parser.add_argument('--steps', type=int, help='Bounded stepwise CLI transitions (1..4096)')
     parser.add_argument('--trace', action='store_true', help='Show every stepwise CLI transition')
     parser.add_argument('--incremental', action='store_true', help='Forward incremental comparison of base/delta seed blocks; requires --fixture')

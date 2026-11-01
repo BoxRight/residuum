@@ -13,12 +13,15 @@ use residuum::typed::{
 
 #[path = "cli/default_output.rs"]
 mod default_output;
+#[path = "cli/execute.rs"]
+mod execute;
 #[path = "cli/steps.rs"]
 mod steps;
 pub use steps::{StepOptions, execute_file_steps};
 
-pub const USAGE: &str = "Usage: residuum <run|query|explain> <case.res> [--steps N] [--trace]\n\
+pub const USAGE: &str = "Usage: residuum <run|query|explain|execute> <case.res> [--steps N] [--trace]\n\
     run      Forward closure and goals; no state execution\n\
+    execute  As run, then apply derived effects to each experiment's `state`\n\
     query    Declared residual, active residual or FOUR queries\n\
     explain  Forward justifications and default selection\n\
     --steps N  At most N synchronous transitions (1..=4096)\n\
@@ -29,6 +32,7 @@ pub enum Command {
     Run,
     Query,
     Explain,
+    Execute,
 }
 
 impl Command {
@@ -37,6 +41,7 @@ impl Command {
             "run" => Ok(Self::Run),
             "query" => Ok(Self::Query),
             "explain" => Ok(Self::Explain),
+            "execute" => Ok(Self::Execute),
             _ => Err(Error::new(format!("unknown command `{name}`\n{USAGE}"))),
         }
     }
@@ -69,6 +74,13 @@ fn execute_module(command: Command, module: &residuum::typed::Module) -> Result<
             module,
             &run_forward_experiments(module)?,
         )),
+        Command::Execute => Ok(run_forward_experiments(module)?
+            .iter()
+            .map(|result| {
+                render_results(std::slice::from_ref(result))
+                    + &execute::render_execution(module, result)
+            })
+            .collect()),
     }
 }
 

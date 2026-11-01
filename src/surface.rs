@@ -41,6 +41,28 @@ pub struct FormalExperiment {
     pub query_kind: crate::typed::ExperimentQueryKind,
     pub goal: SurfaceEvent,
     pub query_options: SurfaceQueryOptions,
+    /// Optional `state @ t { object.field = {values} }`, read only by `execute`.
+    pub state: Option<SurfaceInitialState>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SurfaceInitialState {
+    pub time: String,
+    pub fields: Vec<SurfaceStateField>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SurfaceStateField {
+    pub object: String,
+    pub field: String,
+    pub value: SurfaceStateValue,
+}
+
+/// `{a, b}` for a set-valued field, a bare constant for an entity reference.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SurfaceStateValue {
+    Set(Vec<String>),
+    Reference(String),
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

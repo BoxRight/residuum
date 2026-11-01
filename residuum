@@ -5,8 +5,9 @@ from pathlib import Path
 import sys
 
 
-USAGE = """Usage: residuum <run|query|explain> <case.res> [--steps N] [--trace]
+USAGE = """Usage: residuum <run|query|explain|execute> <case.res> [--steps N] [--trace]
   run      Forward closure and goals; no state execution
+  execute  As run, then apply derived effects to each experiment's `state`
   query    Declared residual, active residual or FOUR queries
   explain  Forward justifications and default selection
   --steps N  At most N synchronous transitions (1..=4096)
@@ -18,7 +19,7 @@ def main():
     if sys.argv[1:] in (["--help"], ["-h"]):
         print(USAGE, end="")
         return 0
-    if len(sys.argv) < 3 or sys.argv[1] not in ("run", "query", "explain"):
+    if len(sys.argv) < 3 or sys.argv[1] not in ("run", "query", "explain", "execute"):
         print(USAGE, end="", file=sys.stderr)
         return 2
     extra = sys.argv[3:]

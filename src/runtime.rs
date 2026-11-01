@@ -116,11 +116,56 @@ impl Default for Store {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum OperationKind {
+    Add,
+    Remove,
+}
+
+/// One set operation of an effect, with its field path and value resolved
+/// against the input store but not yet applied.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ResolvedOperation {
+    pub kind: OperationKind,
+    pub object: ObjectId,
+    pub field: FieldName,
+    pub value: Value,
+}
+
 pub fn execute_effect(
     event: &Event,
     verb: &Verb,
     input: &StateSnapshot,
 ) -> Result<StateSnapshot, Error> {
+    let (time, operations) = effect_operations(event, verb, input)?;
+    let mut output = StateSnapshot {
+        time,
+        store: input.store.clone(),
+    };
+    for operation in operations {
+        let values = output.store.set_mut(&operation.object, &operation.field)?;
+        match operation.kind {
+            OperationKind::Add => {
+                values.insert(operation.value);
+            }
+            OperationKind::Remove => {
+                values.remove(&operation.value);
+            }
+        }
+    }
+    Ok(output)
+}
+
+/// Validates an effect event against its verb and the input snapshot, and
+/// returns its output time and its operations in declaration order. Field
+/// paths only traverse object references, which effects never change, so
+/// resolving every operation against the input store is the same as resolving
+/// each one after the previous ones are applied.
+pub fn effect_operations(
+    event: &Event,
+    verb: &Verb,
+    input: &StateSnapshot,
+) -> Result<(StateTime, Vec<ResolvedOperation>), Error> {
     if event.polarity == Polarity::EvidentialNot {
         return Err(Error::new(
             "EvidentialNot has no executable positive StateTransform",
@@ -166,16 +211,11 @@ pub fn execute_effect(
         .as_ref()
         .ok_or_else(|| Error::new("effect verb has no StateTransform"))?;
 
-    let mut output = StateSnapshot {
-        time: StateTime::At(output_time.clone()),
-        store: input.store.clone(),
-    };
-
-    for operation in operations {
-        execute_operation(operation, verb, event, &mut output.store)?;
-    }
-
-    Ok(output)
+    let operations = operations
+        .iter()
+        .map(|operation| resolve_operation(operation, verb, event, &input.store))
+        .collect::<Result<Vec<_>, Error>>()?;
+    Ok((StateTime::At(output_time.clone()), operations))
 }
 
 fn require_input_time(
@@ -196,26 +236,23 @@ fn require_input_time(
     }
 }
 
-fn execute_operation(
+fn resolve_operation(
     operation: &StateOperation,
     verb: &Verb,
     event: &Event,
-    store: &mut Store,
-) -> Result<(), Error> {
-    match operation {
-        StateOperation::AddToSet { target, value } => {
-            let target = resolve_field_access(target, verb, event, store)?;
-            let value = resolve_term(value, verb, event)?;
-            store.set_mut(&target.0, &target.1)?.insert(value);
-        }
-        StateOperation::RemoveFromSet { target, value } => {
-            let target = resolve_field_access(target, verb, event, store)?;
-            let value = resolve_term(value, verb, event)?;
-            store.set_mut(&target.0, &target.1)?.remove(&value);
-        }
-    }
-
-    Ok(())
+    store: &Store,
+) -> Result<ResolvedOperation, Error> {
+    let (kind, target, value) = match operation {
+        StateOperation::AddToSet { target, value } => (OperationKind::Add, target, value),
+        StateOperation::RemoveFromSet { target, value } => (OperationKind::Remove, target, value),
+    };
+    let (object, field) = resolve_field_access(target, verb, event, store)?;
+    Ok(ResolvedOperation {
+        kind,
+        object,
+        field,
+        value: resolve_term(value, verb, event)?,
+    })
 }
 
 fn resolve_field_access(

@@ -156,6 +156,10 @@ pub(super) fn render(
         let observation = std::slice::from_ref(&result.observation);
         let text = match command {
             Command::Run => render_results(observation),
+            Command::Execute => {
+                render_results(observation)
+                    + &super::execute::render_execution(module, &result.observation)
+            }
             Command::Explain => render_explanations(module, observation),
             Command::Query => unreachable!("default queries remain outside this adapter"),
         };
